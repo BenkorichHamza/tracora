@@ -4,7 +4,6 @@ import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/CustomerPayment/controllers/customer_payment_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
-import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 
@@ -46,7 +45,6 @@ class CustomerPaymentView extends GetView<CustomerPaymentController> {
                 },
                 icon: Icon(Icons.search),
               ),
-              SyncView(),
             ],
           ),
           floatingActionButton: FloatingActionButton(

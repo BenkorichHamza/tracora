@@ -26,10 +26,7 @@ class DbHelper {
 
   initDb() async {
     final path = await getDatabasesPath();
-    final dbPath = join(
-      path,
-      '${Get.find<HomeController>().employee.id ?? 'db'}.db',
-    );
+    final dbPath = join(path, "db.db");
     print(dbPath);
     return await openDatabase(
       dbPath,

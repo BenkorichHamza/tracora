@@ -52,11 +52,14 @@ dependencies:
   # device_info_plus: ^11.1.1
   # flutter_native_splash: ^2.4.2 
   # in_app_update: ^4.2.3
+  flutter_thermal_printer: ^1.2.0
   sqflite:
   path:
   image_picker:
   path_provider:
   mobile_scanner:
+  share_plus: ^10.1.4 # Optional for sharing the file
+  file_picker:
 
   flutter:
     sdk: flutter

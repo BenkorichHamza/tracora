@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
-
 import 'package:get/get.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
-import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import '../controllers/home_controller.dart';
 
@@ -29,7 +27,6 @@ class HomeView extends GetView<HomeController> {
                           .withOpacity(0.95),
                       child: Scaffold(
                         appBar: AppBar(
-                          actions: [SyncView()],
                           backgroundColor:
                               controller.theme.scaffoldBackgroundColor,
                           title: Text('tracora'.tr),
@@ -203,7 +200,7 @@ class HomeView extends GetView<HomeController> {
       {
         "title": "settings".tr,
         "img": "assets/settings.png",
-        "route": "Product",
+        "route": Routes.SETTINGS,
       },
       // {
       //   "title": "missions".tr,

@@ -1,15 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/Purchase/controllers/purchase_controller.dart';
-import 'package:tracora/app/modules/PurchaseForm/controllers/purchase_form_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
-import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 
@@ -51,7 +45,6 @@ class PurchaseView extends GetView<PurchaseController> {
                 },
                 icon: Icon(Icons.search),
               ),
-              SyncView(),
             ],
           ),
           floatingActionButton: FloatingActionButton(

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
-import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 
@@ -49,7 +48,6 @@ class SupplierView extends GetView<SupplierController> {
                 },
                 icon: Icon(Icons.search),
               ),
-              SyncView(),
             ],
           ),
           floatingActionButton: FloatingActionButton(

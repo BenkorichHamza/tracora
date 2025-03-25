@@ -46,6 +46,8 @@ import '../modules/SaleDetails/bindings/sale_details_binding.dart';
 import '../modules/SaleDetails/views/sale_details_view.dart';
 import '../modules/SaleForm/bindings/sale_form_binding.dart';
 import '../modules/SaleForm/views/sale_form_view.dart';
+import '../modules/Settings/bindings/settings_binding.dart';
+import '../modules/Settings/views/settings_view.dart';
 import '../modules/Statistic/bindings/statistic_binding.dart';
 import '../modules/Statistic/views/statistic_view.dart';
 import '../modules/Supplier/bindings/supplier_binding.dart';
@@ -215,6 +217,16 @@ class AppPages {
       name: _Paths.CUSTOMER_DETAILS,
       page: () => const CustomerDetailsView(),
       binding: CustomerDetailsBinding(),
+    ),
+    GetPage(
+      name: _Paths.STATISTIC,
+      page: () => const StatisticView(),
+      binding: StatisticBinding(),
+    ),
+    GetPage(
+      name: _Paths.SETTINGS,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
     ),
   ];
 }

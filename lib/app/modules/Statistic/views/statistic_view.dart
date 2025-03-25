@@ -47,7 +47,10 @@ class StatisticView extends GetView<StatisticController> {
                       : Text(
                         controller.from.formatDate()! +
                             ' - ' +
-                            controller.to.formatDate()!,
+                            (controller.to.toDatetime() ?? DateTime.now())
+                                .subtract(Duration(days: 1))
+                                .millisecondsSinceEpoch
+                                .formatDate()!,
                       ),
             ),
           ),
