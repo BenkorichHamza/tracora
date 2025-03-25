@@ -22,20 +22,12 @@ import '../modules/CustomerPaymentDetails/bindings/customer_payment_details_bind
 import '../modules/CustomerPaymentDetails/views/customer_payment_details_view.dart';
 import '../modules/CustomerPaymentForm/bindings/customer_payment_form_binding.dart';
 import '../modules/CustomerPaymentForm/views/customer_payment_form_view.dart';
-import '../modules/Driver/bindings/driver_binding.dart';
-import '../modules/Driver/views/driver_view.dart';
 import '../modules/FeesPayment/bindings/fees_payment_binding.dart';
 import '../modules/FeesPayment/views/fees_payment_view.dart';
 import '../modules/FeesPaymentDetails/bindings/fees_payment_details_binding.dart';
 import '../modules/FeesPaymentDetails/views/fees_payment_details_view.dart';
 import '../modules/FeesPaymentForm/bindings/fees_payment_form_binding.dart';
 import '../modules/FeesPaymentForm/views/fees_payment_form_view.dart';
-import '../modules/Login/bindings/login_binding.dart';
-import '../modules/Login/views/login_view.dart';
-import '../modules/Mission/bindings/mission_binding.dart';
-import '../modules/Mission/views/mission_view.dart';
-import '../modules/MissionForm/bindings/mission_form_binding.dart';
-import '../modules/MissionForm/views/mission_form_view.dart';
 import '../modules/Product/bindings/product_binding.dart';
 import '../modules/Product/views/product_view.dart';
 import '../modules/ProductForm/bindings/product_form_binding.dart';
@@ -223,31 +215,6 @@ class AppPages {
       name: _Paths.CUSTOMER_DETAILS,
       page: () => const CustomerDetailsView(),
       binding: CustomerDetailsBinding(),
-    ),
-    GetPage(
-      name: _Paths.LOGIN,
-      page: () => const LoginView(),
-      binding: LoginBinding(),
-    ),
-    GetPage(
-      name: _Paths.STATISTIC,
-      page: () => const StatisticView(),
-      binding: StatisticBinding(),
-    ),
-    GetPage(
-      name: _Paths.DRIVER,
-      page: () => const DriverView(),
-      binding: DriverBinding(),
-    ),
-    GetPage(
-      name: _Paths.MISSION,
-      page: () => const MissionView(),
-      binding: MissionBinding(),
-    ),
-    GetPage(
-      name: _Paths.MISSION_FORM,
-      page: () => const MissionFormView(),
-      binding: MissionFormBinding(),
     ),
   ];
 }

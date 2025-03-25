@@ -1,7 +1,4 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -61,25 +58,5 @@ class SupplierPaymentController extends GetxController {
     } finally {
       loading = false;
     }
-  }
-
-  listen() async {
-    try {
-      listener.cancel();
-    } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('moneyTransactions')
-        .where("type", isEqualTo: "purchase")
-        // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()?["remoteId"] = element.data()?["id"];
-            var model = MoneyTransaction.fromMap(element.data()!);
-            await repository.insertMoneyTransaction(model, sync: false);
-          });
-          getAll();
-        });
   }
 }

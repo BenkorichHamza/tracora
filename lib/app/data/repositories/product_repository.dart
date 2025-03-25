@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -90,16 +88,6 @@ class ProductRepository {
     replace = true,
   }) async {
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
-    if (product.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("products")
-              .doc();
-      product = product.copyWith(ids: doc.id);
-    }
     await Future.forEach(product.categories ?? <CategoryModel>[], (c) async {
       await CategoryRepository().insertCategory(c, sync: false, replace: false);
     });
@@ -120,8 +108,6 @@ class ProductRepository {
       if (!replace) return -1;
     }
     product = product.copyWith(
-      createdBy: product.id != null ? product.createdBy : userIds,
-      updatedBy: product.id != null ? userIds : product.updatedBy,
       createdAt:
           product.id != null
               ? product.createdAt
@@ -153,20 +139,6 @@ class ProductRepository {
         ..rawInsert(
           'INSERT INTO product_category (product_id, category_id) VALUES ${categoryMaps.map((map) => '(${map['product_id']}, ${map['category_id']})').join(', ')}',
         );
-    }
-
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("products")
-          .doc(product.ids)
-          .set(
-            product.copyWith(id: id < 0 ? product.id : id).toMap(),
-            SetOptions(merge: sync),
-          );
     }
 
     return id;
@@ -203,12 +175,7 @@ class ProductRepository {
       where: 'id = ?',
       whereArgs: [product.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("products")
-        .doc(product.ids)
-        .set(product.toMap(), SetOptions(merge: true));
+
     return r;
   }
 

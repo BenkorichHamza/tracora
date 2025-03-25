@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -71,16 +69,6 @@ WHERE u.deletedAt IS NULL
   }) async {
     user = user.copyWith(type: "supplier");
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
-    if (user.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("users")
-              .doc();
-      user = user.copyWith(ids: doc.id);
-    }
     List<Map<String, dynamic>> m = await db.query(
       "user",
       columns: ['id'],
@@ -91,8 +79,6 @@ WHERE u.deletedAt IS NULL
       if (!replace) return -1;
     }
     user = user.copyWith(
-      createdBy: user.id != null ? user.createdBy : userIds,
-      updatedBy: user.id != null ? userIds : user.updatedBy,
       createdAt:
           user.id != null
               ? user.createdAt
@@ -107,19 +93,6 @@ WHERE u.deletedAt IS NULL
       user.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("users")
-          .doc(user.ids)
-          .set(
-            user.copyWith(id: id < 0 ? user.id : id).toMap(),
-            SetOptions(merge: sync),
-          );
-    }
-
     return id;
   }
 
@@ -155,12 +128,6 @@ WHERE u.deletedAt IS NULL
       where: 'id = ?',
       whereArgs: [user.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("users")
-        .doc(user.ids)
-        .set(user.toMap(), SetOptions(merge: true));
     return r;
   }
 

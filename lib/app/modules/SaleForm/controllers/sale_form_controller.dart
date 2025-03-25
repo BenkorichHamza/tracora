@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/product_model.dart';
@@ -12,7 +10,6 @@ import 'package:tracora/app/modules/CustomerDetails/controllers/customer_details
 import 'package:tracora/app/modules/Sale/controllers/sale_controller.dart';
 import 'package:tracora/app/modules/SaleDetails/controllers/sale_details_controller.dart';
 import 'package:tracora/app/modules/SaleForm/views/bottom_sheet_item_selector.dart';
-import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
 class SaleFormController extends GetxController {

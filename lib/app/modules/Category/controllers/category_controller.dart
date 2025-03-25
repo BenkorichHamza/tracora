@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -69,23 +67,5 @@ class CategoryController extends GetxController {
       selected.add(id);
     }
     selected = selected.sublist(0);
-  }
-
-  listen() async {
-    try {
-      listener.cancel();
-    } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('categories')
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()["remoteId"] = element.data()["id"];
-            var model = CategoryModel.fromMap(element.data());
-            await repository.insertCategory(model, sync: false);
-          });
-          getAll();
-        });
   }
 }

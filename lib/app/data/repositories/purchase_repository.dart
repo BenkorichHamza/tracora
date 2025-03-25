@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -165,17 +163,8 @@ class PurchaseRepository {
     bool replace = true,
   }) async {
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
     var now = DateTime.now().millisecondsSinceEpoch;
-    if (purchase.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("stockTransactions")
-              .doc();
-      purchase = purchase.copyWith(ids: doc.id);
-    }
+
     List<Map<String, dynamic>> m = await db.query(
       "stock_transaction",
       columns: ['id'],
@@ -201,8 +190,6 @@ class PurchaseRepository {
     });
     purchase = purchase.copyWith(
       type: "purchase",
-      createdBy: purchase.id != null ? purchase.createdBy : userIds,
-      updatedBy: purchase.id != null ? userIds : purchase.updatedBy,
       dateTime: (purchase.dateTime ?? 0) <= 0 ? now : purchase.dateTime,
       createdAt: purchase.id != null ? purchase.createdAt : now,
       updatedAt: purchase.id == null ? purchase.createdAt : now,
@@ -241,19 +228,6 @@ INSERT INTO product_transaction
 ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product_id']}, 1, ${map['price']}, ${map['qte']})').join(', ')}
           ''');
     }
-
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("stockTransactions")
-          .doc(purchase.ids)
-          .set(
-            purchase.copyWith(id: id < 0 ? purchase.id : id).toMap(),
-            SetOptions(merge: sync),
-          );
-    }
-
     return id;
   }
 
@@ -290,12 +264,7 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       where: 'id = ?',
       whereArgs: [stockTransaction.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("stockTransactions")
-        .doc(stockTransaction.ids)
-        .set(stockTransaction.toMap(), SetOptions(merge: true));
+
     return r;
   }
 

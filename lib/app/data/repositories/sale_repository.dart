@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -17,11 +14,6 @@ class SaleRepository {
 
   Future<List<StockTransaction>> getAllSales({required String search}) async {
     final db = await _dbHelper.db;
-    // final List<Map<String, dynamic>> maps = await db.query(
-    //   'stock_transaction',
-    //   where:
-    //       'deletedAt IS NULL AND type = "sale" AND () ORDER BY dateTime DESC',
-    // );
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT st.*, u.firstName from
       stock_transaction st
@@ -97,17 +89,7 @@ class SaleRepository {
   }
 
   Future<int> insertSale(StockTransaction sale, {bool sync = true}) async {
-    if (sale.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("stockTransactions")
-              .doc();
-      sale = sale.copyWith(ids: doc.id);
-    }
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
     var now = DateTime.now().millisecondsSinceEpoch;
     var products = sale.productTransactions?.map((e) => e.product).toList();
     var user = sale.user;
@@ -125,8 +107,6 @@ class SaleRepository {
     });
     sale = sale.copyWith(
       type: "sale",
-      createdBy: sale.id != null ? sale.createdBy : userIds,
-      updatedBy: sale.id != null ? userIds : sale.updatedBy,
       dateTime: (sale.dateTime ?? 0) <= 0 ? now : sale.dateTime,
       createdAt: sale.id != null ? sale.createdAt : now,
       updatedAt: sale.id == null ? sale.createdAt : now,
@@ -165,16 +145,6 @@ INSERT INTO product_transaction
 ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product_id']}, -1, ${map['price']}, ${map['qte']})').join(', ')}
           ''');
     }
-
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("stockTransactions")
-          .doc(sale.ids)
-          .set(sale.toMap(), SetOptions(merge: sync));
-    }
-
     return id;
   }
 
@@ -210,12 +180,6 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       where: 'id = ?',
       whereArgs: [stockTransaction.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("stockTransactions")
-        .doc(stockTransaction.ids)
-        .set(stockTransaction.toMap(), SetOptions(merge: true));
     return r;
   }
 

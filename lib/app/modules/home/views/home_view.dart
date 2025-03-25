@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:get/get.dart';
-import 'package:tracora/app/modules/Login/views/login_view.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -15,110 +13,90 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Obx(
       () =>
-          controller.employee.id == null
-              ? LoginView()
-              : Obx(
-                () =>
-                    !controller.settingsLoaded
-                        ? const Scaffold(
-                          backgroundColor: Color.fromRGBO(0, 180, 80, 1),
-                        )
-                        : Theme(
-                          data: controller.theme,
-                          child: OrientationBuilder(
-                            builder: (context, o) {
-                              var w = MediaQuery.of(context).size.width;
-                              return AdvancedDrawer(
-                                openRatio: Get.width < 600 ? 0.75 : 300 / w,
-                                rtlOpening: Get.locale?.languageCode == "ar",
-                                controller: controller.drawerCtrl,
-                                drawer: drawer(),
-                                backdropColor: controller
-                                    .theme
-                                    .scaffoldBackgroundColor
-                                    .withOpacity(0.95),
-                                child: Scaffold(
-                                  appBar: AppBar(
-                                    actions: [SyncView()],
-                                    backgroundColor:
-                                        controller
-                                            .theme
-                                            .scaffoldBackgroundColor,
-                                    title: Text('tracora'.tr),
-                                    centerTitle: true,
-                                    leading: IconButton(
-                                      icon: ValueListenableBuilder<
-                                        AdvancedDrawerValue
-                                      >(
-                                        valueListenable: controller.drawerCtrl,
-                                        builder: (context, value, child) {
-                                          return AnimatedSwitcher(
-                                            duration: const Duration(
-                                              milliseconds: 250,
-                                            ),
-                                            child:
-                                                value.visible
-                                                    ? const Icon(Icons.clear)
-                                                    : const Icon(Icons.menu),
-                                          );
-                                        },
-                                      ),
-                                      onPressed:
-                                          controller.drawerCtrl.showDrawer,
-                                    ),
-                                  ),
-                                  body: ListView(
-                                    padding: EdgeInsets.all(16),
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[0])),
-                                          Expanded(child: menuItem(pages()[1])),
-                                          Expanded(child: menuItem(pages()[2])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[3])),
-                                          Expanded(child: menuItem(pages()[4])),
-                                          Expanded(child: menuItem(pages()[5])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[6])),
-                                          Expanded(child: menuItem(pages()[7])),
-                                          Expanded(child: menuItem(pages()[8])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[9])),
-                                          Expanded(
-                                            child: menuItem(pages()[10]),
-                                          ),
-                                          Expanded(
-                                            child: menuItem(pages()[11]),
-                                          ),
-                                        ],
-                                      ),
-                                      // Row(
-                                      //   children: [
-                                      //     Expanded(
-                                      //       child: menuItem(pages()[12]),
-                                      //     ),
-                                      //     Expanded(child: SizedBox()),
-
-                                      //     Expanded(child: SizedBox()),
-                                      //   ],
-                                      // ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+          !controller.settingsLoaded
+              ? const Scaffold(backgroundColor: Color.fromRGBO(0, 180, 80, 1))
+              : Theme(
+                data: controller.theme,
+                child: OrientationBuilder(
+                  builder: (context, o) {
+                    var w = MediaQuery.of(context).size.width;
+                    return AdvancedDrawer(
+                      openRatio: Get.width < 600 ? 0.75 : 300 / w,
+                      rtlOpening: Get.locale?.languageCode == "ar",
+                      controller: controller.drawerCtrl,
+                      drawer: drawer(),
+                      backdropColor: controller.theme.scaffoldBackgroundColor
+                          .withOpacity(0.95),
+                      child: Scaffold(
+                        appBar: AppBar(
+                          actions: [SyncView()],
+                          backgroundColor:
+                              controller.theme.scaffoldBackgroundColor,
+                          title: Text('tracora'.tr),
+                          centerTitle: true,
+                          leading: IconButton(
+                            icon: ValueListenableBuilder<AdvancedDrawerValue>(
+                              valueListenable: controller.drawerCtrl,
+                              builder: (context, value, child) {
+                                return AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  child:
+                                      value.visible
+                                          ? const Icon(Icons.clear)
+                                          : const Icon(Icons.menu),
+                                );
+                              },
+                            ),
+                            onPressed: controller.drawerCtrl.showDrawer,
                           ),
                         ),
+                        body: ListView(
+                          padding: EdgeInsets.all(16),
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: menuItem(pages()[0])),
+                                Expanded(child: menuItem(pages()[1])),
+                                Expanded(child: menuItem(pages()[2])),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(child: menuItem(pages()[3])),
+                                Expanded(child: menuItem(pages()[4])),
+                                Expanded(child: menuItem(pages()[5])),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(child: menuItem(pages()[6])),
+                                Expanded(child: menuItem(pages()[7])),
+                                Expanded(child: menuItem(pages()[8])),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Expanded(child: menuItem(pages()[9])),
+                                Expanded(child: menuItem(pages()[10])),
+                                Expanded(child: menuItem(pages()[11])),
+                              ],
+                            ),
+                            // Row(
+                            //   children: [
+                            //     Expanded(
+                            //       child: menuItem(pages()[12]),
+                            //     ),
+                            //     Expanded(child: SizedBox()),
+
+                            //     Expanded(child: SizedBox()),
+                            //   ],
+                            // ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
     );
   }
@@ -242,17 +220,7 @@ class HomeView extends GetView<HomeController> {
         child: Column(
           children: [
             const SizedBox(height: kToolbarHeight + 8),
-            CircleAvatar(
-              radius: 80,
-              backgroundImage: NetworkImage(
-                FirebaseAuth.instance.currentUser?.photoURL ?? '',
-              ),
-            ),
-            ListTile(
-              title: Center(
-                child: Text('${FirebaseAuth.instance.currentUser?.email}'),
-              ),
-            ),
+
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -397,14 +365,7 @@ class HomeView extends GetView<HomeController> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton.icon(
-                        onPressed: () => controller.logout(),
-                        label: Text('logout'.tr),
-                        icon: const Icon(Icons.logout),
-                      ),
-                    ),
+
                     // Obx(
                     //   () => Padding(
                     //     padding: const EdgeInsets.all(8.0),

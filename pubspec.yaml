@@ -30,28 +30,28 @@ environment:
 dependencies:
   dio: any
   dio_smart_retry: ^7.0.1
-  firebase_core: any
-  firebase_messaging: any
-  cloud_firestore: any
-  firebase_auth: any
-  google_sign_in: ^6.2.1
+  # firebase_core: any
+  # firebase_messaging: any
+  # cloud_firestore: any
+  # firebase_auth: any
+  # google_sign_in: ^6.2.1
   lucide_icons:
-  shimmer: any
+  # shimmer: any
   intl: any
-  async:
+  # async:
   location:
   flex_color_scheme: any
-  cached_network_image: any
+  # cached_network_image: any
   url_launcher:
   shared_preferences: any
-  geolocator: ^13.0.1
+  # geolocator: ^13.0.1
   # flutter_local_notifications: ^18.0.1
   qr_flutter: ^4.1.0
   flutter_advanced_drawer: ^1.3.6
   animations: 2.0.11 
-  device_info_plus: ^11.1.1
-  flutter_native_splash: ^2.4.2 
-  in_app_update: ^4.2.3
+  # device_info_plus: ^11.1.1
+  # flutter_native_splash: ^2.4.2 
+  # in_app_update: ^4.2.3
   sqflite:
   path:
   image_picker:

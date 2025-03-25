@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/brand_model.dart';
@@ -33,20 +31,8 @@ class BrandRepository {
     bool sync = true,
     bool replace = true,
   }) async {
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
-    if (brand.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("brands")
-              .doc();
-      brand = brand.copyWith(ids: doc.id);
-    }
     final db = await _dbHelper.db;
     brand = brand.copyWith(
-      createdBy: brand.id != null ? brand.createdBy : userIds,
-      updatedBy: brand.id != null ? userIds : brand.updatedBy,
       createdAt:
           brand.id != null
               ? brand.createdAt
@@ -70,20 +56,6 @@ class BrandRepository {
       brand.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-    if (sync) {
-      await FirebaseFirestore.instance.disableNetwork();
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("brands")
-          .doc(brand.ids)
-          .set(
-            brand.copyWith(id: id < 0 ? brand.id : id).toMap(),
-            SetOptions(merge: sync),
-          );
-      await FirebaseFirestore.instance.enableNetwork();
-    }
 
     return id;
   }
@@ -119,12 +91,7 @@ class BrandRepository {
       where: 'id = ?',
       whereArgs: [brand.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("brands")
-        .doc(brand.ids)
-        .set(brand.toMap(), SetOptions(merge: true));
+
     return r;
   }
 

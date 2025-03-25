@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -133,17 +131,8 @@ class MoneyTransactionRepository {
     bool sync = true,
   }) async {
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
     var now = DateTime.now().millisecondsSinceEpoch;
-    if (moneyTransaction.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("moneyTransactions")
-              .doc();
-      moneyTransaction = moneyTransaction.copyWith(ids: doc.id);
-    }
+
     var user = moneyTransaction.user;
     if (moneyTransaction.type == "purchase") {
       await SupplierRepository().insertSupplier(
@@ -159,10 +148,6 @@ class MoneyTransactionRepository {
       );
     }
     moneyTransaction = moneyTransaction.copyWith(
-      createdBy:
-          moneyTransaction.id != null ? moneyTransaction.createdBy : userIds,
-      updatedBy:
-          moneyTransaction.id != null ? userIds : moneyTransaction.updatedBy,
       dateTime:
           (moneyTransaction.dateTime ?? 0) <= 0
               ? now
@@ -179,19 +164,6 @@ class MoneyTransactionRepository {
       map,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("moneyTransactions")
-          .doc(moneyTransaction.ids)
-          .set(
-            moneyTransaction
-                .copyWith(id: id < 0 ? moneyTransaction.id : id)
-                .toMap(),
-            SetOptions(merge: sync),
-          );
-    }
 
     return id;
   }
@@ -227,12 +199,7 @@ class MoneyTransactionRepository {
       where: 'id = ?',
       whereArgs: [moneyTransaction.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("moneyTransactions")
-        .doc(moneyTransaction.ids)
-        .set(moneyTransaction.toMap(), SetOptions(merge: true));
+
     return r;
   }
 

@@ -1,14 +1,9 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
-import 'package:tracora/app/data/models/product_model.dart';
-import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
-import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/data/repositories/sale_repository.dart';
 
 class SaleController extends GetxController {
@@ -60,25 +55,5 @@ class SaleController extends GetxController {
     } finally {
       loading = false;
     }
-  }
-
-  listen() async {
-    try {
-      listener.cancel();
-    } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('stockTransactions')
-        .where("type", isEqualTo: "sale")
-        // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()?["remoteId"] = element.data()?["id"];
-            var model = StockTransaction.fromMap(element.data()!);
-            await repository.insertSale(model, sync: false);
-          });
-          getAll();
-        });
   }
 }

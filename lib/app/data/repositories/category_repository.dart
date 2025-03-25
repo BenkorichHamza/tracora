@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/category_model.dart';
@@ -36,16 +34,7 @@ class CategoryRepository {
     bool replace = true,
   }) async {
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
-    if (category.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("categories")
-              .doc();
-      category = category.copyWith(ids: doc.id);
-    }
+
     List<Map<String, dynamic>> m = await db.query(
       "user",
       columns: ['id'],
@@ -56,8 +45,6 @@ class CategoryRepository {
       if (!replace) return -1;
     }
     category = category.copyWith(
-      createdBy: category.id != null ? category.createdBy : userIds,
-      updatedBy: category.id != null ? userIds : category.updatedBy,
       createdAt:
           category.id != null
               ? category.createdAt
@@ -72,18 +59,6 @@ class CategoryRepository {
       category.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("categories")
-          .doc(category.ids)
-          .set(
-            category.copyWith(id: id < 0 ? category.id : id).toMap(),
-            SetOptions(merge: true),
-          );
-    }
 
     return id;
   }
@@ -119,12 +94,7 @@ class CategoryRepository {
       where: 'id = ?',
       whereArgs: [category.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("categories")
-        .doc(category.ids)
-        .set(category.toMap(), SetOptions(merge: true));
+
     return r;
   }
 
