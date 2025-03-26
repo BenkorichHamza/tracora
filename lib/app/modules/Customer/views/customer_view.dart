@@ -33,7 +33,7 @@ class CustomerView extends GetView<CustomerController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('customers'.tr),
@@ -57,55 +57,65 @@ class CustomerView extends GetView<CustomerController> {
             () =>
                 controller.customers.isEmpty && !controller.loading
                     ? EmptyWidget()
-                    : ListView.builder(
-                      // separatorBuilder:
-                      //     (c, i) => Divider(height: 0,, endIndent: 16, indent: 16),
-                      itemCount: controller.customers.length,
+                    : NotificationListener(
+                      onNotification: (n) {
+                        if (n is ScrollEndNotification) {
+                          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+                            controller.loadMore();
+                          }
+                        }
+                        return true;
+                      },
+                      child: ListView.builder(
+                        // separatorBuilder:
+                        //     (c, i) => Divider(height: 0,, endIndent: 16, indent: 16),
+                        itemCount: controller.customers.length,
 
-                      itemBuilder: (c, i) {
-                        var user = controller.customers[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                          onTap: () {
-                            if (Get.arguments?['select'] == true) {
-                              Get.back(result: user);
-                              return;
-                            }
-                            Get.toNamed(
-                              Routes.CUSTOMER_DETAILS,
-                              arguments: {"user": user},
-                            );
-                          },
-                          leading: user.circleAvatar(),
-                          title: Text(user.firstName ?? ''),
-                          subtitle: Text(user.companyName ?? ''),
-                          trailing: Tooltip(
-                            message: "credit".tr,
+                        itemBuilder: (c, i) {
+                          var user = controller.customers[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            onTap: () {
+                              if (Get.arguments?['select'] == true) {
+                                Get.back(result: user);
+                                return;
+                              }
+                              Get.toNamed(
+                                Routes.CUSTOMER_DETAILS,
+                                arguments: {"user": user},
+                              );
+                            },
+                            leading: user.circleAvatar(),
+                            title: Text(user.firstName ?? ''),
+                            subtitle: Text(user.companyName ?? ''),
+                            trailing: Tooltip(
+                              message: "credit".tr,
 
-                            child: Material(
-                              color:
-                                  Get.find<HomeController>()
-                                      .dark
-                                      .colorScheme
-                                      .primaryContainer,
-                              borderRadius: BorderRadius.circular(100),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8,
-                                  horizontal: 12,
-                                ),
-                                child: Text(
-                                  '${user.toPay.formatPrice() ?? ''}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                              child: Material(
+                                color:
+                                    Get.find<HomeController>()
+                                        .dark
+                                        .colorScheme
+                                        .primaryContainer,
+                                borderRadius: BorderRadius.circular(100),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(
+                                    '${user.toPay.formatPrice() ?? ''}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
           ),
         ),

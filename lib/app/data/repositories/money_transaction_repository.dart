@@ -12,6 +12,7 @@ class MoneyTransactionRepository {
   Future<List<MoneyTransaction>> getMoneyTransactions({
     required String search,
     required String type,
+    int offset = 0,
   }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
@@ -21,6 +22,7 @@ class MoneyTransactionRepository {
       ON mt.user_id=u.id
       WHERE mt.deletedAt IS NULL AND mt.type = "$type" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%" or mt.description LIKE "%$search%") ORDER BY mt.dateTime DESC
       LIMIT 50
+      OFFSET $offset
 ''');
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(

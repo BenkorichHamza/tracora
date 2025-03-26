@@ -12,7 +12,10 @@ import 'package:tracora/app/data/repositories/supplier_repository.dart';
 class SaleRepository {
   final DbHelper _dbHelper = DbHelper();
 
-  Future<List<StockTransaction>> getAllSales({required String search}) async {
+  Future<List<StockTransaction>> getAllSales({
+    required String search,
+    int offset = 0,
+  }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT st.*, u.firstName from
@@ -21,6 +24,7 @@ class SaleRepository {
       ON st.user_id=u.id
       WHERE st.deletedAt IS NULL AND st.type = "sale" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%") ORDER BY st.dateTime DESC
       LIMIT 50
+      OFFSET $offset
 ''');
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -50,13 +52,21 @@ class BrandFormController extends GetxController {
   void save() async {
     try {
       if (!validate) return;
+      String? path = "";
       try {
         if (img.isNotEmpty) {
-          var path = await ImagePickerService.saveImageToPermanentStorage(img);
+          path = await ImagePickerService.saveImageToPermanentStorage(img);
           brand = brand.copyWith(img: path);
         }
       } on Exception catch (_) {}
-      brand = brand.copyWith(name: name.text, nameAr: nameAr.text);
+      brand = brand.copyWith(
+        name: name.text,
+        nameAr: nameAr.text,
+        data:
+            File(path ?? '').existsSync()
+                ? File(path ?? '').readAsBytesSync()
+                : null,
+      );
       var r = await repository.insertBrand(brand);
       Get.find<BrandController>().getAll();
       Get.back();

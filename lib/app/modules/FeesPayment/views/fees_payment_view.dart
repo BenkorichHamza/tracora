@@ -33,7 +33,7 @@ class FeesPaymentView extends GetView<FeesPaymentController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('fees_payments'.tr),
@@ -61,58 +61,72 @@ class FeesPaymentView extends GetView<FeesPaymentController> {
             () =>
                 controller.moneyTransactions.isEmpty && !controller.loading
                     ? EmptyWidget()
-                    : ListView.builder(
-                      itemCount: controller.moneyTransactions.length,
+                    : NotificationListener(
+                      onNotification: (n) {
+                        if (n is ScrollEndNotification) {
+                          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+                            controller.loadMore();
+                          }
+                        }
+                        return true;
+                      },
+                      child: ListView.builder(
+                        itemCount: controller.moneyTransactions.length,
 
-                      itemBuilder: (c, i) {
-                        var moneyTransaction = controller.moneyTransactions[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                          leading: Icon(Icons.money),
-                          onTap: () async {
-                            Get.lazyPut(() => ProductController());
-                            var b = await Get.toNamed(
-                              Routes.FEES_PAYMENT_DETAILS,
-                              arguments: {"moneyTransaction": moneyTransaction},
-                            );
-                            if (b == true) {
-                              controller.getAll();
-                            }
-                          },
+                        itemBuilder: (c, i) {
+                          var moneyTransaction =
+                              controller.moneyTransactions[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            leading: Icon(Icons.money),
+                            onTap: () async {
+                              Get.lazyPut(() => ProductController());
+                              var b = await Get.toNamed(
+                                Routes.FEES_PAYMENT_DETAILS,
+                                arguments: {
+                                  "moneyTransaction": moneyTransaction,
+                                },
+                              );
+                              if (b == true) {
+                                controller.getAll();
+                              }
+                            },
 
-                          title: Text(
-                            moneyTransaction.description ?? 'fees'.tr,
-                          ),
-                          subtitle: Text(
-                            (moneyTransaction.dateTime ??
-                                        moneyTransaction.createdAt)
-                                    .formatDateTime() ??
-                                '',
-                          ),
-                          trailing: Material(
-                            color:
-                                Get.find<HomeController>()
-                                    .dark
-                                    .colorScheme
-                                    .primaryContainer,
-                            borderRadius: BorderRadius.circular(100),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                (moneyTransaction.amount ?? 0).formatPrice() ??
-                                    '',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                            title: Text(
+                              moneyTransaction.description ?? 'fees'.tr,
+                            ),
+                            subtitle: Text(
+                              (moneyTransaction.dateTime ??
+                                          moneyTransaction.createdAt)
+                                      .formatDateTime() ??
+                                  '',
+                            ),
+                            trailing: Material(
+                              color:
+                                  Get.find<HomeController>()
+                                      .dark
+                                      .colorScheme
+                                      .primaryContainer,
+                              borderRadius: BorderRadius.circular(100),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  (moneyTransaction.amount ?? 0)
+                                          .formatPrice() ??
+                                      '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
           ),
         ),

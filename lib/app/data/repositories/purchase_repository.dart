@@ -14,6 +14,7 @@ class PurchaseRepository {
 
   Future<List<StockTransaction>> getAllPurchases({
     required String search,
+    int offset = 0,
   }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
@@ -23,6 +24,7 @@ class PurchaseRepository {
       ON st.user_id=u.id
       WHERE st.deletedAt IS NULL AND st.type = "purchase" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%") ORDER BY st.dateTime DESC
       LIMIT 50
+      OFFSET $offset
 ''');
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(
@@ -268,7 +270,10 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
     return r;
   }
 
-  Future<StockTransaction?> getStockTransactionById({required int id}) async {
+  Future<StockTransaction?> getStockTransactionById({
+    required int id,
+    int offset = 0,
+  }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT st.*, u.firstName from
@@ -277,6 +282,7 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       ON st.user_id=u.id
       WHERE st.deletedAt IS NULL AND st.id = $id
       LIMIT 50
+      OFFSET $offset
 ''');
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(

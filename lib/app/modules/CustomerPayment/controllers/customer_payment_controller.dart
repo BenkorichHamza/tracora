@@ -15,6 +15,14 @@ class CustomerPaymentController extends GetxController {
   final _loading = false.obs;
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
+  final _offset = 0.obs;
+  int get offset => this._offset.value;
+  set offset(int value) => this._offset.value = value;
+
+  loadMore() {
+    offset = moneyTransactions.length;
+    getAll();
+  }
 
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
@@ -43,10 +51,26 @@ class CustomerPaymentController extends GetxController {
 
   getAll() async {
     try {
-      loading = true;
+      loading = true && offset == 0;
       moneyTransactions = await repository.getMoneyTransactions(
         search: search.text,
         type: "sale",
+        offset: offset,
+      );
+    } catch (e) {
+      ErrorHandler.handleError(e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  filter() async {
+    try {
+      offset = 0;
+      moneyTransactions = await repository.getMoneyTransactions(
+        search: search.text,
+        type: "sale",
+        offset: offset,
       );
     } catch (e) {
       ErrorHandler.handleError(e);

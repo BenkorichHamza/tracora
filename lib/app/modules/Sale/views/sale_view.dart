@@ -33,7 +33,7 @@ class SaleView extends GetView<SaleController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('sales'.tr),
@@ -61,39 +61,49 @@ class SaleView extends GetView<SaleController> {
             () =>
                 controller.sales.isEmpty && !controller.loading
                     ? EmptyWidget()
-                    : ListView.builder(
-                      itemCount: controller.sales.length,
-
-                      itemBuilder: (c, i) {
-                        var sale = controller.sales[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                          onTap: () async {
-                            Get.lazyPut(() => ProductController());
-                            var b = await Get.toNamed(
-                              Routes.SALE_DETAILS,
-                              arguments: {"sale": sale},
-                            );
-                            if (b == true) {
-                              controller.getAll();
-                            }
-                          },
-                          leading: sale.user?.circleAvatar(),
-                          title: Text(sale.user?.firstName ?? ''),
-                          subtitle: Text(
-                            (sale.dateTime ?? sale.createdAt)
-                                    .formatDateTime() ??
-                                '',
-                          ),
-                          trailing: Text(
-                            (sale.topay ?? 0).formatPrice() ?? '',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
+                    : NotificationListener(
+                      onNotification: (n) {
+                        if (n is ScrollEndNotification) {
+                          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+                            controller.loadMore();
+                          }
+                        }
+                        return true;
                       },
+                      child: ListView.builder(
+                        itemCount: controller.sales.length,
+
+                        itemBuilder: (c, i) {
+                          var sale = controller.sales[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            onTap: () async {
+                              Get.lazyPut(() => ProductController());
+                              var b = await Get.toNamed(
+                                Routes.SALE_DETAILS,
+                                arguments: {"sale": sale},
+                              );
+                              if (b == true) {
+                                controller.getAll();
+                              }
+                            },
+                            leading: sale.user?.circleAvatar(),
+                            title: Text(sale.user?.firstName ?? ''),
+                            subtitle: Text(
+                              (sale.dateTime ?? sale.createdAt)
+                                      .formatDateTime() ??
+                                  '',
+                            ),
+                            trailing: Text(
+                              (sale.topay ?? 0).formatPrice() ?? '',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
           ),
         ),

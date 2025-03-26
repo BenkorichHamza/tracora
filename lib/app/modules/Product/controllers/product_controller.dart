@@ -16,6 +16,10 @@ class ProductController extends GetxController {
   get gridView => this._gridView.value;
   set gridView(value) => this._gridView.value = value;
 
+  final _offset = 0.obs;
+  int get offset => this._offset.value;
+  set offset(int value) => this._offset.value = value;
+
   final _loading = false.obs;
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
@@ -47,10 +51,35 @@ class ProductController extends GetxController {
     // } catch (e) {}
   }
 
+  loadMore() {
+    offset = products.length;
+    getAll();
+  }
+
   getAll() async {
     try {
-      loading = true;
-      products = await repository.getAllProducts(search: search.text);
+      loading = true && offset == 0;
+      var data = await repository.getAllProducts(
+        search: search.text,
+        offset: offset,
+      );
+      if (data.isNotEmpty) {
+        products = products + data;
+      }
+    } catch (e) {
+      ErrorHandler.handleError(e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  filter() async {
+    try {
+      offset = 0;
+      products = await repository.getAllProducts(
+        search: search.text,
+        offset: offset,
+      );
     } catch (e) {
       ErrorHandler.handleError(e);
     } finally {

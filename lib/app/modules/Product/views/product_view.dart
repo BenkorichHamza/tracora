@@ -37,7 +37,7 @@ class ProductView extends GetView<ProductController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('products'.tr),
@@ -85,13 +85,24 @@ class ProductView extends GetView<ProductController> {
   }
 
   Widget listView() {
-    return ListView.builder(
-      padding: EdgeInsets.all(8),
-      itemCount: controller.products.length,
-      itemBuilder: (c, i) {
-        var product = controller.products[i];
-        return listItem(product);
+    return NotificationListener(
+      onNotification: (n) {
+        if (n is ScrollEndNotification) {
+          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+            controller.loadMore();
+          }
+        }
+        return true;
       },
+
+      child: ListView.builder(
+        padding: EdgeInsets.all(8),
+        itemCount: controller.products.length,
+        itemBuilder: (c, i) {
+          var product = controller.products[i];
+          return listItem(product);
+        },
+      ),
     );
   }
 
@@ -127,20 +138,30 @@ class ProductView extends GetView<ProductController> {
     );
   }
 
-  GridView gridView() {
-    return GridView.builder(
-      padding: EdgeInsets.all(8),
-      itemCount: controller.products.length,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 250,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 0.7,
-      ),
-      itemBuilder: (c, i) {
-        var product = controller.products[i];
-        return gridItem(product);
+  Widget gridView() {
+    return NotificationListener(
+      onNotification: (n) {
+        if (n is ScrollEndNotification) {
+          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+            controller.loadMore();
+          }
+        }
+        return true;
       },
+      child: GridView.builder(
+        padding: EdgeInsets.all(8),
+        itemCount: controller.products.length,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 250,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 0.7,
+        ),
+        itemBuilder: (c, i) {
+          var product = controller.products[i];
+          return gridItem(product);
+        },
+      ),
     );
   }
 

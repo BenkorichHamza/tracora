@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 class UserModel {
   final String sql = '''
@@ -10,6 +11,7 @@ CREATE TABLE user (
     updatedBy  STRING,
     deletedBy  STRING,
     type        TEXT,
+    data        BLOB,
     firstName   TEXT,
     lastName    TEXT,
     address     TEXT,
@@ -39,6 +41,7 @@ CREATE TABLE user (
   final String? updatedBy;
   final String? deletedBy;
   final String? type;
+  final Uint8List? data;
   final String? firstName;
   final String? lastName;
   final String? address;
@@ -67,6 +70,7 @@ CREATE TABLE user (
     this.updatedBy,
     this.deletedBy,
     this.type,
+    this.data,
     this.firstName,
     this.lastName,
     this.address,
@@ -98,6 +102,7 @@ CREATE TABLE user (
     String? updatedBy,
     String? deletedBy,
     String? type,
+    Uint8List? data,
     String? firstName,
     String? lastName,
     String? address,
@@ -127,6 +132,7 @@ CREATE TABLE user (
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
       type: type ?? this.type,
+      data: data ?? this.data,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       address: address ?? this.address,
@@ -173,6 +179,9 @@ CREATE TABLE user (
     }
     if (type != null) {
       result.addAll({'type': type});
+    }
+    if (data != null) {
+      result.addAll({'data': data});
     }
     if (firstName != null) {
       result.addAll({'firstName': firstName});
@@ -247,6 +256,7 @@ CREATE TABLE user (
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
       type: map['type'],
+      data: map['data'],
       firstName: map['firstName'],
       lastName: map['lastName'],
       address: map['address'],
@@ -277,7 +287,7 @@ CREATE TABLE user (
 
   @override
   String toString() {
-    return 'UserModel(id: $id, remoteId: $remoteId, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, type: $type, firstName: $firstName, lastName: $lastName, address: $address, phone: $phone, fax: $fax, fix: $fix, email: $email, companyName: $companyName, updatedAt: $updatedAt, due: $due, payment: $payment, createdAt: $createdAt, deletedAt: $deletedAt, code: $code, deleted: $deleted, nif: $nif, nis: $nis, nin: $nin, password: $password, img: $img)';
+    return 'UserModel(id: $id, remoteId: $remoteId, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, type: $type, data: $data, firstName: $firstName, lastName: $lastName, address: $address, phone: $phone, fax: $fax, fix: $fix, email: $email, companyName: $companyName, updatedAt: $updatedAt, due: $due, payment: $payment, createdAt: $createdAt, deletedAt: $deletedAt, code: $code, deleted: $deleted, nif: $nif, nis: $nis, nin: $nin, password: $password, img: $img)';
   }
 
   @override
@@ -292,6 +302,7 @@ CREATE TABLE user (
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
         other.type == type &&
+        other.data == data &&
         other.firstName == firstName &&
         other.lastName == lastName &&
         other.address == address &&
@@ -323,6 +334,7 @@ CREATE TABLE user (
         updatedBy.hashCode ^
         deletedBy.hashCode ^
         type.hashCode ^
+        data.hashCode ^
         firstName.hashCode ^
         lastName.hashCode ^
         address.hashCode ^

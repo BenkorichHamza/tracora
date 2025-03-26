@@ -15,6 +15,15 @@ class SupplierController extends GetxController {
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
 
+  final _offset = 0.obs;
+  int get offset => this._offset.value;
+  set offset(int value) => this._offset.value = value;
+
+  loadMore() {
+    offset = suppliers.length;
+    getAll();
+  }
+
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
 
@@ -47,8 +56,25 @@ class SupplierController extends GetxController {
 
   getAll() async {
     try {
-      loading = true;
-      suppliers = await repository.getAllSuppliers(search: search.text);
+      loading = true && offset == 0;
+      suppliers = await repository.getAllSuppliers(
+        search: search.text,
+        offset: offset,
+      );
+    } catch (e) {
+      ErrorHandler.handleError(e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  filter() async {
+    try {
+      offset = 0;
+      suppliers = await repository.getAllSuppliers(
+        search: search.text,
+        offset: 0,
+      );
     } catch (e) {
       ErrorHandler.handleError(e);
     } finally {

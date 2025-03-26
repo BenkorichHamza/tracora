@@ -33,7 +33,7 @@ class PurchaseView extends GetView<PurchaseController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('purchases'.tr),
@@ -61,39 +61,49 @@ class PurchaseView extends GetView<PurchaseController> {
             () =>
                 controller.purchases.isEmpty && !controller.loading
                     ? EmptyWidget()
-                    : ListView.builder(
-                      itemCount: controller.purchases.length,
-
-                      itemBuilder: (c, i) {
-                        var purchase = controller.purchases[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                          onTap: () async {
-                            Get.lazyPut(() => ProductController());
-                            var b = await Get.toNamed(
-                              Routes.PURCHASE_DETAILS,
-                              arguments: {"purchase": purchase},
-                            );
-                            if (b == true) {
-                              controller.getAll();
-                            }
-                          },
-                          leading: purchase.user?.circleAvatar(),
-                          title: Text(purchase.user?.firstName ?? ''),
-                          subtitle: Text(
-                            (purchase.dateTime ?? purchase.createdAt)
-                                    .formatDateTime() ??
-                                '',
-                          ),
-                          trailing: Text(
-                            (purchase.topay ?? 0).formatPrice() ?? '',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
+                    : NotificationListener(
+                      onNotification: (n) {
+                        if (n is ScrollEndNotification) {
+                          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+                            controller.loadMore();
+                          }
+                        }
+                        return true;
                       },
+                      child: ListView.builder(
+                        itemCount: controller.purchases.length,
+
+                        itemBuilder: (c, i) {
+                          var purchase = controller.purchases[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            onTap: () async {
+                              Get.lazyPut(() => ProductController());
+                              var b = await Get.toNamed(
+                                Routes.PURCHASE_DETAILS,
+                                arguments: {"purchase": purchase},
+                              );
+                              if (b == true) {
+                                controller.getAll();
+                              }
+                            },
+                            leading: purchase.user?.circleAvatar(),
+                            title: Text(purchase.user?.firstName ?? ''),
+                            subtitle: Text(
+                              (purchase.dateTime ?? purchase.createdAt)
+                                      .formatDateTime() ??
+                                  '',
+                            ),
+                            trailing: Text(
+                              (purchase.topay ?? 0).formatPrice() ?? '',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
           ),
         ),

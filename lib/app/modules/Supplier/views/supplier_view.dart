@@ -36,7 +36,7 @@ class SupplierView extends GetView<SupplierController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('suppliers'.tr),
@@ -60,49 +60,59 @@ class SupplierView extends GetView<SupplierController> {
             () =>
                 controller.suppliers.isEmpty && !controller.loading
                     ? EmptyWidget()
-                    : ListView.builder(
-                      itemCount: controller.suppliers.length,
+                    : NotificationListener(
+                      onNotification: (n) {
+                        if (n is ScrollEndNotification) {
+                          if (n.metrics.pixels == n.metrics.maxScrollExtent) {
+                            controller.loadMore();
+                          }
+                        }
+                        return true;
+                      },
+                      child: ListView.builder(
+                        itemCount: controller.suppliers.length,
 
-                      itemBuilder: (c, i) {
-                        var user = controller.suppliers[i];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                          onTap: () {
-                            if (Get.arguments?['select'] == true) {
-                              Get.back(result: user);
-                              return;
-                            }
-                            Get.toNamed(
-                              Routes.SUPPLIER_DETAILS,
-                              arguments: {"user": user},
-                            );
-                          },
-                          leading: user.circleAvatar(),
-                          title: Text(user.firstName ?? ''),
-                          subtitle: Text(user.companyName ?? ''),
-                          trailing: Material(
-                            color:
-                                Get.find<HomeController>()
-                                    .dark
-                                    .colorScheme
-                                    .primaryContainer,
-                            borderRadius: BorderRadius.circular(100),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 8,
-                                horizontal: 12,
-                              ),
-                              child: Text(
-                                (user.toPay).formatPrice() ?? '',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                        itemBuilder: (c, i) {
+                          var user = controller.suppliers[i];
+                          return ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                            onTap: () {
+                              if (Get.arguments?['select'] == true) {
+                                Get.back(result: user);
+                                return;
+                              }
+                              Get.toNamed(
+                                Routes.SUPPLIER_DETAILS,
+                                arguments: {"user": user},
+                              );
+                            },
+                            leading: user.circleAvatar(),
+                            title: Text(user.firstName ?? ''),
+                            subtitle: Text(user.companyName ?? ''),
+                            trailing: Material(
+                              color:
+                                  Get.find<HomeController>()
+                                      .dark
+                                      .colorScheme
+                                      .primaryContainer,
+                              borderRadius: BorderRadius.circular(100),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                child: Text(
+                                  (user.toPay).formatPrice() ?? '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
           ),
         ),

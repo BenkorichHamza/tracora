@@ -1,6 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
+import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import '../controllers/home_controller.dart';
@@ -46,6 +52,34 @@ class HomeView extends GetView<HomeController> {
                             ),
                             onPressed: controller.drawerCtrl.showDrawer,
                           ),
+                          actions: [
+                            IconButton(
+                              icon: const Icon(Icons.settings),
+                              onPressed: () async {
+                                ByteData v = await rootBundle.load(
+                                  "assets/icon.png",
+                                );
+                                var data = v.buffer.asUint8List();
+                                var products = List.generate(
+                                  5000,
+                                  (i) => Product(
+                                    name: "product $i",
+                                    nameAr: "product ar $i",
+                                    buyPrice: i * 5,
+                                    sellPrice: i * 5 * 1.2,
+                                    packaging: 4,
+                                    alert: 8,
+                                    data: data,
+                                  ),
+                                );
+                                Future.forEach((products), (p) async {
+                                  await ProductRepository()
+                                      .insertProduct(p)
+                                      .then((v) => print(v));
+                                });
+                              },
+                            ),
+                          ],
                         ),
                         body: ListView(
                           padding: EdgeInsets.all(16),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 import '../controllers/product_form_controller.dart';
@@ -300,18 +301,14 @@ class ProductFormView extends GetView<ProductFormController> {
                             : controller.brand.translateName ?? 'brand'.tr,
                       ),
                       leading:
-                          !File(controller.brand.img ?? '').existsSync()
+                          controller.brand.data == null
                               ? Icon(Icons.image)
                               : AspectRatio(
                                 aspectRatio: 1,
                                 child: Container(
+                                  margin: EdgeInsets.all(4),
                                   decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: FileImage(
-                                        File(controller.brand.img ?? ''),
-                                      ),
-                                      fit: BoxFit.contain,
-                                    ),
+                                    image: controller.brand.toDecorationImage(),
                                   ),
                                 ),
                               ),

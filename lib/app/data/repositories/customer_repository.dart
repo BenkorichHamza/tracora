@@ -6,7 +6,10 @@ import 'package:tracora/app/data/models/user_model.dart';
 class CustomerRepository {
   final DbHelper _dbHelper = DbHelper();
 
-  Future<List<UserModel>> getAllCustomers({required String search}) async {
+  Future<List<UserModel>> getAllCustomers({
+    required String search,
+    int offset = 0,
+  }) async {
     final db = await _dbHelper.db;
     // final List<Map<String, dynamic>> maps = await db.query(
     //   'user',
@@ -34,6 +37,8 @@ LEFT JOIN (
 WHERE u.deletedAt IS NULL 
   AND u.type = "customer"
   AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%" OR u.email LIKE "%$search%" OR u.phone LIKE "%$search%")
+  LIMIT 50
+  OFFSET $offset
 ''');
 
     return maps.map((map) => UserModel.fromMap(map)).toList();

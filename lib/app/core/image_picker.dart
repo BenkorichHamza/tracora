@@ -5,7 +5,11 @@ import 'package:path_provider/path_provider.dart';
 
 class ImagePickerService {
   static Future<String?> pickImage() async {
-    var xf = await ImagePicker().pickImage(source: ImageSource.gallery);
+    var xf = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxHeight: 500,
+      maxWidth: 500,
+    );
     return xf?.path;
   }
 

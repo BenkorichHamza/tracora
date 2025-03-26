@@ -10,9 +10,13 @@ import 'package:tracora/app/data/repositories/category_repository.dart';
 class ProductRepository {
   final DbHelper _dbHelper = DbHelper();
 
-  Future<List<Product>> getAllProducts({required String search}) async {
+  Future<List<Product>> getAllProducts({
+    required String search,
+    int? brandId,
+    int? categoryId,
+    int offset = 0,
+  }) async {
     final db = await _dbHelper.db;
-
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
     SELECT 
       p.*, 
@@ -22,6 +26,7 @@ class ProductRepository {
     WHERE p.deletedAt IS NULL AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
     GROUP BY p.id
     LIMIT 50
+    OFFSET $offset
   ''');
 
     // final List<Map<String, dynamic>> maps = await db.query(

@@ -54,6 +54,7 @@ CREATE TABLE product_category (
     category_id INTEGER REFERENCES category (id)
 )
 ''');
+
     await db.execute('PRAGMA foreign_keys = ON;');
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -116,15 +118,20 @@ class ProductFormController extends GetxController {
   void save() async {
     try {
       if (!(formKey.currentState?.validate() ?? false)) return;
+      String? path = "";
       try {
         if (img.isNotEmpty && product.img != img) {
-          var path = await ImagePickerService.saveImageToPermanentStorage(img);
+          path = await ImagePickerService.saveImageToPermanentStorage(img);
           product = product.copyWith(img: path);
         }
       } on Exception catch (_) {}
       product = product.copyWith(
         name: name.text,
         nameAr: nameAr.text,
+        data:
+            File(path ?? '').existsSync()
+                ? File(path ?? '').readAsBytesSync()
+                : null,
         alert: double.tryParse(alert.text),
         packaging: double.tryParse(packaging.text),
         buyPrice: double.tryParse(buyPrice.text),

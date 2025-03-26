@@ -33,7 +33,7 @@ class SupplierPaymentView extends GetView<SupplierPaymentController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('supplier_payments'.tr),

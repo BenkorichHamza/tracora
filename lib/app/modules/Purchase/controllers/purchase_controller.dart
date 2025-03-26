@@ -19,6 +19,15 @@ class PurchaseController extends GetxController {
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
 
+  final _offset = 0.obs;
+  int get offset => this._offset.value;
+  set offset(int value) => this._offset.value = value;
+
+  loadMore() {
+    offset = purchases.length;
+    getAll();
+  }
+
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
 
@@ -51,8 +60,25 @@ class PurchaseController extends GetxController {
 
   getAll() async {
     try {
-      loading = true;
-      purchases = await repository.getAllPurchases(search: search.text);
+      loading = true && offset == 0;
+      purchases = await repository.getAllPurchases(
+        search: search.text,
+        offset: offset,
+      );
+    } catch (e) {
+      ErrorHandler.handleError(e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  filter() async {
+    try {
+      offset = 0;
+      purchases = await repository.getAllPurchases(
+        search: search.text,
+        offset: offset,
+      );
     } catch (e) {
       ErrorHandler.handleError(e);
     } finally {

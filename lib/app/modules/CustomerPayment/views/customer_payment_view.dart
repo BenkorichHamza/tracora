@@ -33,7 +33,7 @@ class CustomerPaymentView extends GetView<CustomerPaymentController> {
                           hintText: "search".tr,
                         ),
                         onChanged: (v) {
-                          controller.getAll();
+                          controller.filter();
                         },
                       )
                       : Text('customer_payments'.tr),

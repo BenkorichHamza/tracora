@@ -56,11 +56,13 @@ extension NumberParsing on num? {
 
 extension ProductImage on Product {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data == null
+        ? null
+        : DecorationImage(image: MemoryImage(data!), fit: BoxFit.cover);
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data == null ? null : MemoryImage(data!);
   }
 
   Widget leading() {
@@ -108,31 +110,37 @@ extension ProductImage on Product {
 
 extension BrandImage on Brand {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data == null
+        ? null
+        : DecorationImage(image: MemoryImage(data!), fit: BoxFit.contain);
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data == null ? null : MemoryImage(data!);
   }
 }
 
 extension CategoryImage on CategoryModel {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data == null
+        ? null
+        : DecorationImage(image: MemoryImage(data!), fit: BoxFit.contain);
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data == null ? null : MemoryImage(data!);
   }
 }
 
 extension UserImage on UserModel {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data == null
+        ? null
+        : DecorationImage(image: MemoryImage(data!), fit: BoxFit.cover);
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data == null ? null : MemoryImage(data!);
   }
 
   Widget circleAvatar({double? radius}) {
