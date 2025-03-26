@@ -4,13 +4,11 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/brand_model.dart';
@@ -84,7 +82,8 @@ class HomeController extends GetxController {
     super.onInit();
     drawerCtrl = AdvancedDrawerController();
     readSettings();
-    listen();
+    // listen();
+    listenToAuth();
   }
 
   @override
@@ -164,7 +163,7 @@ class HomeController extends GetxController {
         .doc(FirebaseAuth.instance.currentUser?.uid)
         .snapshots()
         .listen((event) {
-          employee = EmployeeModel.fromMap(event.data()!);
+          employee = EmployeeModel.fromMap(event.data() ?? {});
         });
   }
 
@@ -244,14 +243,14 @@ class HomeController extends GetxController {
   get profileController => null;
 
   logout() async {
-    var pref = await SharedPreferences.getInstance();
-    pref.remove("employee");
-    employee = EmployeeModel();
+    // var pref = await SharedPreferences.getInstance();
+    // pref.remove("employee");
+    // employee = EmployeeModel();
 
-    await cancelListener();
-    await FirebaseAuth.instance.signOut();
-    await GoogleSignIn().signOut();
-    DbHelper().db = null;
+    // await cancelListener();
+    // await FirebaseAuth.instance.signOut();
+    // // await GoogleSignIn().signOut();
+    // DbHelper().db = null;
   }
 
   // Future<void> setupToken() async {

@@ -16,6 +16,23 @@ class LoginView extends GetView<LoginController> {
           children: [
             FlutterLogo(size: 200),
             SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
+              controller: controller.email,
+            ),
+            SizedBox(height: 16),
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+              controller: controller.password,
+            ),
+            SizedBox(height: 16),
             Obx(
               () =>
                   controller.loading

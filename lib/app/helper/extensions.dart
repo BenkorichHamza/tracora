@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ extension NumberParsing on num? {
 
 extension ProductImage on Product {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return this.data?.toDecorationImage() ?? img?.toDecorationImage();
   }
 
   ImageProvider? toImageProvider() {
@@ -185,7 +186,7 @@ extension UserImage on UserModel {
 
 extension StringImage on String? {
   DecorationImage? toDecorationImage() {
-    if (!File(this ?? '').existsSync()) return null;
+    if ((this ?? '').isEmpty) return null;
     return DecorationImage(
       image: FileImage(File(this ?? '')),
       fit: BoxFit.cover,
@@ -193,7 +194,19 @@ extension StringImage on String? {
   }
 
   ImageProvider? toImageProvider() {
-    if (!File(this ?? '').existsSync()) return null;
+    if ((this ?? '').isEmpty) return null;
     return FileImage(File(this ?? ''));
+  }
+}
+
+extension DataImage on Uint8List? {
+  DecorationImage? toDecorationImage() {
+    if (this == null) return null;
+    return DecorationImage(image: MemoryImage(this!), fit: BoxFit.cover);
+  }
+
+  ImageProvider? toImageProvider() {
+    if (this == null) return null;
+    return MemoryImage(this!);
   }
 }

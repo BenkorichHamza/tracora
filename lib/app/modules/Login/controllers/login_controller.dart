@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/employee_model.dart';
@@ -14,8 +14,13 @@ class LoginController extends GetxController {
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
 
+  late TextEditingController email;
+  late TextEditingController password;
+
   @override
   void onInit() {
+    email = TextEditingController();
+    password = TextEditingController();
     super.onInit();
   }
 
@@ -32,14 +37,11 @@ class LoginController extends GetxController {
   googleLogin() async {
     try {
       loading = true;
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+
+      var u = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.text,
+        password: password.text,
       );
-      var u = await FirebaseAuth.instance.signInWithCredential(credential);
       var user = u.user;
       if (user == null) throw ('null_user');
       var e = EmployeeModel(

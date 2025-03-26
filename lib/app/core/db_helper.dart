@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tracora/app/data/models/modals.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
@@ -25,12 +26,26 @@ class DbHelper {
   DbHelper.internal();
 
   initDb() async {
+    if (GetPlatform.isWindows) {
+      final path = 'E:/';
+      final dbPath = join(
+        path,
+        '${Get.find<HomeController>().employee.id ?? 'db'}.db',
+      );
+      print(dbPath);
+
+      return await databaseFactoryFfi.openDatabase(
+        dbPath,
+        options: OpenDatabaseOptions(version: 1, onCreate: _onCreate),
+      );
+    }
     final path = await getDatabasesPath();
     final dbPath = join(
       path,
       '${Get.find<HomeController>().employee.id ?? 'db'}.db',
     );
     print(dbPath);
+
     return await openDatabase(
       dbPath,
       version: 1,

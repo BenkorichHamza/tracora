@@ -51,7 +51,7 @@ class ProductFormController extends GetxController {
     formKey = GlobalKey<FormState>();
     if (Get.arguments?['product'] is Product) {
       product = Get.arguments?["product"] ?? product;
-      img = product.img ?? img;
+      // img = product.img ?? img;
     }
     name = TextEditingController(text: product.name ?? '');
     nameAr = TextEditingController(text: product.nameAr ?? '');
