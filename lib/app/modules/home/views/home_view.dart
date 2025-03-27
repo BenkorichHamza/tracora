@@ -1,8 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/modules/Customer/views/customer_view.dart';
+import 'package:tracora/app/modules/CustomerPayment/views/customer_payment_view.dart';
 import 'package:tracora/app/modules/Login/views/login_view.dart';
+import 'package:tracora/app/modules/Product/views/product_view.dart';
+import 'package:tracora/app/modules/Purchase/views/purchase_view.dart';
+import 'package:tracora/app/modules/Sale/views/sale_view.dart';
+import 'package:tracora/app/modules/Supplier/views/supplier_view.dart';
+import 'package:tracora/app/modules/SupplierPayment/views/supplier_payment_view.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
@@ -38,88 +47,155 @@ class HomeView extends GetView<HomeController> {
                                     .scaffoldBackgroundColor
                                     .withOpacity(0.95),
                                 child: Scaffold(
-                                  appBar: AppBar(
-                                    actions: [SyncView()],
-                                    backgroundColor:
-                                        controller
-                                            .theme
-                                            .scaffoldBackgroundColor,
-                                    title: Text('tracora'.tr),
-                                    centerTitle: true,
-                                    leading: IconButton(
-                                      icon: ValueListenableBuilder<
-                                        AdvancedDrawerValue
-                                      >(
-                                        valueListenable: controller.drawerCtrl,
-                                        builder: (context, value, child) {
-                                          return AnimatedSwitcher(
-                                            duration: const Duration(
-                                              milliseconds: 250,
+                                  appBar:
+                                      Platform.isWindows
+                                          ? null
+                                          : AppBar(
+                                            actions: [SyncView()],
+                                            backgroundColor:
+                                                controller
+                                                    .theme
+                                                    .scaffoldBackgroundColor,
+                                            title: Text('tracora'.tr),
+                                            centerTitle: true,
+                                            leading: IconButton(
+                                              icon: ValueListenableBuilder<
+                                                AdvancedDrawerValue
+                                              >(
+                                                valueListenable:
+                                                    controller.drawerCtrl,
+                                                builder: (
+                                                  context,
+                                                  value,
+                                                  child,
+                                                ) {
+                                                  return AnimatedSwitcher(
+                                                    duration: const Duration(
+                                                      milliseconds: 250,
+                                                    ),
+                                                    child:
+                                                        value.visible
+                                                            ? const Icon(
+                                                              Icons.clear,
+                                                            )
+                                                            : const Icon(
+                                                              Icons.menu,
+                                                            ),
+                                                  );
+                                                },
+                                              ),
+                                              onPressed:
+                                                  controller
+                                                      .drawerCtrl
+                                                      .showDrawer,
                                             ),
-                                            child:
-                                                value.visible
-                                                    ? const Icon(Icons.clear)
-                                                    : const Icon(Icons.menu),
-                                          );
-                                        },
-                                      ),
-                                      onPressed:
-                                          controller.drawerCtrl.showDrawer,
-                                    ),
-                                  ),
-                                  body: ListView(
-                                    padding: EdgeInsets.all(16),
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[0])),
-                                          Expanded(child: menuItem(pages()[1])),
-                                          Expanded(child: menuItem(pages()[2])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[3])),
-                                          Expanded(child: menuItem(pages()[4])),
-                                          Expanded(child: menuItem(pages()[5])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[6])),
-                                          Expanded(child: menuItem(pages()[7])),
-                                          Expanded(child: menuItem(pages()[8])),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(child: menuItem(pages()[9])),
-                                          Expanded(
-                                            child: menuItem(pages()[10]),
                                           ),
-                                          Expanded(
-                                            child: menuItem(pages()[11]),
-                                          ),
-                                        ],
-                                      ),
-                                      // Row(
-                                      //   children: [
-                                      //     Expanded(
-                                      //       child: menuItem(pages()[12]),
-                                      //     ),
-                                      //     Expanded(child: SizedBox()),
-
-                                      //     Expanded(child: SizedBox()),
-                                      //   ],
-                                      // ),
-                                    ],
-                                  ),
+                                  body:
+                                      Platform.isWindows
+                                          ? Column(
+                                            children: [
+                                              TabBar(
+                                                controller: controller.tabCtrl,
+                                                tabs: [
+                                                  Tab(text: 'home'.tr),
+                                                  Tab(text: 'sales'.tr),
+                                                  Tab(text: 'purchases'.tr),
+                                                  Tab(text: 'payments_in'.tr),
+                                                  Tab(text: 'payment_out'.tr),
+                                                  Tab(text: 'customers'.tr),
+                                                  Tab(text: 'suppliers'.tr),
+                                                  Tab(text: 'products'.tr),
+                                                ],
+                                              ),
+                                              Expanded(
+                                                child: TabBarView(
+                                                  controller:
+                                                      controller.tabCtrl,
+                                                  children: [
+                                                    GridView(
+                                                      gridDelegate:
+                                                          SliverGridDelegateWithMaxCrossAxisExtent(
+                                                            maxCrossAxisExtent:
+                                                                250,
+                                                          ),
+                                                      children:
+                                                          pages()
+                                                              .map(
+                                                                (p) =>
+                                                                    menuItem(p),
+                                                              )
+                                                              .toList(),
+                                                    ),
+                                                    SaleView(),
+                                                    PurchaseView(),
+                                                    CustomerPaymentView(),
+                                                    SupplierPaymentView(),
+                                                    CustomerView(),
+                                                    SupplierView(),
+                                                    ProductView(),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                          : content(),
                                 ),
                               );
                             },
                           ),
                         ),
               ),
+    );
+  }
+
+  Center content() {
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 600),
+        child: Center(
+          child: ListView(
+            padding: EdgeInsets.all(16),
+            children: [
+              Row(
+                children: [
+                  Expanded(child: menuItem(pages()[0])),
+                  Expanded(child: menuItem(pages()[1])),
+                  Expanded(child: menuItem(pages()[2])),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(child: menuItem(pages()[3])),
+                  Expanded(child: menuItem(pages()[4])),
+                  Expanded(child: menuItem(pages()[5])),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(child: menuItem(pages()[6])),
+                  Expanded(child: menuItem(pages()[7])),
+                  Expanded(child: menuItem(pages()[8])),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(child: menuItem(pages()[9])),
+                  Expanded(child: menuItem(pages()[10])),
+                  Expanded(child: menuItem(pages()[11])),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(child: menuItem(pages()[12])),
+                  Expanded(child: SizedBox()),
+
+                  Expanded(child: SizedBox()),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -227,11 +303,11 @@ class HomeView extends GetView<HomeController> {
         "img": "assets/settings.png",
         "route": "Product",
       },
-      // {
-      //   "title": "missions".tr,
-      //   "img": "assets/settings.png",
-      //   "route": Routes.MISSION,
-      // },
+      {
+        "title": "missions".tr,
+        "img": "assets/settings.png",
+        "route": Routes.MISSION,
+      },
     ];
   }
 
@@ -244,9 +320,16 @@ class HomeView extends GetView<HomeController> {
             const SizedBox(height: kToolbarHeight + 8),
             CircleAvatar(
               radius: 80,
-              backgroundImage: NetworkImage(
-                FirebaseAuth.instance.currentUser?.photoURL ?? '',
-              ),
+              child:
+                  (FirebaseAuth.instance.currentUser?.photoURL ?? '').isNotEmpty
+                      ? null
+                      : Icon(Icons.person, size: 80),
+              backgroundImage:
+                  (FirebaseAuth.instance.currentUser?.photoURL ?? '').isEmpty
+                      ? null
+                      : NetworkImage(
+                        FirebaseAuth.instance.currentUser?.photoURL ?? '',
+                      ),
             ),
             ListTile(
               title: Center(

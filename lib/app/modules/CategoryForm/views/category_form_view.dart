@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 import '../controllers/category_form_controller.dart';
@@ -31,7 +32,7 @@ class CategoryFormView extends GetView<CategoryFormController> {
                 onTap: controller.pickImage,
                 child: Container(
                   child:
-                      File(controller.img).existsSync()
+                      (controller.img).isNotEmpty
                           ? Column(
                             children: [
                               Align(
@@ -45,20 +46,10 @@ class CategoryFormView extends GetView<CategoryFormController> {
                           )
                           : Icon(Icons.image_outlined, size: 100),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color:
-                        Get.find<HomeController>()
-                            .theme
-                            .colorScheme
-                            .surfaceContainerHighest,
                     image:
-                        !File(controller.img).existsSync()
-                            ? null
-                            : DecorationImage(
-                              image: MemoryImage(
-                                File(controller.img).readAsBytesSync(),
-                              ),
-                            ),
+                        controller.img.isEmpty
+                            ? controller.category.toDecorationImage()
+                            : controller.img.toDecorationImage(),
                   ),
                 ),
               ),

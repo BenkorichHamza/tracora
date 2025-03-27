@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -52,14 +54,15 @@ class CategoryFormController extends GetxController {
   void save() async {
     try {
       if (!validate) return;
-      try {
-        if (img.isNotEmpty) {
-          var path = await ImagePickerService.saveImageToPermanentStorage(img);
-          category = category.copyWith(img: path);
-        }
-      } on Exception catch (_) {}
+      // try {
+      //   if (img.isNotEmpty) {
+      //     var path = await ImagePickerService.saveImageToPermanentStorage(img);
+      //     category = category.copyWith(img: path);
+      //   }
+      // } on Exception catch (_) {}
       category = category.copyWith(
         name: name.text,
+        data: img.isEmpty ? null : File(img).readAsBytesSync(),
         nameAr: nameAr.text,
         order: int.tryParse(order.text),
       );

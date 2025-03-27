@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 import '../controllers/product_form_controller.dart';
@@ -300,18 +301,13 @@ class ProductFormView extends GetView<ProductFormController> {
                             : controller.brand.translateName ?? 'brand'.tr,
                       ),
                       leading:
-                          !File(controller.brand.img ?? '').existsSync()
+                          (controller.brand.data == null)
                               ? Icon(Icons.image)
                               : AspectRatio(
                                 aspectRatio: 1,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: FileImage(
-                                        File(controller.brand.img ?? ''),
-                                      ),
-                                      fit: BoxFit.contain,
-                                    ),
+                                    image: controller.brand.toDecorationImage(),
                                   ),
                                 ),
                               ),
@@ -338,7 +334,7 @@ class ProductFormView extends GetView<ProductFormController> {
                               .map<Widget>(
                                 (category) => Chip(
                                   avatar:
-                                      !File(category.img ?? '').existsSync()
+                                      !controller.img.isNotEmpty
                                           ? Icon(Icons.image)
                                           : CircleAvatar(
                                             backgroundImage: FileImage(
@@ -402,7 +398,7 @@ class ProductFormView extends GetView<ProductFormController> {
           onTap: controller.pickImage,
           child: Container(
             child:
-                File(controller.img).existsSync()
+                controller.img.isNotEmpty
                     ? Column(
                       children: [
                         Align(
@@ -414,6 +410,8 @@ class ProductFormView extends GetView<ProductFormController> {
                         ),
                       ],
                     )
+                    : controller.product.data != null
+                    ? null
                     : Icon(Icons.image_outlined, size: 100),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -423,12 +421,8 @@ class ProductFormView extends GetView<ProductFormController> {
                       .colorScheme
                       .surfaceContainerHighest,
               image:
-                  !File(controller.img).existsSync()
-                      ? null
-                      : DecorationImage(
-                        fit: BoxFit.cover,
-                        image: FileImage(File(controller.img)),
-                      ),
+                  controller.img.toDecorationImage() ??
+                  controller.product.toDecorationImage(),
             ),
           ),
         ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -64,18 +66,19 @@ class CustomerFormController extends GetxController {
   void save() async {
     try {
       if (!validate) return;
-      try {
-        if (img.isNotEmpty) {
-          var path = await ImagePickerService.saveImageToPermanentStorage(img);
-          customer = customer.copyWith(img: path);
-        }
-      } on Exception catch (_) {}
+      // try {
+      //   if (img.isNotEmpty) {
+      //     var path = await ImagePickerService.saveImageToPermanentStorage(img);
+      //     customer = customer.copyWith(img: path);
+      //   }
+      // } on Exception catch (_) {}
       customer = customer.copyWith(
         firstName: name.text,
         companyName: companyName.text,
         nif: nif.text,
         nis: nis.text,
         nin: nin.text,
+        data: img.isEmpty ? null : File(img).readAsBytesSync(),
         email: email.text,
         phone: phone.text,
         address: address.text,

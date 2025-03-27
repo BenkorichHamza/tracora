@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -116,12 +118,12 @@ class ProductFormController extends GetxController {
   void save() async {
     try {
       if (!(formKey.currentState?.validate() ?? false)) return;
-      try {
-        if (img.isNotEmpty && product.img != img) {
-          var path = await ImagePickerService.saveImageToPermanentStorage(img);
-          product = product.copyWith(img: path);
-        }
-      } on Exception catch (_) {}
+      // try {
+      //   if (img.isNotEmpty && product.img != img) {
+      //     var path = await ImagePickerService.saveImageToPermanentStorage(img);
+      //     product = product.copyWith(img: path);
+      //   }
+      // } on Exception catch (_) {}
       product = product.copyWith(
         name: name.text,
         nameAr: nameAr.text,
@@ -135,6 +137,7 @@ class ProductFormController extends GetxController {
         unity: unity.text.isEmpty ? 'u'.tr : unity.text,
         brand: brand,
         categories: categories,
+        data: img.isNotEmpty ? await File(img).readAsBytes() : null,
       );
       var r = await repository.insertProduct(product);
       Get.find<ProductController>().getAll();

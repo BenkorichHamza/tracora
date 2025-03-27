@@ -50,7 +50,7 @@ CREATE TABLE product_transaction (
       result.addAll({'transactionId': transactionId!.toMap()});
     }
     if (product != null) {
-      result.addAll({'product': product!.toMap()});
+      result.addAll({'product': product!.toFirebaseMap()});
     }
     if (direction != null) {
       result.addAll({'direction': direction});

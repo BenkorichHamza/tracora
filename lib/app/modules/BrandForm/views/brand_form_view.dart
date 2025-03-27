@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 import '../controllers/brand_form_controller.dart';
@@ -53,7 +54,7 @@ class BrandFormView extends GetView<BrandFormController> {
                             .surfaceContainerHighest,
                     image:
                         controller.img.isEmpty
-                            ? null
+                            ? controller.brand.toDecorationImage()
                             : DecorationImage(
                               image: MemoryImage(
                                 File(controller.img).readAsBytesSync(),

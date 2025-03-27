@@ -65,7 +65,7 @@ class LoginController extends GetxController {
             .set(e.toMap());
       }
       var pref = await SharedPreferences.getInstance();
-      pref.setString("employee", e.toJson());
+      await pref.setString("employee", e.toJson());
       Get.find<HomeController>().employee = e;
     } on Exception catch (e) {
       ErrorHandler.handleError(e);

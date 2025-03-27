@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
+import 'package:tracora/app/data/models/image_model.dart';
 
 class Product {
   final String sql = '''
@@ -16,6 +17,7 @@ CREATE TABLE product (
     updatedBy  STRING,
     deletedBy  STRING,
     alert       DOUBLE,
+    data       BLOB,
     stock       DOUBLE,
     name        TEXT,
     nameAr      TEXT,
@@ -27,6 +29,7 @@ CREATE TABLE product (
     code       STRING,
     unity       STRING,
     brand_id    INTEGER REFERENCES brand (id),
+    image_id    INTEGER REFERENCES image (id),
     packaging   INTEGER,
     buyPrice    REAL,
     sellPrice   DOUBLE,
@@ -42,6 +45,7 @@ CREATE TABLE product (
 
   final int? id;
   final int? remoteId;
+  final Uint8List? data;
   final String? ids;
   final String? createdBy;
   final String? updatedBy;
@@ -55,6 +59,7 @@ CREATE TABLE product (
   final String? barcode;
   final String? unity;
   final Brand? brand;
+  final ImageModel? image;
   final List<CategoryModel>? categories;
   final double? buyPrice;
   final double? sellPrice;
@@ -67,6 +72,7 @@ CREATE TABLE product (
   Product({
     this.id,
     this.remoteId,
+    this.data,
     this.ids,
     this.createdBy,
     this.updatedBy,
@@ -80,6 +86,7 @@ CREATE TABLE product (
     this.barcode,
     this.unity,
     this.brand,
+    this.image,
     this.categories,
     this.buyPrice,
     this.sellPrice,
@@ -94,6 +101,7 @@ CREATE TABLE product (
   Product copyWith({
     int? id,
     int? remoteId,
+    Uint8List? data,
     String? ids,
     String? createdBy,
     String? updatedBy,
@@ -107,6 +115,7 @@ CREATE TABLE product (
     String? barcode,
     String? unity,
     Brand? brand,
+    ImageModel? image,
     List<CategoryModel>? categories,
     double? buyPrice,
     double? sellPrice,
@@ -120,6 +129,7 @@ CREATE TABLE product (
     return Product(
       id: id ?? this.id,
       remoteId: remoteId ?? this.remoteId,
+      data: data ?? this.data,
       ids: ids ?? this.ids,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -133,6 +143,7 @@ CREATE TABLE product (
       barcode: barcode ?? this.barcode,
       unity: unity ?? this.unity,
       brand: brand ?? this.brand,
+      image: image ?? this.image,
       categories: categories ?? this.categories,
       buyPrice: buyPrice ?? this.buyPrice,
       sellPrice: sellPrice ?? this.sellPrice,
@@ -153,6 +164,9 @@ CREATE TABLE product (
     }
     if (remoteId != null) {
       result.addAll({'remoteId': remoteId});
+    }
+    if (data != null) {
+      result.addAll({'data': data});
     }
     if (ids != null) {
       result.addAll({'ids': ids});
@@ -193,9 +207,99 @@ CREATE TABLE product (
     if (brand != null) {
       result.addAll({'brand': brand!.toMap()});
     }
+    if (image != null) {
+      result.addAll({'image': image!.toMap()});
+    }
     if (categories != null) {
       result.addAll({
         'categories': categories!.map((x) => x?.toMap()).toList(),
+      });
+    }
+    if (buyPrice != null) {
+      result.addAll({'buyPrice': buyPrice});
+    }
+    if (sellPrice != null) {
+      result.addAll({'sellPrice': sellPrice});
+    }
+    if (sellPrice1 != null) {
+      result.addAll({'sellPrice1': sellPrice1});
+    }
+    if (sellPrice2 != null) {
+      result.addAll({'sellPrice2': sellPrice2});
+    }
+    if (img != null) {
+      result.addAll({'img': img});
+    }
+    if (createdAt != null) {
+      result.addAll({'createdAt': createdAt});
+    }
+    if (updatedAt != null) {
+      result.addAll({'updatedAt': updatedAt});
+    }
+    if (deletedAt != null) {
+      result.addAll({'deletedAt': deletedAt});
+    }
+
+    return result;
+  }
+
+  Map<String, dynamic> toFirebaseMap() {
+    final result = <String, dynamic>{};
+
+    if (id != null) {
+      result.addAll({'id': id});
+    }
+    if (remoteId != null) {
+      result.addAll({'remoteId': remoteId});
+    }
+    // if (data != null) {
+    //   result.addAll({'data': data});
+    // }
+    if (ids != null) {
+      result.addAll({'ids': ids});
+    }
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+    if (name != null) {
+      result.addAll({'name': name});
+    }
+    if (nameAr != null) {
+      result.addAll({'nameAr': nameAr});
+    }
+    if (alert != null) {
+      result.addAll({'alert': alert});
+    }
+    if (packaging != null) {
+      result.addAll({'packaging': packaging});
+    }
+    if (isInteger != null) {
+      result.addAll({'isInteger': isInteger});
+    }
+    if (stock != null) {
+      result.addAll({'stock': stock});
+    }
+    if (barcode != null) {
+      result.addAll({'barcode': barcode});
+    }
+    if (unity != null) {
+      result.addAll({'unity': unity});
+    }
+    if (brand != null) {
+      result.addAll({'brand': brand!.toFirebaseMap()});
+    }
+    if (image != null) {
+      result.addAll({'image': image!.toMap()});
+    }
+    if (categories != null) {
+      result.addAll({
+        'categories': categories!.map((x) => x?.toFirebaseMap()).toList(),
       });
     }
     if (buyPrice != null) {
@@ -235,6 +339,9 @@ CREATE TABLE product (
     if (ids != null) {
       result.addAll({'ids': ids});
     }
+    if (data != null) {
+      result.addAll({'data': data});
+    }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
     }
@@ -267,6 +374,9 @@ CREATE TABLE product (
     }
     if (brand?.id != null) {
       result.addAll({'brand_id': brand!.id});
+    }
+    if (image?.id != null) {
+      result.addAll({'image_id': image!.id});
     }
     // if (categories != null) {
     //   result.addAll({
@@ -308,6 +418,7 @@ CREATE TABLE product (
     return Product(
       id: map['id']?.toInt(),
       remoteId: map['remoteId']?.toInt(),
+      data: map['data'],
       ids: map['ids'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
@@ -321,6 +432,7 @@ CREATE TABLE product (
       barcode: map['barcode'],
       unity: map['unity'],
       brand: map['brand'] != null ? Brand.fromMap(map['brand']) : null,
+      image: map['image'] != null ? ImageModel.fromMap(map['image']) : null,
       categories:
           map['categories'] != null
               ? List<CategoryModel>.from(
@@ -345,7 +457,7 @@ CREATE TABLE product (
 
   @override
   String toString() {
-    return 'Product(id: $id, remoteId: $remoteId, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Product(id: $id, remoteId: $remoteId, data: $data, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, image: $image, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -355,6 +467,7 @@ CREATE TABLE product (
     return other is Product &&
         other.id == id &&
         other.remoteId == remoteId &&
+        other.data == data &&
         other.ids == ids &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
@@ -368,6 +481,7 @@ CREATE TABLE product (
         other.barcode == barcode &&
         other.unity == unity &&
         other.brand == brand &&
+        other.image == image &&
         listEquals(other.categories, categories) &&
         other.buyPrice == buyPrice &&
         other.sellPrice == sellPrice &&
@@ -383,6 +497,7 @@ CREATE TABLE product (
   int get hashCode {
     return id.hashCode ^
         remoteId.hashCode ^
+        data.hashCode ^
         ids.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
@@ -396,6 +511,7 @@ CREATE TABLE product (
         barcode.hashCode ^
         unity.hashCode ^
         brand.hashCode ^
+        image.hashCode ^
         categories.hashCode ^
         buyPrice.hashCode ^
         sellPrice.hashCode ^

@@ -76,13 +76,15 @@ class ProductSaleShoppingView extends GetView<ProductController> {
   }
 
   Widget listView(SaleFormController saleFormController) {
-    return ListView.builder(
-      padding: EdgeInsets.all(8),
-      itemCount: controller.products.length,
-      itemBuilder: (c, i) {
-        var product = controller.products[i];
-        return listItem(product, saleFormController);
-      },
+    return Obx(
+      () => ListView.builder(
+        padding: EdgeInsets.all(8),
+        itemCount: controller.products.length,
+        itemBuilder: (c, i) {
+          var product = controller.products[i];
+          return listItem(product, saleFormController);
+        },
+      ),
     );
   }
 
@@ -90,7 +92,7 @@ class ProductSaleShoppingView extends GetView<ProductController> {
     return GetBuilder<SaleFormController>(
       initState: (_) {},
       id: 'shop_${product.id}',
-      builder: (context) {
+      builder: (c) {
         return Padding(
           padding: const EdgeInsets.all(4.0),
           child: ListTile(

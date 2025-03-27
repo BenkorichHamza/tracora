@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:get/get.dart';
 
@@ -9,6 +10,7 @@ class Brand {
   final String? updatedBy;
   final String? deletedBy;
   final int? remoteId;
+  final Uint8List? data;
   final String? name;
   final String? nameAr;
   final String? img;
@@ -22,9 +24,11 @@ class Brand {
     updatedBy  STRING,
     deletedBy  STRING,
     remoteId    INTEGER,
+    data       BLOB,
     name  TEXT,
     nameAr  TEXT,
     img   STRING,
+    image_id    INTEGER REFERENCES image (id),
     createdAt INTEGER,
     updatedAt INTEGER,
     deletedAt INTEGER
@@ -37,6 +41,7 @@ class Brand {
     this.updatedBy,
     this.deletedBy,
     this.remoteId,
+    this.data,
     this.name,
     this.nameAr,
     this.img,
@@ -52,6 +57,7 @@ class Brand {
     String? updatedBy,
     String? deletedBy,
     int? remoteId,
+    Uint8List? data,
     String? name,
     String? nameAr,
     String? img,
@@ -66,6 +72,7 @@ class Brand {
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
       remoteId: remoteId ?? this.remoteId,
+      data: data ?? this.data,
       name: name ?? this.name,
       nameAr: nameAr ?? this.nameAr,
       img: img ?? this.img,
@@ -96,6 +103,55 @@ class Brand {
     if (remoteId != null) {
       result.addAll({'remoteId': remoteId});
     }
+    if (data != null) {
+      result.addAll({'data': data});
+    }
+    if (name != null) {
+      result.addAll({'name': name});
+    }
+    if (nameAr != null) {
+      result.addAll({'nameAr': nameAr});
+    }
+    if (img != null) {
+      result.addAll({'img': img});
+    }
+    if (createdAt != null) {
+      result.addAll({'createdAt': createdAt});
+    }
+    if (updatedAt != null) {
+      result.addAll({'updatedAt': updatedAt});
+    }
+    if (deletedAt != null) {
+      result.addAll({'deletedAt': deletedAt});
+    }
+
+    return result;
+  }
+
+  Map<String, dynamic> toFirebaseMap() {
+    final result = <String, dynamic>{};
+
+    if (id != null) {
+      result.addAll({'id': id});
+    }
+    if (ids != null) {
+      result.addAll({'ids': ids});
+    }
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+    if (remoteId != null) {
+      result.addAll({'remoteId': remoteId});
+    }
+    // if (data != null) {
+    //   result.addAll({'data': data});
+    // }
     if (name != null) {
       result.addAll({'name': name});
     }
@@ -126,6 +182,7 @@ class Brand {
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
       remoteId: map['remoteId']?.toInt(),
+      data: map['data'],
       name: map['name'],
       nameAr: map['nameAr'],
       img: map['img'],
@@ -141,7 +198,7 @@ class Brand {
 
   @override
   String toString() {
-    return 'Brand(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, remoteId: $remoteId, name: $name, nameAr: $nameAr, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Brand(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, remoteId: $remoteId, data: $data, name: $name, nameAr: $nameAr, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -155,6 +212,7 @@ class Brand {
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
         other.remoteId == remoteId &&
+        other.data == data &&
         other.name == name &&
         other.nameAr == nameAr &&
         other.img == img &&
@@ -171,6 +229,7 @@ class Brand {
         updatedBy.hashCode ^
         deletedBy.hashCode ^
         remoteId.hashCode ^
+        data.hashCode ^
         name.hashCode ^
         nameAr.hashCode ^
         img.hashCode ^

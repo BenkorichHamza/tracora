@@ -30,7 +30,7 @@ class DbHelper {
       final path = 'E:/';
       final dbPath = join(
         path,
-        '${Get.find<HomeController>().employee.id ?? 'db'}.db',
+        '${Get.find<HomeController>().employee.id ?? 'db'}1.db',
       );
       print(dbPath);
 

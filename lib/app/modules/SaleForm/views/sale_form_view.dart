@@ -15,38 +15,18 @@ class SaleFormView extends GetView<SaleFormController> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: AppBar(title: Text('sale_form'.tr), centerTitle: true),
-      body: Stack(
+      body: Row(
         children: [
-          ProductSaleShoppingView(),
-
-          Obx(
-            () =>
-                controller.productTransactions.isEmpty
-                    ? SizedBox()
-                    : Positioned(
-                      right: 8,
-                      left: 8,
-                      bottom: 12,
-                      child: OpenContainer(
-                        openShape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(0),
-                        ),
-                        closedShape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        openColor:
-                            Get.find<HomeController>()
-                                .theme
-                                .scaffoldBackgroundColor,
-                        closedColor:
-                            Get.find<HomeController>()
-                                .theme
-                                .scaffoldBackgroundColor,
-                        transitionDuration: Duration(seconds: 1),
-                        openBuilder: (c, a) => SaleCheckoutPage(),
-                        closedBuilder: (c, a) => SaleCartBar(),
-                      ),
-                    ),
+          Expanded(child: ProductSaleShoppingView()),
+          Container(
+            width: 400,
+            margin: EdgeInsets.all(4),
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(width: 0.2),
+            ),
+            child: SaleCheckoutPage(),
           ),
         ],
       ),

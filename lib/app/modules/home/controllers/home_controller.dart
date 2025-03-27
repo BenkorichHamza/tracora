@@ -30,7 +30,7 @@ import 'package:tracora/app/modules/Login/controllers/login_controller.dart';
 import 'package:tracora/app/modules/Profile/controllers/profile_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
-class HomeController extends GetxController {
+class HomeController extends GetxController with GetTickerProviderStateMixin {
   //TODO: Implement HomeController
 
   final _isDark = Get.isDarkMode.obs;
@@ -77,9 +77,12 @@ class HomeController extends GetxController {
   late StreamSubscription suppliersListener;
   late StreamSubscription purchasesListener;
 
+  late TabController tabCtrl;
+
   @override
   void onInit() {
     super.onInit();
+    tabCtrl = TabController(length: 8, vsync: this);
     drawerCtrl = AdvancedDrawerController();
     readSettings();
     // listen();
@@ -117,10 +120,10 @@ class HomeController extends GetxController {
   listenToAuth() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        cancelListener();
-        employee = EmployeeModel();
+        // cancelListener();
+        // employee = EmployeeModel();
       } else {
-        listen();
+        // listen();
       }
     });
   }

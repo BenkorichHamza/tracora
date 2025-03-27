@@ -57,7 +57,7 @@ extension NumberParsing on num? {
 
 extension ProductImage on Product {
   DecorationImage? toDecorationImage() {
-    return this.data?.toDecorationImage() ?? img?.toDecorationImage();
+    return data?.toDecorationImage();
   }
 
   ImageProvider? toImageProvider() {
@@ -109,21 +109,21 @@ extension ProductImage on Product {
 
 extension BrandImage on Brand {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data.toDecorationImage() ?? img?.toDecorationImage();
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data.toImageProvider() ?? img?.toImageProvider();
   }
 }
 
 extension CategoryImage on CategoryModel {
   DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
+    return data?.toDecorationImage() ?? img?.toDecorationImage();
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data?.toImageProvider() ?? img?.toImageProvider();
   }
 }
 
@@ -133,7 +133,7 @@ extension UserImage on UserModel {
   }
 
   ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
+    return data?.toImageProvider() ?? img?.toImageProvider();
   }
 
   Widget circleAvatar({double? radius}) {

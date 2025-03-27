@@ -11,12 +11,16 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/data/repositories/sale_repository.dart';
 
-class SaleController extends GetxController {
+class SaleController extends GetxController with GetTickerProviderStateMixin {
   final repository = SaleRepository();
   final _stockTransactions = <StockTransaction>[].obs;
   List<StockTransaction> get sales => this._stockTransactions.value;
   set sales(List<StockTransaction> value) =>
       this._stockTransactions.value = value;
+
+  final _showForm = false.obs;
+  bool get showForm => this._showForm.value;
+  set showForm(bool value) => this._showForm.value = value;
 
   final _loading = false.obs;
   bool get loading => this._loading.value;
@@ -28,10 +32,12 @@ class SaleController extends GetxController {
   TextEditingController search = TextEditingController();
   set showSearch(bool value) => this._showSearch.value = value;
   late StreamSubscription listener;
+  late TabController tabCtrl;
 
   @override
   void onInit() {
     super.onInit();
+    tabCtrl = TabController(length: 2, vsync: this);
     getAll();
     // listen();
   }

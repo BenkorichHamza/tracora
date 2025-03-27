@@ -8,6 +8,8 @@ import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/sale_repository.dart';
+import 'package:tracora/app/modules/Customer/controllers/customer_controller.dart';
+import 'package:tracora/app/modules/Customer/views/customer_view.dart';
 import 'package:tracora/app/modules/CustomerDetails/controllers/customer_details_controller.dart';
 import 'package:tracora/app/modules/Sale/controllers/sale_controller.dart';
 import 'package:tracora/app/modules/SaleDetails/controllers/sale_details_controller.dart';
@@ -52,10 +54,18 @@ class SaleFormController extends GetxController {
   void onInit() {
     if (Get.arguments?['sale'] is StockTransaction) {
       sale = Get.arguments?["sale"] ?? sale;
-      customer = sale.user ?? customer;
-      employee = sale.employee ?? employee;
-      productTransactions = sale.productTransactions ?? productTransactions;
     }
+    init(sale);
+    super.onInit();
+  }
+
+  void init(StockTransaction stockTransaction) {
+    sale = stockTransaction;
+    customer = sale.user ?? UserModel();
+    employee = sale.employee ?? employee;
+    productTransactions = sale.productTransactions ?? <ProductTransaction>[];
+    dateTime = sale.dateTime ?? 0;
+
     payment = TextEditingController(text: sale.payment?.floor().toString());
     paymentFn =
         FocusNode()..addListener(() {
@@ -66,11 +76,13 @@ class SaleFormController extends GetxController {
         });
     dateTime = sale.dateTime ?? sale.createdAt ?? dateTime;
     getProductTransactions();
-    super.onInit();
   }
 
   getProductTransactions() async {
     productTransactions = await repository.getProductTransactions(sale.id ?? 0);
+    update([
+      productTransactions.map((pt) => 'shop_${pt.product?.id}').toList(),
+    ]);
   }
 
   @override
@@ -169,10 +181,18 @@ class SaleFormController extends GetxController {
 
   sell() {}
 
-  sellectCustomer() async {
-    var r = await Get.toNamed(
-      Routes.CUSTOMER,
-      arguments: {"customer": customer, 'select': true},
+  selectCustomer() async {
+    var r = await showDialog(
+      routeSettings: RouteSettings(arguments: {"select": true}),
+      context: Get.context!,
+      builder:
+          (c) => Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450),
+
+              child: CustomerView(),
+            ),
+          ),
     );
     if (r is UserModel && r.type == "customer") customer = r;
   }
@@ -207,20 +227,17 @@ class SaleFormController extends GetxController {
         Get.find<SaleController>().getAll();
       }
 
-      if (Get.isRegistered<SaleDetailsController>()) {
-        Get.find<SaleDetailsController>().getStockTransaction();
-      }
       if (Get.isRegistered<CustomerDetailsController>()) {
         await Get.find<CustomerDetailsController>().getProductTransactions();
         await Get.find<CustomerDetailsController>().getStockTransactions();
         await Get.find<CustomerDetailsController>().getUser();
       }
       n = n.copyWith(id: id <= 0 ? null : id, dateTime: dateTime);
-      Get.offNamedUntil(
-        Routes.SALE_DETAILS,
-        (r) => [Routes.SALE, Routes.CUSTOMER_DETAILS].contains(r.settings.name),
-        arguments: {"sale": n},
-      );
+      sale = sale.copyWith(id: id);
+      Get.find<SaleController>().showForm = false;
+      Get.find<SaleDetailsController>().stockTransaction = n;
+      Get.find<SaleDetailsController>().getStockTransaction();
+      init(StockTransaction());
     } catch (e) {
       ErrorHandler.handleError(e);
     }
