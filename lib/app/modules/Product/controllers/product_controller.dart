@@ -10,6 +10,7 @@ import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
+import 'package:tracora/app/modules/ProductDetails/controllers/product_details_controller.dart';
 
 class ProductController extends GetxController {
   final repository = ProductRepository();
@@ -31,6 +32,33 @@ class ProductController extends GetxController {
   TextEditingController search = TextEditingController();
   set showSearch(bool value) => this._showSearch.value = value;
   late StreamSubscription listener;
+
+  final _showForm = false.obs;
+  bool get showForm => this._showForm.value;
+  set showForm(bool value) => this._showForm.value = value;
+
+  final _selected = Product().obs;
+  Product get selected => this._selected.value;
+  set selected(Product value) => this._selected.value = value;
+
+  get detailsController => Get.find<ProductDetailsController>();
+  next() {
+    var i = products.indexWhere((e) => e.id == selected.id);
+    if (i >= products.length - 1) return;
+
+    toDetails(products[i + 1]);
+  }
+
+  previous() {
+    var i = products.indexWhere((e) => e.id == selected.id);
+    if (i == 0) return;
+    toDetails(products[i - 1]);
+  }
+
+  delete() {
+    if (selected.id == null) return;
+    Get.find<ProductController>().delete();
+  }
 
   @override
   void onInit() {
@@ -80,5 +108,19 @@ class ProductController extends GetxController {
           });
           getAll();
         });
+  }
+
+  void toDetails(Product product) {
+    if (Get.arguments?["select"] == true) {
+      Get.back(result: product);
+      return;
+    }
+    var id = selected.id;
+    selected = product;
+    update(['item_${product.id}', 'item_$id']);
+    Get.find<ProductDetailsController>().product = product;
+    Get.find<ProductDetailsController>().getSuppliers();
+    Get.find<ProductDetailsController>().getCustomers();
+    Get.find<ProductDetailsController>().getTransactions();
   }
 }

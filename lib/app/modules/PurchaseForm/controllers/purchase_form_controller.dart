@@ -14,7 +14,7 @@ import 'package:tracora/app/modules/Supplier/controllers/supplier_controller.dar
 import 'package:tracora/app/modules/SupplierDetails/controllers/supplier_details_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
-class PurchaseFormController extends GetxController {
+class PurchaseFormController<T> extends GetxController {
   final PurchaseRepository repository = PurchaseRepository();
   final _purchase = StockTransaction().obs;
   StockTransaction get purchase => this._purchase.value;

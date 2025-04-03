@@ -4,62 +4,90 @@ import 'package:flutter/foundation.dart';
 
 import 'package:tracora/app/data/models/employee_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/modules/MissionForm/views/product_mission_view.dart';
 
 class Mission {
+  static String sql = '''
+CREATE TABLE mission (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  ids         STRING,
+  title       STRING,
+  startAt     INTEGER,
+  createdAt   INTEGER,
+  updatedAt   INTEGER,
+  deletedAt   INTEGER,
+  done        BOOLEAN,
+  comment     STRING,
+  user_id  INTEGER REFERENCES user (id)
+)
+
+''';
   final int? id;
   final String? ids;
+  final String? createdBy;
+  final String? updatedBy;
+  final String? deletedBy;
   final String? title;
-  final int? startAt;
+  final int? dateTime;
   final int? createdAt;
   final int? updatedAt;
   final int? deletedAt;
   final int? endAt;
   final bool? done;
   final String? comment;
-  final EmployeeModel? employee;
+  final UserModel? user;
   final List<MissionProduct>? missionProducts;
   Mission({
     this.id,
     this.ids,
+    this.createdBy,
+    this.updatedBy,
+    this.deletedBy,
     this.title,
-    this.startAt,
+    this.dateTime,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
     this.endAt,
     this.done,
     this.comment,
-    this.employee,
+    this.user,
     this.missionProducts,
   });
 
   Mission copyWith({
     int? id,
     String? ids,
+    String? createdBy,
+    String? updatedBy,
+    String? deletedBy,
     String? title,
-    int? startAt,
+    int? dateTime,
     int? createdAt,
     int? updatedAt,
     int? deletedAt,
     int? endAt,
     bool? done,
     String? comment,
-    EmployeeModel? employee,
+    UserModel? user,
     List<MissionProduct>? missionProducts,
   }) {
     return Mission(
       id: id ?? this.id,
       ids: ids ?? this.ids,
+      createdBy: createdBy ?? this.createdBy,
+      updatedBy: updatedBy ?? this.updatedBy,
+      deletedBy: deletedBy ?? this.deletedBy,
       title: title ?? this.title,
-      startAt: startAt ?? this.startAt,
+      dateTime: dateTime ?? this.dateTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       endAt: endAt ?? this.endAt,
       done: done ?? this.done,
       comment: comment ?? this.comment,
-      employee: employee ?? this.employee,
+      user: user ?? this.user,
       missionProducts: missionProducts ?? this.missionProducts,
     );
   }
@@ -73,11 +101,20 @@ class Mission {
     if (ids != null) {
       result.addAll({'ids': ids});
     }
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
     if (title != null) {
       result.addAll({'title': title});
     }
-    if (startAt != null) {
-      result.addAll({'startAt': startAt});
+    if (dateTime != null) {
+      result.addAll({'dateTime': dateTime});
     }
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
@@ -97,8 +134,8 @@ class Mission {
     if (comment != null) {
       result.addAll({'comment': comment});
     }
-    if (employee != null) {
-      result.addAll({'employee': employee!.toMap()});
+    if (user != null) {
+      result.addAll({'user': user!.toMap()});
     }
     if (missionProducts != null) {
       result.addAll({
@@ -113,18 +150,18 @@ class Mission {
     return Mission(
       id: map['id']?.toInt(),
       ids: map['ids'],
+      createdBy: map['createdBy'],
+      updatedBy: map['updatedBy'],
+      deletedBy: map['deletedBy'],
       title: map['title'],
-      startAt: map['startAt']?.toInt(),
+      dateTime: map['dateTime']?.toInt(),
       createdAt: map['createdAt']?.toInt(),
       updatedAt: map['updatedAt']?.toInt(),
       deletedAt: map['deletedAt']?.toInt(),
       endAt: map['endAt']?.toInt(),
       done: map['done'],
       comment: map['comment'],
-      employee:
-          map['employee'] != null
-              ? EmployeeModel.fromMap(map['employee'])
-              : null,
+      user: map['user'] != null ? UserModel.fromMap(map['user']) : null,
       missionProducts:
           map['missionProducts'] != null
               ? List<MissionProduct>.from(
@@ -141,7 +178,7 @@ class Mission {
 
   @override
   String toString() {
-    return 'Mission(id: $id, ids: $ids, title: $title, startAt: $startAt, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, endAt: $endAt, done: $done, comment: $comment, employee: $employee, missionProducts: $missionProducts)';
+    return 'Mission(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, title: $title, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, endAt: $endAt, done: $done, comment: $comment, user: $user, missionProducts: $missionProducts)';
   }
 
   @override
@@ -151,15 +188,18 @@ class Mission {
     return other is Mission &&
         other.id == id &&
         other.ids == ids &&
+        other.createdBy == createdBy &&
+        other.updatedBy == updatedBy &&
+        other.deletedBy == deletedBy &&
         other.title == title &&
-        other.startAt == startAt &&
+        other.dateTime == dateTime &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.deletedAt == deletedAt &&
         other.endAt == endAt &&
         other.done == done &&
         other.comment == comment &&
-        other.employee == employee &&
+        other.user == user &&
         listEquals(other.missionProducts, missionProducts);
   }
 
@@ -167,27 +207,39 @@ class Mission {
   int get hashCode {
     return id.hashCode ^
         ids.hashCode ^
+        createdBy.hashCode ^
+        updatedBy.hashCode ^
+        deletedBy.hashCode ^
         title.hashCode ^
-        startAt.hashCode ^
+        dateTime.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
         deletedAt.hashCode ^
         endAt.hashCode ^
         done.hashCode ^
         comment.hashCode ^
-        employee.hashCode ^
+        user.hashCode ^
         missionProducts.hashCode;
   }
 }
 
 class MissionProduct {
+  static String sql = '''
+CREATE TABLE mission_product (
+  product_id INTEGER REFERENCES product (id),
+  mission_id INTEGER REFERENCES mission (id),
+  qte        DOUBLE
+)
+''';
   final Product? product;
+  final Mission? mission;
   final double? qte;
-  MissionProduct({this.product, this.qte});
+  MissionProduct({this.product, this.mission, this.qte});
 
-  MissionProduct copyWith({Product? product, double? qte}) {
+  MissionProduct copyWith({Product? product, Mission? mission, double? qte}) {
     return MissionProduct(
       product: product ?? this.product,
+      mission: mission ?? this.mission,
       qte: qte ?? this.qte,
     );
   }
@@ -197,6 +249,9 @@ class MissionProduct {
 
     if (product != null) {
       result.addAll({'product': product!.toMap()});
+    }
+    if (mission != null) {
+      result.addAll({'mission': mission!.toMap()});
     }
     if (qte != null) {
       result.addAll({'qte': qte});
@@ -208,6 +263,7 @@ class MissionProduct {
   factory MissionProduct.fromMap(Map<String, dynamic> map) {
     return MissionProduct(
       product: map['product'] != null ? Product.fromMap(map['product']) : null,
+      mission: map['mission'] != null ? Mission.fromMap(map['mission']) : null,
       qte: map['qte']?.toDouble(),
     );
   }
@@ -218,7 +274,8 @@ class MissionProduct {
       MissionProduct.fromMap(json.decode(source));
 
   @override
-  String toString() => 'MissionProduct(product: $product, qte: $qte)';
+  String toString() =>
+      'MissionProduct(product: $product, mission: $mission, qte: $qte)';
 
   @override
   bool operator ==(Object other) {
@@ -226,9 +283,10 @@ class MissionProduct {
 
     return other is MissionProduct &&
         other.product == product &&
+        other.mission == mission &&
         other.qte == qte;
   }
 
   @override
-  int get hashCode => product.hashCode ^ qte.hashCode;
+  int get hashCode => product.hashCode ^ mission.hashCode ^ qte.hashCode;
 }

@@ -67,25 +67,23 @@ class MissionCheckoutPage extends GetView<MissionFormController> {
                                   CircleAvatar(
                                     radius: 60,
                                     child:
-                                        !(controller.employee.img?.isURL ??
-                                                false)
+                                        !(controller.user.img?.isURL ?? false)
                                             ? Icon(Icons.person, size: 60)
                                             : null,
                                     backgroundImage:
-                                        !(controller.employee.img?.isURL ??
-                                                false)
+                                        !(controller.user.img?.isURL ?? false)
                                             ? null
                                             : CachedNetworkImageProvider(
-                                              controller.employee.img ?? '',
+                                              controller.user.img ?? '',
                                             ),
                                   ),
                                   SizedBox(height: 8),
                                   Center(
                                     child:
-                                        controller.employee.id == null
-                                            ? Text('select_employee'.tr)
+                                        controller.user.id == null
+                                            ? Text('select_user'.tr)
                                             : Text(
-                                              controller.employee.email ?? '',
+                                              controller.user.email ?? '',
                                               style: TextStyle(fontSize: 16),
                                             ),
                                   ),
@@ -117,10 +115,11 @@ class MissionCheckoutPage extends GetView<MissionFormController> {
                   onTap: () => controller.editTime(),
                   leading: Icon(Icons.calendar_month),
                   title:
-                      controller.startAt == 0
+                      controller.dateTime == 0
                           ? Text('select_date'.tr)
                           : Text(
-                            controller.startAt.formatDate() ?? '-- / -- / ----',
+                            controller.dateTime.formatDate() ??
+                                '-- / -- / ----',
                           ),
                   trailing: OutlinedButton.icon(
                     icon: Icon(Icons.edit_calendar),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
+import 'package:tracora/app/data/models/employee_model.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_controller.dart';
+import 'package:tracora/app/modules/FeesPaymentDetails/controllers/fees_payment_details_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
 class FeesPaymentFormController extends GetxController {
@@ -24,6 +26,7 @@ class FeesPaymentFormController extends GetxController {
 
   late TextEditingController description;
   late TextEditingController payment;
+  late FocusNode paymentFn;
 
   @override
   void onInit() {
@@ -39,6 +42,13 @@ class FeesPaymentFormController extends GetxController {
     );
     dateTime =
         moneyTransaction.dateTime ?? moneyTransaction.createdAt ?? dateTime;
+    paymentFn =
+        FocusNode()..addListener(() {
+          payment.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: payment.text.length,
+          );
+        });
     super.onInit();
   }
 
@@ -83,11 +93,19 @@ class FeesPaymentFormController extends GetxController {
       if (Get.isRegistered<FeesPaymentController>()) {
         Get.find<FeesPaymentController>().getAll();
       }
-      Get.offNamedUntil(
-        Routes.FEES_PAYMENT_DETAILS,
-        (r) => r.settings.name == Routes.FEES_PAYMENT,
-        arguments: {"moneyTransaction": n.copyWith(id: id <= 0 ? null : id)},
-      );
+
+      if (Get.isRegistered<FeesPaymentDetailsController>()) {
+        // await Get.find<FeesPaymentDetailsController>();
+      }
+      n = n.copyWith(id: id <= 0 ? null : id, dateTime: dateTime);
+      moneyTransaction = moneyTransaction.copyWith(id: id);
+      Get.find<FeesPaymentController>().showForm = false;
+      Get.find<FeesPaymentController>().getAll();
+      Get.find<FeesPaymentDetailsController>().moneyTransaction = n;
+      Get.find<FeesPaymentFormController>().moneyTransaction =
+          MoneyTransaction();
+
+      init(MoneyTransaction());
     } catch (e) {
       ErrorHandler.handleError(e);
     }
@@ -95,4 +113,22 @@ class FeesPaymentFormController extends GetxController {
 
   bool get validate =>
       int.tryParse(payment.text) != null && description.text.length >= 3;
+
+  void init(MoneyTransaction? transaction) {
+    transaction = transaction ?? MoneyTransaction();
+
+    dateTime = transaction.dateTime ?? 0;
+    description = TextEditingController(text: transaction.description);
+    payment = TextEditingController(
+      text: transaction.amount?.floor().toString(),
+    );
+    paymentFn =
+        FocusNode()..addListener(() {
+          payment.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: payment.text.length,
+          );
+        });
+    dateTime = transaction.dateTime ?? transaction.createdAt ?? dateTime;
+  }
 }

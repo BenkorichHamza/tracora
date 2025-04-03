@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 
 import '../modules/Brand/bindings/brand_binding.dart';
@@ -8,20 +10,8 @@ import '../modules/Category/bindings/category_binding.dart';
 import '../modules/Category/views/category_view.dart';
 import '../modules/CategoryForm/bindings/category_form_binding.dart';
 import '../modules/CategoryForm/views/category_form_view.dart';
-import '../modules/Customer/bindings/customer_binding.dart';
-import '../modules/Customer/bindings/customer_binding.dart';
-import '../modules/Customer/views/customer_view.dart';
-import '../modules/Customer/views/customer_view.dart';
-import '../modules/CustomerDetails/bindings/customer_details_binding.dart';
-import '../modules/CustomerDetails/views/customer_details_view.dart';
-import '../modules/CustomerForm/bindings/customer_form_binding.dart';
-import '../modules/CustomerForm/views/customer_form_view.dart';
-import '../modules/CustomerPayment/bindings/customer_payment_binding.dart';
-import '../modules/CustomerPayment/views/customer_payment_view.dart';
-import '../modules/CustomerPaymentDetails/bindings/customer_payment_details_binding.dart';
-import '../modules/CustomerPaymentDetails/views/customer_payment_details_view.dart';
-import '../modules/CustomerPaymentForm/bindings/customer_payment_form_binding.dart';
-import '../modules/CustomerPaymentForm/views/customer_payment_form_view.dart';
+import '../modules/CustomerDetails/bindings/user_details_binding.dart';
+import '../modules/CustomerDetails/views/user_details_view.dart';
 import '../modules/Driver/bindings/driver_binding.dart';
 import '../modules/Driver/views/driver_view.dart';
 import '../modules/FeesPayment/bindings/fees_payment_binding.dart';
@@ -32,12 +22,13 @@ import '../modules/FeesPaymentForm/bindings/fees_payment_form_binding.dart';
 import '../modules/FeesPaymentForm/views/fees_payment_form_view.dart';
 import '../modules/Login/bindings/login_binding.dart';
 import '../modules/Login/views/login_view.dart';
-import '../modules/Mission/bindings/mission_binding.dart';
-import '../modules/Mission/views/mission_view.dart';
-import '../modules/MissionForm/bindings/mission_form_binding.dart';
 import '../modules/MissionForm/views/mission_form_view.dart';
+import '../modules/PosHome/bindings/pos_home_binding.dart';
+import '../modules/PosHome/views/pos_home_view.dart';
 import '../modules/Product/bindings/product_binding.dart';
 import '../modules/Product/views/product_view.dart';
+import '../modules/ProductDetails/bindings/product_details_binding.dart';
+import '../modules/ProductDetails/views/product_details_view.dart';
 import '../modules/ProductForm/bindings/product_form_binding.dart';
 import '../modules/ProductForm/views/product_form_view.dart';
 import '../modules/Profile/bindings/profile_binding.dart';
@@ -48,14 +39,14 @@ import '../modules/PurchaseDetails/bindings/purchase_details_binding.dart';
 import '../modules/PurchaseDetails/views/purchase_details_view.dart';
 import '../modules/PurchaseForm/bindings/purchase_form_binding.dart';
 import '../modules/PurchaseForm/views/purchase_form_view.dart';
-import '../modules/Sale/bindings/sale_binding.dart';
-import '../modules/Sale/views/sale_view.dart';
-import '../modules/SaleDetails/bindings/sale_details_binding.dart';
-import '../modules/SaleDetails/views/sale_details_view.dart';
-import '../modules/SaleForm/bindings/sale_form_binding.dart';
-import '../modules/SaleForm/views/sale_form_view.dart';
+import '../modules/Setting/bindings/setting_binding.dart';
+import '../modules/Setting/views/setting_view.dart';
 import '../modules/Statistic/bindings/statistic_binding.dart';
 import '../modules/Statistic/views/statistic_view.dart';
+import '../modules/StockTransaction/bindings/transaction_binding.dart';
+import '../modules/StockTransaction/views/transaction_view.dart';
+import '../modules/StockTransactionDetails/bindings/sale_details_binding.dart';
+import '../modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
 import '../modules/Supplier/bindings/supplier_binding.dart';
 import '../modules/Supplier/views/supplier_view.dart';
 import '../modules/SupplierDetails/bindings/supplier_details_binding.dart';
@@ -68,6 +59,20 @@ import '../modules/SupplierPaymentDetails/bindings/supplier_payment_details_bind
 import '../modules/SupplierPaymentDetails/views/supplier_payment_details_view.dart';
 import '../modules/SupplierPaymentForm/bindings/supplier_payment_form_binding.dart';
 import '../modules/SupplierPaymentForm/views/supplier_payment_form_view.dart';
+import '../modules/TransactionForm/bindings/transaction_form_binding.dart';
+import '../modules/TransactionForm/views/transaction_form_view.dart';
+import '../modules/User/bindings/user_binding.dart';
+import '../modules/User/bindings/user_binding.dart';
+import '../modules/User/views/user_view.dart';
+import '../modules/User/views/user_view.dart';
+import '../modules/UserForm/bindings/user_form_binding.dart';
+import '../modules/UserForm/views/user_form_view.dart';
+import '../modules/UserPayment/bindings/user_payment_binding.dart';
+import '../modules/UserPayment/views/user_payment_view.dart';
+import '../modules/UserPaymentDetails/bindings/user_payment_details_binding.dart';
+import '../modules/UserPaymentDetails/views/user_payment_details_view.dart';
+import '../modules/UserPaymentForm/bindings/user_payment_form_binding.dart';
+import '../modules/UserPaymentForm/views/user_payment_form_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 
@@ -76,7 +81,7 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static const INITIAL = Routes.HOME;
+  static String INITIAL = Platform.isAndroid ? Routes.POS_HOME : Routes.HOME;
 
   static final routes = [
     GetPage(
@@ -121,8 +126,8 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CUSTOMER,
-      page: () => const CustomerView(),
-      binding: CustomerBinding(),
+      page: () => const UserView(),
+      binding: UserBinding(),
     ),
     GetPage(
       name: _Paths.CUSTOMER_FORM,
@@ -147,7 +152,7 @@ class AppPages {
     GetPage(
       name: _Paths.PURCHASE_FORM,
       page: () => const PurchaseFormView(),
-      binding: PurchaseFormBinding(),
+      binding: UserFormBinding(),
     ),
     GetPage(
       name: _Paths.PURCHASE_DETAILS,
@@ -156,18 +161,18 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.SALE_DETAILS,
-      page: () => const SaleDetailsView(),
+      page: () => const StockTransactionDetailsView(),
       binding: SaleDetailsBinding(),
     ),
     GetPage(
       name: _Paths.SALE,
-      page: () => const SaleView(),
+      page: () => const StockTransactionView(),
       binding: SaleBinding(),
     ),
     GetPage(
       name: _Paths.SALE_FORM,
-      page: () => const SaleFormView(),
-      binding: SaleFormBinding(),
+      page: () => const TransactionFormView(),
+      binding: TransactionFormBinding(),
     ),
     GetPage(
       name: _Paths.SUPPLIER_PAYMENT,
@@ -186,18 +191,18 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CUSTOMER_PAYMENT,
-      page: () => const CustomerPaymentView(),
+      page: () => const UserPaymentView(),
       binding: CustomerPaymentBinding(),
     ),
     GetPage(
       name: _Paths.CUSTOMER_PAYMENT_DETAILS,
-      page: () => const CustomerPaymentDetailsView(),
-      binding: CustomerPaymentDetailsBinding(),
+      page: () => const UserPaymentDetailsView(),
+      binding: UserPaymentDetailsBinding(),
     ),
     GetPage(
       name: _Paths.CUSTOMER_PAYMENT_FORM,
-      page: () => const CustomerPaymentFormView(),
-      binding: CustomerPaymentFormBinding(),
+      page: () => const UserPaymentFormView(),
+      binding: UserPaymentFormBinding(),
     ),
     GetPage(
       name: _Paths.FEES_PAYMENT,
@@ -221,7 +226,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.CUSTOMER_DETAILS,
-      page: () => const CustomerDetailsView(),
+      page: () => const UserDetailsView(),
       binding: CustomerDetailsBinding(),
     ),
     GetPage(
@@ -240,14 +245,19 @@ class AppPages {
       binding: DriverBinding(),
     ),
     GetPage(
-      name: _Paths.MISSION,
-      page: () => const MissionView(),
-      binding: MissionBinding(),
+      name: _Paths.PRODUCT_DETAILS,
+      page: () => const ProductDetailsView(),
+      binding: ProductDetailsBinding(),
     ),
     GetPage(
-      name: _Paths.MISSION_FORM,
-      page: () => const MissionFormView(),
-      binding: MissionFormBinding(),
+      name: _Paths.SETTING,
+      page: () => const SettingView(),
+      binding: SettingBinding(),
+    ),
+    GetPage(
+      name: _Paths.POS_HOME,
+      page: () => const PosHomeView(),
+      binding: PosHomeBinding(),
     ),
   ];
 }

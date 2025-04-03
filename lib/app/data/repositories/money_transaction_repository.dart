@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/user_model.dart';
-import 'package:tracora/app/data/repositories/customer_repository.dart';
+import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/supplier_repository.dart';
 
 class MoneyTransactionRepository {
@@ -33,12 +33,10 @@ class MoneyTransactionRepository {
               : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var userIds = maps.map((e) => e['user_id']);
-    final List<Map<String, dynamic>> userMaps = await db.query(
-      'user',
-      where: userIds.isEmpty ? null : 'id IN (${userIds.join(', ')})',
+    var userIds = maps.map<int?>((e) => e['user_id']).toList();
+    final users = await UserRepository().getAllUsersFromArray(
+      ids: userIds.whereType<int>().toList(),
     );
-    var users = userMaps.map(((e) => UserModel.fromMap(e))).toList();
 
     return maps
         .map(
@@ -128,6 +126,47 @@ class MoneyTransactionRepository {
         .toList();
   }
 
+  Future<List<MoneyTransaction>> getMoneyTransactionsForEmployee({
+    required int id,
+    required String type,
+  }) async {
+    final db = await _dbHelper.db;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT mt.*, u.firstName from
+      money_transaction mt
+      LEFT JOIN user u
+      ON mt.user_id=u.id
+      WHERE mt.deletedAt IS NULL AND  employee_id=$id ORDER BY mt.dateTime DESC
+      LIMIT 50
+''');
+    var employeeIds = maps.map((e) => e['employee_id']);
+    final List<Map<String, dynamic>> employeeMaps = await db.query(
+      'user',
+      where:
+          employeeIds.isEmpty
+              ? null
+              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+    );
+    var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
+    var userIds = maps.map((e) => e['user_id']);
+    final List<Map<String, dynamic>> userMaps = await db.query(
+      'user',
+      where: userIds.isEmpty ? null : 'id IN (${userIds.join(', ')})',
+    );
+    var users = userMaps.map(((e) => UserModel.fromMap(e))).toList();
+
+    return maps
+        .map(
+          (map) => MoneyTransaction.fromMap(map).copyWith(
+            employee: (employees).firstWhereOrNull(
+              (e) => e.id == map['employee_id'],
+            ),
+            user: users.firstWhereOrNull((e) => e.id == map['user_id']),
+          ),
+        )
+        .toList();
+  }
+
   Future<int> insertMoneyTransaction(
     MoneyTransaction moneyTransaction, {
     bool sync = true,
@@ -152,7 +191,7 @@ class MoneyTransactionRepository {
         replace: false,
       );
     } else if (moneyTransaction.type == "sale") {
-      await CustomerRepository().insertCustomer(
+      await UserRepository().insertUser(
         user ?? UserModel(),
         sync: false,
         replace: false,

@@ -37,6 +37,10 @@ abstract class Routes {
   static const DRIVER = _Paths.DRIVER;
   static const MISSION = _Paths.MISSION;
   static const MISSION_FORM = _Paths.MISSION_FORM;
+  static const PRODUCT_DETAILS = _Paths.PRODUCT_DETAILS;
+  static const SETTING = _Paths.SETTING;
+  static const MISSION_DETAILS = _Paths.MISSION_DETAILS;
+  static const POS_HOME = _Paths.POS_HOME;
 }
 
 abstract class _Paths {
@@ -75,4 +79,8 @@ abstract class _Paths {
   static const DRIVER = '/driver';
   static const MISSION = '/mission';
   static const MISSION_FORM = '/mission-form';
+  static const PRODUCT_DETAILS = '/product-details';
+  static const SETTING = '/setting';
+  static const MISSION_DETAILS = '/mission-details';
+  static const POS_HOME = '/pos-home';
 }

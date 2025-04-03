@@ -7,6 +7,7 @@ class MoneyTransaction {
 CREATE TABLE money_transaction (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     ids  STRING UNIQUE,
+    missionIds  STRING,
     createdBy  STRING,
     updatedBy  STRING,
     deletedBy  STRING,
@@ -25,6 +26,7 @@ CREATE TABLE money_transaction (
 ''';
   final int? id;
   final String? ids;
+  final String? missionIds;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
@@ -42,6 +44,7 @@ CREATE TABLE money_transaction (
   MoneyTransaction({
     this.id,
     this.ids,
+    this.missionIds,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
@@ -61,6 +64,7 @@ CREATE TABLE money_transaction (
   MoneyTransaction copyWith({
     int? id,
     String? ids,
+    String? missionIds,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
@@ -79,6 +83,7 @@ CREATE TABLE money_transaction (
     return MoneyTransaction(
       id: id ?? this.id,
       ids: ids ?? this.ids,
+      missionIds: missionIds ?? this.missionIds,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
@@ -104,6 +109,9 @@ CREATE TABLE money_transaction (
     }
     if (ids != null) {
       result.addAll({'ids': ids});
+    }
+    if (missionIds != null) {
+      result.addAll({'missionIds': missionIds});
     }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
@@ -160,6 +168,9 @@ CREATE TABLE money_transaction (
     if (ids != null) {
       result.addAll({'ids': ids});
     }
+    if (missionIds != null) {
+      result.addAll({'missionIds': ids});
+    }
     if (credit != null) {
       result.addAll({'credit': credit});
     }
@@ -198,6 +209,7 @@ CREATE TABLE money_transaction (
     return MoneyTransaction(
       id: map['id']?.toInt(),
       ids: map['ids'],
+      missionIds: map['missionIds'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
@@ -223,7 +235,7 @@ CREATE TABLE money_transaction (
 
   @override
   String toString() {
-    return 'MoneyTransaction(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'MoneyTransaction(id: $id, ids: $ids, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -233,6 +245,7 @@ CREATE TABLE money_transaction (
     return other is MoneyTransaction &&
         other.id == id &&
         other.ids == ids &&
+        other.missionIds == missionIds &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
@@ -253,6 +266,7 @@ CREATE TABLE money_transaction (
   int get hashCode {
     return id.hashCode ^
         ids.hashCode ^
+        missionIds.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^

@@ -357,3 +357,9 @@ CREATE TABLE user (
         img.hashCode;
   }
 }
+
+class Customer {}
+
+class Supplier {}
+
+class Employee {}

@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/image_model.dart';
+import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
 
 class Product {
   final String sql = '''
@@ -525,4 +527,7 @@ CREATE TABLE product (
 
   String? get translateName =>
       Get.locale?.languageCode == 'ar' ? nameAr ?? name : name ?? nameAr;
+
+  double getPrice<T>() =>
+      [Sale, Customer].contains(T) ? sellPrice ?? 0 : buyPrice ?? 0;
 }

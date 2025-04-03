@@ -20,14 +20,24 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
-import 'package:tracora/app/data/repositories/customer_repository.dart';
+import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/data/repositories/purchase_repository.dart';
-import 'package:tracora/app/data/repositories/sale_repository.dart';
+import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/data/repositories/supplier_repository.dart';
+import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_controller.dart';
+import 'package:tracora/app/modules/FeesPaymentForm/controllers/fees_payment_form_controller.dart';
 import 'package:tracora/app/modules/Login/controllers/login_controller.dart';
+import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
+import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
 import 'package:tracora/app/modules/Profile/controllers/profile_controller.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
+import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
+import 'package:tracora/app/modules/User/controllers/user_controller.dart';
+import 'package:tracora/app/modules/UserForm/controllers/user_form_controller.dart';
+import 'package:tracora/app/modules/UserPayment/controllers/user_payment_controller.dart';
+import 'package:tracora/app/modules/UserPaymentForm/controllers/user_payment_form_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
 class HomeController extends GetxController with GetTickerProviderStateMixin {
@@ -65,6 +75,14 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   bool get settingsLoaded => this._settingsLoaded.value;
   set settingsLoaded(bool value) => this._settingsLoaded.value = value;
 
+  final _index = 0.obs;
+  int get index => this._index.value;
+  set index(int value) => this._index.value = value;
+
+  final _extended = false.obs;
+  bool get extended => this._extended.value;
+  set extended(bool value) => this._extended.value = value;
+
   late AdvancedDrawerController drawerCtrl;
 
   late StreamSubscription accountListener;
@@ -79,10 +97,44 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   late TabController tabCtrl;
 
+  List<Map> get controllers => [
+    {
+      Get.find<StockTransactionController<Sale>>():
+          Get.find<TransactionFormController<Sale>>(),
+    },
+    {
+      Get.find<StockTransactionController<Purchase>>():
+          Get.find<TransactionFormController<Purchase>>(),
+    },
+    {
+      Get.find<StockTransactionController<Mission>>():
+          Get.find<TransactionFormController<Mission>>(),
+    },
+    {
+      Get.find<UserPaymentController<Sale>>():
+          Get.find<UserPaymentFormController<Sale>>(),
+    },
+    {
+      Get.find<UserPaymentController<Purchase>>():
+          Get.find<UserPaymentFormController<Purchase>>(),
+    },
+    {
+      Get.find<UserController<Customer>>():
+          Get.find<UserFormController<Customer>>(),
+    },
+    {
+      Get.find<UserController<Supplier>>():
+          Get.find<UserFormController<Supplier>>(),
+    },
+
+    {Get.find<FeesPaymentController>(): Get.find<FeesPaymentFormController>()},
+    {Get.find<ProductController>(): Get.find<ProductFormController>()},
+  ];
+
   @override
   void onInit() {
     super.onInit();
-    tabCtrl = TabController(length: 8, vsync: this);
+    tabCtrl = TabController(length: 11, vsync: this);
     drawerCtrl = AdvancedDrawerController();
     readSettings();
     // listen();
@@ -245,6 +297,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   get profileController => null;
 
+  Map? get aciveController => index == 0 ? null : controllers[index - 1];
+
   logout() async {
     // var pref = await SharedPreferences.getInstance();
     // pref.remove("employee");
@@ -341,7 +395,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(data.docs, (element) async {
             element.data()["remoteId"] = element.data()["id"];
             var model = UserModel.fromMap(element.data()!);
-            await CustomerRepository().insertCustomer(model, sync: false);
+            await UserRepository().insertUser(model, sync: false);
           });
         });
   }
@@ -385,7 +439,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(data.docs, (element) async {
             element.data()["remoteId"] = element.data()["id"];
             var model = StockTransaction.fromMap(element.data()!);
-            await SaleRepository().insertSale(model, sync: false);
+            await StockTransactionRepository().insert(model, sync: false);
           });
         });
   }

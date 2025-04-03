@@ -7,13 +7,22 @@ import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
+import 'package:tracora/app/modules/FeesPaymentDetails/controllers/fees_payment_details_controller.dart';
 
 class FeesPaymentController extends GetxController {
   final repository = MoneyTransactionRepository();
   final _moneyTransactions = <MoneyTransaction>[].obs;
-  List<MoneyTransaction> get moneyTransactions => this._moneyTransactions.value;
-  set moneyTransactions(List<MoneyTransaction> value) =>
+  List<MoneyTransaction> get transactions => this._moneyTransactions.value;
+  set transactions(List<MoneyTransaction> value) =>
       this._moneyTransactions.value = value;
+
+  final _showForm = false.obs;
+  bool get showForm => this._showForm.value;
+  set showForm(bool value) => this._showForm.value = value;
+
+  final _selected = MoneyTransaction().obs;
+  MoneyTransaction get selected => this._selected.value;
+  set selected(MoneyTransaction value) => this._selected.value = value;
 
   final _loading = false.obs;
   bool get loading => this._loading.value;
@@ -21,6 +30,21 @@ class FeesPaymentController extends GetxController {
 
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
+
+  get detailsController => Get.find<FeesPaymentDetailsController>();
+
+  next() {
+    var i = transactions.indexWhere((e) => e.id == selected.id);
+    if (i >= transactions.length - 1) return;
+
+    toDetails(transactions[i + 1]);
+  }
+
+  previous() {
+    var i = transactions.indexWhere((e) => e.id == selected.id);
+    if (i == 0) return;
+    toDetails(transactions[i - 1]);
+  }
 
   TextEditingController search = TextEditingController();
   set showSearch(bool value) => this._showSearch.value = value;
@@ -51,12 +75,13 @@ class FeesPaymentController extends GetxController {
   getAll() async {
     try {
       loading = true;
-      moneyTransactions = await repository.getMoneyTransactions(
+      transactions = await repository.getMoneyTransactions(
         search: search.text,
         type: "fees",
       );
     } catch (e) {
       ErrorHandler.handleError(e);
+      rethrow;
     } finally {
       loading = false;
     }
@@ -80,5 +105,12 @@ class FeesPaymentController extends GetxController {
           });
           getAll();
         });
+  }
+
+  void toDetails(MoneyTransaction transaction) async {
+    var id = selected.id;
+    selected = transaction;
+    update(['item_${transaction.id}', 'item_$id']);
+    Get.find<FeesPaymentDetailsController>().moneyTransaction = transaction;
   }
 }

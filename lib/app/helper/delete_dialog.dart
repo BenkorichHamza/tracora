@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 Future<bool?> deleteConfirmation() {
   return Get.dialog(
     SimpleDialog(
-      title: Center(child: Text("delete_brand".tr)),
+      title: Center(child: Text("delete_item".tr)),
       children: [
         Row(
           children: [

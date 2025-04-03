@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/helper/delete_dialog.dart';
+import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_controller.dart';
+import 'package:tracora/app/modules/FeesPaymentForm/controllers/fees_payment_form_controller.dart';
 
 class FeesPaymentDetailsController extends GetxController {
   final _loading = false.obs;
@@ -42,4 +44,12 @@ class FeesPaymentDetailsController extends GetxController {
     await repository.deleteMoneyTransaction(moneyTransaction);
     Get.back(result: true);
   }
+
+  edit() {
+    changed = true;
+    Get.find<FeesPaymentFormController>().init(moneyTransaction);
+    Get.find<FeesPaymentController>().showForm = true;
+  }
+
+  void print() {}
 }

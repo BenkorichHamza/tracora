@@ -6,6 +6,7 @@ import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
 
@@ -72,6 +73,24 @@ class ProductRepository {
         }).toList();
 
     return products;
+  }
+
+  Future<List<ProductTransaction>> getProductTransactions({
+    required int productId,
+  }) async {
+    final db = await _dbHelper.db;
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    SELECT pt.* 
+    FROM product_transaction pt
+    INNER JOIN stock_transaction  st on st.id=pt.transaction_id
+    WHERE pt.product_id = $productId
+    ORDER BY st.dateTime DESC 
+    LIMIT 100
+  ''');
+
+    // Convert each Map to a ProductTransaction object
+    return maps.map((map) => ProductTransaction.fromMap(map)).toList();
   }
 
   Future<Product> getProduct(int id) async {

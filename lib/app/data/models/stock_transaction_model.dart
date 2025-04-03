@@ -10,6 +10,8 @@ class StockTransaction {
 CREATE TABLE stock_transaction (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     ids  STRING UNIQUE,
+    status INTEGER,
+    missionIds  STRING,
     createdBy  STRING,
     updatedBy  STRING,
     deletedBy  STRING,
@@ -30,7 +32,9 @@ CREATE TABLE stock_transaction (
 )
 ''';
   final int? id;
+  final int? status;
   final String? ids;
+  final String? missionIds;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
@@ -51,7 +55,9 @@ CREATE TABLE stock_transaction (
   final int? deletedAt;
   StockTransaction({
     this.id,
+    this.status,
     this.ids,
+    this.missionIds,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
@@ -74,7 +80,9 @@ CREATE TABLE stock_transaction (
 
   StockTransaction copyWith({
     int? id,
+    int? status,
     String? ids,
+    String? missionIds,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
@@ -96,7 +104,9 @@ CREATE TABLE stock_transaction (
   }) {
     return StockTransaction(
       id: id ?? this.id,
+      status: status ?? this.status,
       ids: ids ?? this.ids,
+      missionIds: missionIds ?? this.missionIds,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
@@ -124,8 +134,14 @@ CREATE TABLE stock_transaction (
     if (id != null) {
       result.addAll({'id': id});
     }
+    if (status != null) {
+      result.addAll({'status': status});
+    }
     if (ids != null) {
       result.addAll({'ids': ids});
+    }
+    if (missionIds != null) {
+      result.addAll({'missionIds': missionIds});
     }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
@@ -194,8 +210,14 @@ CREATE TABLE stock_transaction (
     if (id != null) {
       result.addAll({'id': id});
     }
+    if (status != null) {
+      result.addAll({'status': id});
+    }
     if (ids != null) {
       result.addAll({'ids': ids});
+    }
+    if (missionIds != null) {
+      result.addAll({'missionIds': ids});
     }
     if (employee?.id != null) {
       result.addAll({'employee_id': employee?.id});
@@ -243,7 +265,9 @@ CREATE TABLE stock_transaction (
   factory StockTransaction.fromMap(Map<String, dynamic> map) {
     return StockTransaction(
       id: map['id']?.toInt(),
+      status: map['status']?.toInt(),
       ids: map['ids'],
+      missionIds: map['missionIds'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
@@ -280,7 +304,7 @@ CREATE TABLE stock_transaction (
 
   @override
   String toString() {
-    return 'StockTransaction(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, employee: $employee, user: $user, type: $type, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'StockTransaction(id: $id, status: $status, ids: $ids, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, employee: $employee, user: $user, type: $type, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -289,7 +313,9 @@ CREATE TABLE stock_transaction (
 
     return other is StockTransaction &&
         other.id == id &&
+        other.status == status &&
         other.ids == ids &&
+        other.missionIds == missionIds &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
@@ -313,7 +339,9 @@ CREATE TABLE stock_transaction (
   @override
   int get hashCode {
     return id.hashCode ^
+        status.hashCode ^
         ids.hashCode ^
+        missionIds.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^
@@ -334,3 +362,11 @@ CREATE TABLE stock_transaction (
         deletedAt.hashCode;
   }
 }
+
+class Sale {}
+
+class Purchase {}
+
+class Mission {}
+
+class Fees {}

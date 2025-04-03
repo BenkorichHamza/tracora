@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
-import 'package:tracora/app/data/models/employee_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/models/mission_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/modules/MissionForm/views/bottom_sheet_item_selector.dart';
@@ -13,13 +13,13 @@ class MissionFormController extends GetxController {
   Mission get mission => this._mission.value;
   set mission(Mission value) => this._mission.value = value;
 
-  final _startAt = 0.obs;
-  int get startAt => this._startAt.value;
-  set startAt(int value) => this._startAt.value = value;
+  final _dateTime = 0.obs;
+  int get dateTime => this._dateTime.value;
+  set dateTime(int value) => this._dateTime.value = value;
 
-  final _employee = EmployeeModel().obs;
-  EmployeeModel get employee => this._employee.value;
-  set employee(EmployeeModel value) => this._employee.value = value;
+  final _user = UserModel().obs;
+  UserModel get user => this._user.value;
+  set user(UserModel value) => this._user.value = value;
 
   final _missionProducts = <MissionProduct>[].obs;
   List<MissionProduct> get missionProducts => this._missionProducts.value;
@@ -30,11 +30,11 @@ class MissionFormController extends GetxController {
   void onInit() {
     if (Get.arguments?['mission'] is Mission) {
       mission = Get.arguments?["mission"] ?? mission;
-      employee = mission.employee ?? employee;
+      user = mission.user ?? user;
       missionProducts = mission.missionProducts ?? missionProducts;
     }
 
-    startAt = mission.startAt ?? mission.createdAt ?? startAt;
+    dateTime = mission.dateTime ?? mission.createdAt ?? dateTime;
     super.onInit();
   }
 
@@ -55,7 +55,7 @@ class MissionFormController extends GetxController {
       lastDate: DateTime.now(),
       initialDate: DateTime.now(),
     );
-    startAt = r?.millisecondsSinceEpoch ?? startAt;
+    dateTime = r?.millisecondsSinceEpoch ?? dateTime;
   }
 
   void increment(Product p) {
@@ -132,28 +132,28 @@ class MissionFormController extends GetxController {
   sellectSupplier() async {
     var r = await Get.toNamed(
       Routes.DRIVER,
-      arguments: {"employee": employee, 'select': true},
+      arguments: {"user": user, 'select': true},
     );
-    if (r is EmployeeModel) employee = r;
+    if (r is UserModel) user = r;
   }
 
   save() async {
     try {
-      if (employee.id == null) {
-        ErrorHandler.showError("select_employee".tr);
+      if (user.id == null) {
+        ErrorHandler.showError("select_user".tr);
         return;
       }
 
       if (!validate) return;
-      if (startAt <= 0) {
-        startAt = DateTime.now().millisecondsSinceEpoch;
+      if (dateTime <= 0) {
+        dateTime = DateTime.now().millisecondsSinceEpoch;
       }
       var n = mission.copyWith(
-        employee: employee,
+        user: user,
 
         missionProducts: missionProducts,
 
-        startAt: startAt,
+        dateTime: dateTime,
       );
       if ((mission.ids ?? '').isNotEmpty) {
         FirebaseFirestore.instance

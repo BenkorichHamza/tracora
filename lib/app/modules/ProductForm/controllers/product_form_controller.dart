@@ -14,6 +14,7 @@ import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Brand/controllers/brand_controller.dart';
 import 'package:tracora/app/modules/Brand/views/brand_view.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
+import 'package:tracora/app/modules/ProductDetails/controllers/product_details_controller.dart';
 import 'package:tracora/app/modules/ProductForm/views/scanner.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
@@ -51,32 +52,8 @@ class ProductFormController extends GetxController {
   @override
   void onInit() {
     formKey = GlobalKey<FormState>();
-    if (Get.arguments?['product'] is Product) {
-      product = Get.arguments?["product"] ?? product;
-      // img = product.img ?? img;
-    }
-    name = TextEditingController(text: product.name ?? '');
-    nameAr = TextEditingController(text: product.nameAr ?? '');
-    alert = TextEditingController(text: product.alert?.formatNumber() ?? '');
-    packaging = TextEditingController(
-      text: product.packaging?.formatNumber() ?? '',
-    );
-    barcode = TextEditingController(text: product.barcode ?? '');
-    unity = TextEditingController(text: product.unity ?? '');
-    buyPrice = TextEditingController(
-      text: product.buyPrice?.formatNumber() ?? '',
-    );
-    sellPrice = TextEditingController(
-      text: product.sellPrice?.formatNumber() ?? '',
-    );
-    sellPrice1 = TextEditingController(
-      text: product.sellPrice1?.formatNumber() ?? '',
-    );
-    sellPrice2 = TextEditingController(
-      text: product.sellPrice2?.formatNumber() ?? '',
-    );
-    brand = product.brand ?? brand;
-    categories = product.categories ?? categories;
+
+    init(product);
 
     super.onInit();
   }
@@ -140,8 +117,17 @@ class ProductFormController extends GetxController {
         data: img.isNotEmpty ? await File(img).readAsBytes() : null,
       );
       var r = await repository.insertProduct(product);
-      Get.find<ProductController>().getAll();
-      Get.back();
+      if (Get.isRegistered<ProductDetailsController>()) {
+        Get.find<ProductDetailsController>().product = product.copyWith(
+          id: r <= 0 ? null : r,
+        );
+      }
+      if (Get.isRegistered<ProductController>()) {
+        Get.find<ProductController>().getAll();
+      }
+      product = product.copyWith(id: r <= 0 ? null : r);
+      Get.find<ProductController>().showForm = false;
+      init(Product());
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
       rethrow;
@@ -182,5 +168,31 @@ class ProductFormController extends GetxController {
     } catch (e) {
       ErrorHandler.handleError(e);
     }
+  }
+
+  void init(Product? t) {
+    product = t ?? Product();
+    name = TextEditingController(text: product.name ?? '');
+    nameAr = TextEditingController(text: product.nameAr ?? '');
+    alert = TextEditingController(text: product.alert?.formatNumber() ?? '');
+    packaging = TextEditingController(
+      text: product.packaging?.formatNumber() ?? '',
+    );
+    barcode = TextEditingController(text: product.barcode ?? '');
+    unity = TextEditingController(text: product.unity ?? '');
+    buyPrice = TextEditingController(
+      text: product.buyPrice?.formatNumber() ?? '',
+    );
+    sellPrice = TextEditingController(
+      text: product.sellPrice?.formatNumber() ?? '',
+    );
+    sellPrice1 = TextEditingController(
+      text: product.sellPrice1?.formatNumber() ?? '',
+    );
+    sellPrice2 = TextEditingController(
+      text: product.sellPrice2?.formatNumber() ?? '',
+    );
+    brand = product.brand ?? brand;
+    categories = product.categories ?? categories;
   }
 }

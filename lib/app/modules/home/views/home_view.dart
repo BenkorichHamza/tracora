@@ -1,17 +1,20 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:get/get.dart';
-import 'package:tracora/app/modules/Customer/views/customer_view.dart';
-import 'package:tracora/app/modules/CustomerPayment/views/customer_payment_view.dart';
+import 'package:tracora/app/core/intents.dart';
+import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/modules/FeesPayment/views/fees_payment_view.dart';
+import 'package:tracora/app/modules/Setting/views/setting_view.dart';
+import 'package:tracora/app/modules/User/views/user_view.dart';
+import 'package:tracora/app/modules/UserPayment/views/user_payment_view.dart';
 import 'package:tracora/app/modules/Login/views/login_view.dart';
 import 'package:tracora/app/modules/Product/views/product_view.dart';
-import 'package:tracora/app/modules/Purchase/views/purchase_view.dart';
-import 'package:tracora/app/modules/Sale/views/sale_view.dart';
-import 'package:tracora/app/modules/Supplier/views/supplier_view.dart';
-import 'package:tracora/app/modules/SupplierPayment/views/supplier_payment_view.dart';
+import 'package:tracora/app/modules/StockTransaction/views/transaction_view.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
@@ -22,129 +25,346 @@ class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () =>
-          controller.employee.id == null
-              ? LoginView()
-              : Obx(
-                () =>
-                    !controller.settingsLoaded
-                        ? const Scaffold(
-                          backgroundColor: Color.fromRGBO(0, 180, 80, 1),
-                        )
-                        : Theme(
-                          data: controller.theme,
-                          child: OrientationBuilder(
-                            builder: (context, o) {
-                              var w = MediaQuery.of(context).size.width;
-                              return AdvancedDrawer(
-                                openRatio: Get.width < 600 ? 0.75 : 300 / w,
-                                rtlOpening: Get.locale?.languageCode == "ar",
-                                controller: controller.drawerCtrl,
-                                drawer: drawer(),
-                                backdropColor: controller
-                                    .theme
-                                    .scaffoldBackgroundColor
-                                    .withOpacity(0.95),
-                                child: Scaffold(
-                                  appBar:
-                                      Platform.isWindows
-                                          ? null
-                                          : AppBar(
-                                            actions: [SyncView()],
-                                            backgroundColor:
-                                                controller
-                                                    .theme
-                                                    .scaffoldBackgroundColor,
-                                            title: Text('tracora'.tr),
-                                            centerTitle: true,
-                                            leading: IconButton(
-                                              icon: ValueListenableBuilder<
-                                                AdvancedDrawerValue
-                                              >(
-                                                valueListenable:
-                                                    controller.drawerCtrl,
-                                                builder: (
-                                                  context,
-                                                  value,
-                                                  child,
-                                                ) {
-                                                  return AnimatedSwitcher(
-                                                    duration: const Duration(
-                                                      milliseconds: 250,
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN):
+            NewIntent(),
+        LogicalKeySet(LogicalKeyboardKey.delete): DeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+            SearchIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowDown): NextIntent(),
+        LogicalKeySet(LogicalKeyboardKey.arrowUp): PreviousIntent(),
+        LogicalKeySet(LogicalKeyboardKey.escape): EscapeIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyW):
+            CloseIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS):
+            SaveIntent(),
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyE):
+            EditIntent(),
+      },
+
+      child: Obx(
+        () => Actions(
+          actions:
+              controller.index == 0
+                  ? {}
+                  : <Type, Action<Intent>>{
+                    NewIntent: CallbackAction<NewIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.showForm = true;
+                        controller.aciveController?.values.first.init();
+                      },
+                    ),
+                    CloseIntent: CallbackAction<CloseIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.showForm = false;
+                      },
+                    ),
+                    DeleteIntent: CallbackAction<DeleteIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.delete();
+                      },
+                    ),
+                    SearchIntent: CallbackAction<SearchIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.showSearch =
+                            controller.aciveController?.keys.first.showSearch;
+                        controller.aciveController?.keys.first.searchFn
+                            .requestFocus();
+                      },
+                    ),
+                    NextIntent: CallbackAction<NextIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.next();
+                      },
+                    ),
+                    PreviousIntent: CallbackAction<PreviousIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.previous();
+                      },
+                    ),
+                    EscapeIntent: CallbackAction<EscapeIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.showSearch =
+                            false;
+                      },
+                    ),
+                    SaveIntent: CallbackAction<SaveIntent>(
+                      onInvoke: (intent) {
+                        if (controller.aciveController?.keys.first.showForm !=
+                            true) {
+                          return;
+                        }
+                        controller.aciveController?.values.first.save();
+                      },
+                    ),
+                    EditIntent: CallbackAction<EditIntent>(
+                      onInvoke: (intent) {
+                        if (controller.aciveController?.keys.first.showForm ==
+                            true) {
+                          return;
+                        }
+                        controller.aciveController?.keys.first.detailsController
+                            .edit();
+                      },
+                    ),
+                  },
+
+          child: Focus(
+            autofocus: true,
+            child: Obx(
+              () =>
+                  controller.employee.id == null
+                      ? LoginView()
+                      : Obx(
+                        () =>
+                            !controller.settingsLoaded
+                                ? const Scaffold(
+                                  backgroundColor: Color.fromRGBO(
+                                    0,
+                                    180,
+                                    80,
+                                    1,
+                                  ),
+                                )
+                                : Theme(
+                                  data: controller.theme,
+                                  child: OrientationBuilder(
+                                    builder: (context, o) {
+                                      var w = MediaQuery.of(context).size.width;
+                                      return AdvancedDrawer(
+                                        openRatio:
+                                            Get.width < 600 ? 0.75 : 300 / w,
+                                        rtlOpening:
+                                            Get.locale?.languageCode == "ar",
+                                        controller: controller.drawerCtrl,
+                                        drawer: drawer(),
+                                        backdropColor: controller
+                                            .theme
+                                            .scaffoldBackgroundColor
+                                            .withOpacity(0.95),
+                                        child: Scaffold(
+                                          appBar:
+                                              Platform.isWindows
+                                                  ? null
+                                                  : AppBar(
+                                                    actions: [SyncView()],
+                                                    backgroundColor:
+                                                        controller
+                                                            .theme
+                                                            .scaffoldBackgroundColor,
+                                                    title: Text('tracora'.tr),
+                                                    centerTitle: true,
+                                                    leading: IconButton(
+                                                      icon: ValueListenableBuilder<
+                                                        AdvancedDrawerValue
+                                                      >(
+                                                        valueListenable:
+                                                            controller
+                                                                .drawerCtrl,
+                                                        builder: (
+                                                          context,
+                                                          value,
+                                                          child,
+                                                        ) {
+                                                          return AnimatedSwitcher(
+                                                            duration:
+                                                                const Duration(
+                                                                  milliseconds:
+                                                                      250,
+                                                                ),
+                                                            child:
+                                                                value.visible
+                                                                    ? const Icon(
+                                                                      Icons
+                                                                          .clear,
+                                                                    )
+                                                                    : const Icon(
+                                                                      Icons
+                                                                          .menu,
+                                                                    ),
+                                                          );
+                                                        },
+                                                      ),
+                                                      onPressed:
+                                                          controller
+                                                              .drawerCtrl
+                                                              .showDrawer,
                                                     ),
-                                                    child:
-                                                        value.visible
-                                                            ? const Icon(
-                                                              Icons.clear,
-                                                            )
-                                                            : const Icon(
-                                                              Icons.menu,
-                                                            ),
-                                                  );
-                                                },
-                                              ),
-                                              onPressed:
-                                                  controller
-                                                      .drawerCtrl
-                                                      .showDrawer,
-                                            ),
-                                          ),
-                                  body:
-                                      Platform.isWindows
-                                          ? Column(
-                                            children: [
-                                              TabBar(
-                                                controller: controller.tabCtrl,
-                                                tabs: [
-                                                  Tab(text: 'home'.tr),
-                                                  Tab(text: 'sales'.tr),
-                                                  Tab(text: 'purchases'.tr),
-                                                  Tab(text: 'payments_in'.tr),
-                                                  Tab(text: 'payment_out'.tr),
-                                                  Tab(text: 'customers'.tr),
-                                                  Tab(text: 'suppliers'.tr),
-                                                  Tab(text: 'products'.tr),
-                                                ],
-                                              ),
-                                              Expanded(
-                                                child: TabBarView(
-                                                  controller:
-                                                      controller.tabCtrl,
-                                                  children: [
-                                                    GridView(
-                                                      gridDelegate:
-                                                          SliverGridDelegateWithMaxCrossAxisExtent(
-                                                            maxCrossAxisExtent:
-                                                                250,
-                                                          ),
-                                                      children:
-                                                          pages()
-                                                              .map(
-                                                                (p) =>
-                                                                    menuItem(p),
-                                                              )
-                                                              .toList(),
-                                                    ),
-                                                    SaleView(),
-                                                    PurchaseView(),
-                                                    CustomerPaymentView(),
-                                                    SupplierPaymentView(),
-                                                    CustomerView(),
-                                                    SupplierView(),
-                                                    ProductView(),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          )
-                                          : content(),
+                                                  ),
+                                          body:
+                                              Platform.isWindows
+                                                  ? Row(
+                                                    children: [
+                                                      navigationRail(),
+                                                      Expanded(child: views()),
+                                                    ],
+                                                  )
+                                                  : content(),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-              ),
+                      ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container sideMenu() {
+    return Container(
+      width: 240,
+      padding: EdgeInsets.all(8),
+      child: ListView(
+        children: [
+          menuTile(0, "Dashboard", icon: Icons.dashboard),
+          menuTile(1, "Sales", img: "sales.png"),
+          menuTile(2, "Purchases", img: "purchase.png"),
+          menuTile(3, "Missions", img: "mission.png"),
+          menuTile(4, "Customer payment", img: "money-in.png"),
+          menuTile(5, "Supplier payment", img: "money-out.png"),
+          menuTile(6, "Customers", img: "customer.png"),
+          menuTile(7, "Suppliers", img: "supplier.png"),
+          menuTile(8, "Employees", img: "supplier.png"),
+          menuTile(9, "Fees", img: "reduction.png"),
+          menuTile(10, "Products", img: "inventory.png"),
+        ],
+      ),
+    );
+  }
+
+  Widget menuTile(int index, String label, {String? img, IconData? icon}) {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: ListTile(
+        tileColor:
+            controller.index == index
+                ? controller.theme.colorScheme.surfaceContainerHighest
+                : null,
+        onTap: () {
+          controller.tabCtrl.index = index;
+          controller.index = index;
+        },
+        // dense: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 0),
+        minVerticalPadding: 0,
+        leading:
+            icon == null
+                ? img == null
+                    ? null
+                    : Image.asset("assets/$img", height: 35, width: 35)
+                : Icon(Icons.dashboard),
+        title: Text(label),
+      ),
+    );
+  }
+
+  TabBarView views() {
+    return TabBarView(
+      controller: controller.tabCtrl,
+      children: [
+        dashboard(),
+        StockTransactionView<Sale>(),
+        StockTransactionView<Purchase>(),
+        StockTransactionView<Mission>(),
+        UserPaymentView<Sale>(),
+        UserPaymentView<Purchase>(),
+        UserView<Customer>(),
+        UserView<Supplier>(),
+        UserView<Employee>(),
+        FeesPaymentView(),
+        ProductView(),
+      ],
+    );
+  }
+
+  GridView dashboard() {
+    return GridView(
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 250,
+      ),
+      children: pages().map((p) => menuItem(p)).toList(),
+    );
+  }
+
+  Obx navigationRail() {
+    return Obx(
+      () => NavigationRail(
+        unselectedLabelTextStyle: TextStyle(fontSize: 16),
+        selectedLabelTextStyle: TextStyle(fontSize: 16),
+
+        backgroundColor: controller.theme.scaffoldBackgroundColor,
+        onDestinationSelected: (i) {
+          controller.index = i;
+          controller.tabCtrl.index = i;
+        },
+        trailing: IconButton(
+          onPressed: () => controller.extended = !controller.extended,
+          icon: Icon(Icons.explore),
+        ),
+        extended: controller.extended,
+        selectedIndex: controller.index,
+        leading: FittedBox(child: CircleAvatar(child: Icon(Icons.person))),
+        destinations: [
+          NavigationRailDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            label: Text('dashboard'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/sales.png", height: 28, width: 28),
+            label: Text('sales'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/purchase.png", height: 28, width: 28),
+            label: Text('purchases'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/mission.png", height: 28, width: 28),
+            label: Text('missions'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/money-in.png", height: 28, width: 28),
+            label: Text('customer_payment'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/money-out.png", height: 28, width: 28),
+            label: Text('supplier_payment'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/customer.png", height: 28, width: 28),
+            label: Text('customers'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/supplier.png", height: 28, width: 28),
+            label: Text('suppliers'),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/supplier.png", height: 28, width: 28),
+            label: Text('employees'),
+          ),
+
+          NavigationRailDestination(
+            icon: Image.asset("assets/reduction.png", height: 28, width: 28),
+            label: Text('fees'.tr),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/inventory.png", height: 28, width: 28),
+            label: Text('products'.tr),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/settings.png", height: 28, width: 28),
+            label: Text('settings'.tr),
+          ),
+          NavigationRailDestination(
+            icon: Image.asset("assets/settings.png", height: 28, width: 28),
+            label: Text('missions'.tr),
+          ),
+        ],
+      ),
     );
   }
 
