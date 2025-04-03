@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
 
 import '../modules/Brand/bindings/brand_binding.dart';
@@ -81,7 +79,7 @@ part 'app_routes.dart';
 class AppPages {
   AppPages._();
 
-  static String INITIAL = Platform.isAndroid ? Routes.POS_HOME : Routes.HOME;
+  static const INITIAL = Routes.HOME;
 
   static final routes = [
     GetPage(

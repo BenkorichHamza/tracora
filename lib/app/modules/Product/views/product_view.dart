@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/Product/views/pos_product_view.dart';
 import 'package:tracora/app/modules/ProductDetails/views/product_details_view.dart';
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
 import 'package:tracora/app/modules/ProductForm/views/product_form_view.dart';
@@ -20,29 +21,33 @@ class ProductView extends GetView<ProductController> {
   const ProductView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Column(
-        children: [
-          StockTransactionTabs(
-            title: "products",
-            formTitle:
-                Get.find<ProductFormController>().product.id == null
-                    ? ('new_product'.tr)
-                    : (Get.find<ProductFormController>().product.name ??
-                        Get.find<ProductFormController>().product.nameAr ??
-                        'form'),
-            onCloseForm: () {
-              Get.find<ProductFormController>().init(Product());
-              controller.showForm = false;
-            },
-            onFormTap: () => controller.showForm = true,
-            onHideForm: () => controller.showForm = false,
-            showForm: controller.showForm,
+    return Platform.isAndroid
+        ? PosProductPage()
+        : Obx(
+          () => Column(
+            children: [
+              StockTransactionTabs(
+                title: "products",
+                formTitle:
+                    Get.find<ProductFormController>().product.id == null
+                        ? ('new_product'.tr)
+                        : (Get.find<ProductFormController>().product.name ??
+                            Get.find<ProductFormController>().product.nameAr ??
+                            'form'),
+                onCloseForm: () {
+                  Get.find<ProductFormController>().init(Product());
+                  controller.showForm = false;
+                },
+                onFormTap: () => controller.showForm = true,
+                onHideForm: () => controller.showForm = false,
+                showForm: controller.showForm,
+              ),
+              Expanded(
+                child: controller.showForm ? ProductFormView() : users(),
+              ),
+            ],
           ),
-          Expanded(child: controller.showForm ? ProductFormView() : users()),
-        ],
-      ),
-    );
+        );
   }
 
   Row users() {

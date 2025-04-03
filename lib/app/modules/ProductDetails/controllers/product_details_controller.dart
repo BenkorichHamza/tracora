@@ -38,7 +38,6 @@ class ProductDetailsController extends GetxController
   @override
   void onInit() {
     tabCtrl = TabController(length: 4, vsync: this);
-
     super.onInit();
   }
 

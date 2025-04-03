@@ -11,6 +11,7 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/db_helper.dart';
+import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/employee_model.dart';
@@ -31,6 +32,7 @@ import 'package:tracora/app/modules/FeesPaymentForm/controllers/fees_payment_for
 import 'package:tracora/app/modules/Login/controllers/login_controller.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
+import 'package:tracora/app/modules/ProductForm/views/scanner.dart';
 import 'package:tracora/app/modules/Profile/controllers/profile_controller.dart';
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
@@ -46,6 +48,14 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   final _isDark = Get.isDarkMode.obs;
   bool get isDark => this._isDark.value;
   set isDark(bool value) => this._isDark.value = value;
+
+  final _scanning = false.obs;
+  bool get scanning => this._scanning.value;
+  set scanning(bool value) => this._scanning.value = value;
+
+  final _mission = StockTransaction().obs;
+  StockTransaction get mission => this._mission.value;
+  set mission(StockTransaction value) => this._mission.value = value;
 
   final _pendingWrites = <String, bool>{}.obs;
   Map<String, bool> get pendingWrites => this._pendingWrites.value;
@@ -230,6 +240,11 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
         pref.getString("employee") == null
             ? employee
             : EmployeeModel.fromJson(pref.getString("employee")!);
+    mission =
+        pref.getString("mission") == null
+            ? mission
+            : StockTransaction.fromJson(pref.getString("mission")!);
+
     await Get.updateLocale(Locale(lang));
     isDark = pref.getBool('isDark') ?? isDark;
     Get.changeThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
@@ -491,5 +506,28 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
             );
           });
         });
+  }
+
+  void scanMission() async {
+    try {
+      scanning = true;
+      var r = await Get.to(ScannerPage());
+      if (r is! String) return;
+      var d = await FirebaseFirestore.instance
+          .collection("missions")
+          .doc(r)
+          .get(GetOptions(source: Source.server));
+      if (d.data() == null) return;
+      if (d.data()!.isEmpty) return;
+      mission = StockTransaction.fromMap(d.data()!);
+
+      var pref = await SharedPreferences.getInstance();
+      await pref.setString("mission", mission.toJson());
+      StockTransactionRepository().insert(mission, mission: true, sync: false);
+    } on Exception catch (e) {
+      ErrorHandler.handleError(e);
+    } finally {
+      scanning = false;
+    }
   }
 }

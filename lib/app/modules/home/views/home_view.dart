@@ -15,6 +15,7 @@ import 'package:tracora/app/modules/UserPayment/views/user_payment_view.dart';
 import 'package:tracora/app/modules/Login/views/login_view.dart';
 import 'package:tracora/app/modules/Product/views/product_view.dart';
 import 'package:tracora/app/modules/StockTransaction/views/transaction_view.dart';
+import 'package:tracora/app/modules/home/views/pos_home.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
@@ -143,65 +144,71 @@ class HomeView extends GetView<HomeController> {
                                             .theme
                                             .scaffoldBackgroundColor
                                             .withOpacity(0.95),
-                                        child: Scaffold(
-                                          appBar:
-                                              Platform.isWindows
-                                                  ? null
-                                                  : AppBar(
-                                                    actions: [SyncView()],
-                                                    backgroundColor:
-                                                        controller
-                                                            .theme
-                                                            .scaffoldBackgroundColor,
-                                                    title: Text('tracora'.tr),
-                                                    centerTitle: true,
-                                                    leading: IconButton(
-                                                      icon: ValueListenableBuilder<
-                                                        AdvancedDrawerValue
-                                                      >(
-                                                        valueListenable:
-                                                            controller
-                                                                .drawerCtrl,
-                                                        builder: (
-                                                          context,
-                                                          value,
-                                                          child,
-                                                        ) {
-                                                          return AnimatedSwitcher(
-                                                            duration:
-                                                                const Duration(
-                                                                  milliseconds:
-                                                                      250,
-                                                                ),
-                                                            child:
-                                                                value.visible
-                                                                    ? const Icon(
-                                                                      Icons
-                                                                          .clear,
-                                                                    )
-                                                                    : const Icon(
-                                                                      Icons
-                                                                          .menu,
+                                        child:
+                                            Platform.isAndroid
+                                                ? PosHomePage()
+                                                : Scaffold(
+                                                  appBar:
+                                                      Platform.isWindows
+                                                          ? null
+                                                          : AppBar(
+                                                            actions: [
+                                                              SyncView(),
+                                                            ],
+                                                            backgroundColor:
+                                                                controller
+                                                                    .theme
+                                                                    .scaffoldBackgroundColor,
+                                                            title: Text(
+                                                              'tracora'.tr,
+                                                            ),
+                                                            centerTitle: true,
+                                                            leading: IconButton(
+                                                              icon: ValueListenableBuilder<
+                                                                AdvancedDrawerValue
+                                                              >(
+                                                                valueListenable:
+                                                                    controller
+                                                                        .drawerCtrl,
+                                                                builder: (
+                                                                  context,
+                                                                  value,
+                                                                  child,
+                                                                ) {
+                                                                  return AnimatedSwitcher(
+                                                                    duration: const Duration(
+                                                                      milliseconds:
+                                                                          250,
                                                                     ),
-                                                          );
-                                                        },
-                                                      ),
-                                                      onPressed:
-                                                          controller
-                                                              .drawerCtrl
-                                                              .showDrawer,
-                                                    ),
-                                                  ),
-                                          body:
-                                              Platform.isWindows
-                                                  ? Row(
-                                                    children: [
-                                                      navigationRail(),
-                                                      Expanded(child: views()),
-                                                    ],
-                                                  )
-                                                  : content(),
-                                        ),
+                                                                    child:
+                                                                        value.visible
+                                                                            ? const Icon(
+                                                                              Icons.clear,
+                                                                            )
+                                                                            : const Icon(
+                                                                              Icons.menu,
+                                                                            ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                              onPressed:
+                                                                  controller
+                                                                      .drawerCtrl
+                                                                      .showDrawer,
+                                                            ),
+                                                          ),
+                                                  body:
+                                                      Platform.isWindows
+                                                          ? Row(
+                                                            children: [
+                                                              navigationRail(),
+                                                              Expanded(
+                                                                child: views(),
+                                                              ),
+                                                            ],
+                                                          )
+                                                          : content(),
+                                                ),
                                       );
                                     },
                                   ),
