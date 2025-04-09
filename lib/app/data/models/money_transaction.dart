@@ -6,7 +6,10 @@ class MoneyTransaction {
   final String sql = '''
 CREATE TABLE money_transaction (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    userIds         INTEGER REFERENCES user (ids),
     ids  STRING UNIQUE,
+
+    status      INTEGER,
     missionIds  STRING,
     createdBy  STRING,
     updatedBy  STRING,
@@ -25,7 +28,9 @@ CREATE TABLE money_transaction (
 );
 ''';
   final int? id;
+  final int? status;
   final String? ids;
+  final String? userIds;
   final String? missionIds;
   final String? createdBy;
   final String? updatedBy;
@@ -43,7 +48,9 @@ CREATE TABLE money_transaction (
   final int? deletedAt;
   MoneyTransaction({
     this.id,
+    this.status,
     this.ids,
+    this.userIds,
     this.missionIds,
     this.createdBy,
     this.updatedBy,
@@ -63,7 +70,9 @@ CREATE TABLE money_transaction (
 
   MoneyTransaction copyWith({
     int? id,
+    int? status,
     String? ids,
+    String? userIds,
     String? missionIds,
     String? createdBy,
     String? updatedBy,
@@ -82,7 +91,9 @@ CREATE TABLE money_transaction (
   }) {
     return MoneyTransaction(
       id: id ?? this.id,
+      status: status ?? this.status,
       ids: ids ?? this.ids,
+      userIds: userIds ?? this.userIds,
       missionIds: missionIds ?? this.missionIds,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -107,8 +118,14 @@ CREATE TABLE money_transaction (
     if (id != null) {
       result.addAll({'id': id});
     }
+    if (status != null) {
+      result.addAll({'status': status});
+    }
     if (ids != null) {
       result.addAll({'ids': ids});
+    }
+    if (userIds != null) {
+      result.addAll({'userIds': userIds});
     }
     if (missionIds != null) {
       result.addAll({'missionIds': missionIds});
@@ -165,11 +182,17 @@ CREATE TABLE money_transaction (
     if (id != null) {
       result.addAll({'id': id});
     }
+    if (status != null) {
+      result.addAll({'status': status});
+    }
     if (ids != null) {
       result.addAll({'ids': ids});
     }
+    if (user?.ids != null) {
+      result.addAll({'userIds': user!.ids});
+    }
     if (missionIds != null) {
-      result.addAll({'missionIds': ids});
+      result.addAll({'missionIds': missionIds});
     }
     if (credit != null) {
       result.addAll({'credit': credit});
@@ -192,6 +215,17 @@ CREATE TABLE money_transaction (
     if (dateTime != null) {
       result.addAll({'dateTime': dateTime});
     }
+
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
     }
@@ -208,7 +242,9 @@ CREATE TABLE money_transaction (
   factory MoneyTransaction.fromMap(Map<String, dynamic> map) {
     return MoneyTransaction(
       id: map['id']?.toInt(),
+      status: map['status']?.toInt(),
       ids: map['ids'],
+      userIds: map['userIds'],
       missionIds: map['missionIds'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
@@ -235,7 +271,7 @@ CREATE TABLE money_transaction (
 
   @override
   String toString() {
-    return 'MoneyTransaction(id: $id, ids: $ids, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'MoneyTransaction(id: $id, status: $status, ids: $ids, userIds: $userIds, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -244,7 +280,9 @@ CREATE TABLE money_transaction (
 
     return other is MoneyTransaction &&
         other.id == id &&
+        other.status == status &&
         other.ids == ids &&
+        other.userIds == userIds &&
         other.missionIds == missionIds &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
@@ -265,7 +303,9 @@ CREATE TABLE money_transaction (
   @override
   int get hashCode {
     return id.hashCode ^
+        status.hashCode ^
         ids.hashCode ^
+        userIds.hashCode ^
         missionIds.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^

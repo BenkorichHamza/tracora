@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:get/get.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/modules/FeesPayment/views/fees_payment_view.dart';
 import 'package:tracora/app/modules/Setting/views/setting_view.dart';
+import 'package:tracora/app/modules/Statistic/views/statistic_view.dart';
 import 'package:tracora/app/modules/User/views/user_view.dart';
 import 'package:tracora/app/modules/UserPayment/views/user_payment_view.dart';
 import 'package:tracora/app/modules/Login/views/login_view.dart';
@@ -20,6 +22,7 @@ import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tracora/app/widgets/toast_managet.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -148,55 +151,6 @@ class HomeView extends GetView<HomeController> {
                                             Platform.isAndroid
                                                 ? PosHomePage()
                                                 : Scaffold(
-                                                  appBar:
-                                                      Platform.isWindows
-                                                          ? null
-                                                          : AppBar(
-                                                            actions: [
-                                                              SyncView(),
-                                                            ],
-                                                            backgroundColor:
-                                                                controller
-                                                                    .theme
-                                                                    .scaffoldBackgroundColor,
-                                                            title: Text(
-                                                              'tracora'.tr,
-                                                            ),
-                                                            centerTitle: true,
-                                                            leading: IconButton(
-                                                              icon: ValueListenableBuilder<
-                                                                AdvancedDrawerValue
-                                                              >(
-                                                                valueListenable:
-                                                                    controller
-                                                                        .drawerCtrl,
-                                                                builder: (
-                                                                  context,
-                                                                  value,
-                                                                  child,
-                                                                ) {
-                                                                  return AnimatedSwitcher(
-                                                                    duration: const Duration(
-                                                                      milliseconds:
-                                                                          250,
-                                                                    ),
-                                                                    child:
-                                                                        value.visible
-                                                                            ? const Icon(
-                                                                              Icons.clear,
-                                                                            )
-                                                                            : const Icon(
-                                                                              Icons.menu,
-                                                                            ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                              onPressed:
-                                                                  controller
-                                                                      .drawerCtrl
-                                                                      .showDrawer,
-                                                            ),
-                                                          ),
                                                   body:
                                                       Platform.isWindows
                                                           ? Row(
@@ -274,7 +228,7 @@ class HomeView extends GetView<HomeController> {
     return TabBarView(
       controller: controller.tabCtrl,
       children: [
-        dashboard(),
+        StatisticView(),
         StockTransactionView<Sale>(),
         StockTransactionView<Purchase>(),
         StockTransactionView<Mission>(),

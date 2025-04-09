@@ -38,9 +38,18 @@ class MoneyTransactionTile extends StatelessWidget {
       leading: item.user?.circleAvatar(),
       title: Text(item.user?.firstName ?? ''),
       subtitle: Text((item.dateTime ?? item.createdAt).formatDateTime() ?? ''),
-      trailing: Text(
-        (item.amount ?? 0).formatPrice() ?? '',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            (item.amount ?? 0).formatPrice() ?? '',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: item.employee?.circleAvatar(radius: 15) ?? SizedBox(),
+          ),
+        ],
       ),
     );
   }

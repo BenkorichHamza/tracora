@@ -9,7 +9,6 @@ import 'package:tracora/app/modules/CustomerDetails/bindings/user_details_bindin
 import 'package:tracora/app/modules/CustomerDetails/views/user_details_view.dart';
 import 'package:tracora/app/modules/UserForm/controllers/user_form_controller.dart';
 import 'package:tracora/app/modules/UserForm/views/user_form_view.dart';
-import 'package:tracora/app/modules/PurchaseForm/controllers/purchase_form_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
@@ -139,7 +138,6 @@ class UserView<T> extends GetView<UserController<T>> {
                         init: controller,
                         initState: (_) {},
                         builder: (c) {
-                          print(item.id);
                           return UserTile(
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,

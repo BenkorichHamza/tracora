@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -5,6 +8,7 @@ import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/helper/delete_dialog.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
@@ -48,6 +52,15 @@ class StockTransactionDetailsController<T> extends GetxController
   set missionSales(List<StockTransaction> value) =>
       this._missionSales.value = value;
 
+  final _missionPayments = <MoneyTransaction>[].obs;
+  List<MoneyTransaction> get missionPayments => this._missionPayments.value;
+  set missionPayments(List<MoneyTransaction> value) =>
+      this._missionPayments.value = value;
+
+  final _sync = false.obs;
+  get sync => this._sync.value;
+  set sync(value) => this._sync.value = value;
+
   late TabController tabCtrl;
 
   String get userType =>
@@ -69,9 +82,12 @@ class StockTransactionDetailsController<T> extends GetxController
         previousValue + (element.qte ?? 0) * (element.price ?? 0),
   );
 
+  late StreamSubscription listener;
+  late StreamSubscription paymentListener;
+
   @override
   void onInit() {
-    tabCtrl = TabController(length: 3, vsync: this);
+    tabCtrl = TabController(length: 4, vsync: this);
     if (Get.arguments?['sale'] is StockTransaction) {
       stockTransaction = Get.arguments?["sale"] ?? stockTransaction;
       productTransactions =
@@ -82,7 +98,9 @@ class StockTransactionDetailsController<T> extends GetxController
     }
     getProductTransactions();
     if (T == Mission) {
-      getMissionStockTransactions();
+      // getMissionStockTransactions();
+      // listenToSales();
+      // listenToPayments();
     }
     super.onInit();
   }
@@ -99,7 +117,7 @@ class StockTransactionDetailsController<T> extends GetxController
 
   getProductTransactions() async {
     try {
-      loading = true;
+      // loading = true;
       productTransactions = await repository.getProductTransactions(
         stockTransaction.id ?? 0,
       );
@@ -133,14 +151,79 @@ class StockTransactionDetailsController<T> extends GetxController
 
   getMissionStockTransactions() async {
     try {
-      var r = await StockTransactionRepository().getAllTransactionsForEmployee(
-        id: stockTransaction.employee?.id ?? 0,
+      var r = await StockTransactionRepository().getMissionStockTransactions(
+        ids: stockTransaction.ids ?? "",
       );
       missionSales = r;
       getProductTransactions();
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
     }
+  }
+
+  getMissionMoneyTransactions() async {
+    try {
+      var r = await MoneyTransactionRepository().getMissionMoneyTransactions(
+        ids: stockTransaction.ids ?? "",
+      );
+      missionPayments = r;
+    } on Exception catch (e) {
+      ErrorHandler.handleError(e);
+    }
+  }
+
+  listenToSSales() async {
+    try {
+      await listener.cancel();
+    } catch (e) {}
+    listener = FirebaseFirestore.instance
+        .collection("missions")
+        .doc(stockTransaction.ids)
+        .collection("stockTransactions")
+        .snapshots()
+        .listen((data) async {
+          if (data.docChanges.isEmpty) return;
+          var sales =
+              data.docs.map((d) => StockTransaction.fromMap(d.data())).toList();
+          await Future.forEach(sales, (s) async {
+            if (s.type == "sale") {
+              await StockTransactionRepository<Sale>().insert(
+                s,
+                sync: s.id == null,
+                mission: false,
+              );
+            } else {
+              await StockTransactionRepository<Purchase>().insert(
+                s,
+                sync: s.id == null,
+                mission: false,
+              );
+            }
+          });
+          getMissionStockTransactions();
+        });
+  }
+
+  listenToPayments() async {
+    try {
+      await paymentListener.cancel();
+    } catch (e) {}
+    paymentListener = FirebaseFirestore.instance
+        .collection("missions")
+        .doc(stockTransaction.ids)
+        .collection("moneyTransactions")
+        .snapshots()
+        .listen((data) async {
+          var sales =
+              data.docs.map((d) => MoneyTransaction.fromMap(d.data())).toList();
+          await Future.forEach(sales, (s) async {
+            await MoneyTransactionRepository().insertMoneyTransaction(
+              s,
+              sync: s.id == null,
+            );
+          });
+          getMissionMoneyTransactions();
+        });
   }
 
   edit() {
@@ -150,5 +233,20 @@ class StockTransactionDetailsController<T> extends GetxController
     Get.find<StockTransactionController<T>>().showForm = true;
   }
 
-  void print() {}
+  late StreamSubscription syncListener;
+  listenToSync() {
+    sync = false;
+    try {
+      syncListener.cancel();
+    } catch (e) {}
+    syncListener = FirebaseFirestore.instance
+        .collection("missions")
+        .doc(stockTransaction.ids)
+        .snapshots(includeMetadataChanges: true)
+        .listen((event) {
+          sync = !event.metadata.hasPendingWrites;
+        });
+  }
+
+  void printTicket() {}
 }

@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
+import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/CustomerDetails/views/employee_detais.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
+import 'package:tracora/app/modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
+import 'package:tracora/app/modules/UserPayment/controllers/user_payment_controller.dart';
+import 'package:tracora/app/modules/UserPaymentDetails/views/user_payment_details_view.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
@@ -202,7 +207,31 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                   itemBuilder: (c, i) {
                     var moneyTransaction = controller.moneyTransactions[i];
                     return MoneyTransactionTile(
-                      onTap: (t) {},
+                      onTap: (t) {
+                        showDialog(
+                          context: Get.context!,
+
+                          builder: (c) {
+                            Get.find<UserPaymentController<Sale>>().toDetails(
+                              t,
+                            );
+                            return Center(
+                              child: Dialog(
+                                backgroundColor: Colors.transparent,
+                                clipBehavior: Clip.antiAlias,
+                                elevation: 10,
+                                child: Container(
+                                  constraints: BoxConstraints(maxWidth: 450),
+
+                                  child: Center(
+                                    child: UserPaymentDetailsView<Sale>(),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                       item: moneyTransaction,
                       highest: i.isEven,
                       selected: false,
@@ -224,7 +253,30 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                 itemBuilder: (c, i) {
                   var transaction = controller.stockTransactions[i];
                   return StockTransactionTile(
-                    onTap: (t) {},
+                    onTap: (t) {
+                      showDialog(
+                        context: Get.context!,
+
+                        builder: (c) {
+                          Get.find<StockTransactionController<Sale>>()
+                              .toDetails(transaction);
+                          return Center(
+                            child: Dialog(
+                              backgroundColor: Colors.transparent,
+                              clipBehavior: Clip.antiAlias,
+                              elevation: 10,
+                              child: Container(
+                                constraints: BoxConstraints(maxWidth: 450),
+
+                                child: Center(
+                                  child: StockTransactionDetailsView<Sale>(),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
                     item: transaction,
                     highest: i.isEven,
                     selected: false,

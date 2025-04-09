@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 class UserModel {
@@ -56,7 +57,6 @@ CREATE TABLE user (
   final int? createdAt;
   final int? deletedAt;
   final String? code;
-  final bool? deleted;
   final String? nif;
   final String? nis;
   final String? nin;
@@ -85,7 +85,6 @@ CREATE TABLE user (
     this.createdAt,
     this.deletedAt,
     this.code,
-    this.deleted,
     this.nif,
     this.nis,
     this.nin,
@@ -117,7 +116,6 @@ CREATE TABLE user (
     int? createdAt,
     int? deletedAt,
     String? code,
-    bool? deleted,
     String? nif,
     String? nis,
     String? nin,
@@ -147,7 +145,6 @@ CREATE TABLE user (
       createdAt: createdAt ?? this.createdAt,
       deletedAt: deletedAt ?? this.deletedAt,
       code: code ?? this.code,
-      deleted: deleted ?? this.deleted,
       nif: nif ?? this.nif,
       nis: nis ?? this.nis,
       nin: nin ?? this.nin,
@@ -225,9 +222,6 @@ CREATE TABLE user (
     if (code != null) {
       result.addAll({'code': code});
     }
-    if (deleted != null) {
-      result.addAll({'deleted': deleted});
-    }
     if (nif != null) {
       result.addAll({'nif': nif});
     }
@@ -271,7 +265,6 @@ CREATE TABLE user (
       createdAt: map['createdAt']?.toInt(),
       deletedAt: map['deletedAt']?.toInt(),
       code: map['code'],
-      deleted: map['deleted'],
       nif: map['nif'],
       nis: map['nis'],
       nin: map['nin'],
@@ -287,7 +280,7 @@ CREATE TABLE user (
 
   @override
   String toString() {
-    return 'UserModel(id: $id, remoteId: $remoteId, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, type: $type, data: $data, firstName: $firstName, lastName: $lastName, address: $address, phone: $phone, fax: $fax, fix: $fix, email: $email, companyName: $companyName, updatedAt: $updatedAt, due: $due, payment: $payment, createdAt: $createdAt, deletedAt: $deletedAt, code: $code, deleted: $deleted, nif: $nif, nis: $nis, nin: $nin, password: $password, img: $img)';
+    return 'UserModel(id: $id, remoteId: $remoteId, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, type: $type, data: $data, firstName: $firstName, lastName: $lastName, address: $address, phone: $phone, fax: $fax, fix: $fix, email: $email, companyName: $companyName, updatedAt: $updatedAt, due: $due, payment: $payment, createdAt: $createdAt, deletedAt: $deletedAt, code: $code, nif: $nif, nis: $nis, nin: $nin, password: $password, img: $img)';
   }
 
   @override
@@ -317,7 +310,6 @@ CREATE TABLE user (
         other.createdAt == createdAt &&
         other.deletedAt == deletedAt &&
         other.code == code &&
-        other.deleted == deleted &&
         other.nif == nif &&
         other.nis == nis &&
         other.nin == nin &&
@@ -349,7 +341,6 @@ CREATE TABLE user (
         createdAt.hashCode ^
         deletedAt.hashCode ^
         code.hashCode ^
-        deleted.hashCode ^
         nif.hashCode ^
         nis.hashCode ^
         nin.hashCode ^

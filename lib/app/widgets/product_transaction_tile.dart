@@ -14,20 +14,19 @@ class ProductTransactionTile<T> extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: ListTile(
+        dense: true,
         leading: product?.leading(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 4),
+        contentPadding: EdgeInsets.symmetric(horizontal: 0),
         title: Text(product?.translateName ?? ''),
         trailing: SizedBox(
-          width: 180,
+          width: 150,
           child: Row(
             children: [
               Expanded(
                 child: Text(
-                  'qte'.tr +
-                      ' ' +
-                      (productTransaction.qte.formatNumber() ?? '0'),
+                  (productTransaction.qte.formatNumber() ?? '0'),
                   textAlign: TextAlign.end,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
 
@@ -36,7 +35,7 @@ class ProductTransactionTile<T> extends StatelessWidget {
                   (productTransaction.total.formatPrice() ?? '0'),
                   textAlign: TextAlign.end,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
                   ),

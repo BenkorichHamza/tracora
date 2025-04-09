@@ -10,6 +10,7 @@ import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_control
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
+import 'package:tracora/app/widgets/employee_selector.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 import 'package:tracora/app/widgets/fee_transaction_tile.dart';
 import 'package:tracora/app/widgets/money_transaction_tile.dart';
@@ -120,7 +121,18 @@ class FeesPaymentView extends GetView<FeesPaymentController> {
             color: Colors.white,
             icon: Icon(controller.showSearch ? Icons.close : Icons.search),
           ),
-          SyncView(),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: EmployeeSelector(
+                onSelect: (v) {
+                  controller.employee = v;
+                  controller.getAll();
+                },
+              ),
+            ),
+          ),
         ],
       ),
 
@@ -138,7 +150,6 @@ class FeesPaymentView extends GetView<FeesPaymentController> {
                         init: controller,
                         initState: (_) {},
                         builder: (c) {
-                          print(item.id);
                           return FeeTransactionTile(
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,

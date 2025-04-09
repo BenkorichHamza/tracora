@@ -4,10 +4,12 @@ import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/widgets/product_transaction_tile.dart';
 import 'package:tracora/app/widgets/qr_code.dart';
+import 'package:tracora/app/widgets/user_tile.dart';
 
 import '../controllers/stock_transaction_details_controller.dart';
 
@@ -181,6 +183,14 @@ class StockTransactionDetailsView<T>
                                     ),
                                   ),
                                 ),
+                                UserTile(
+                                  onTap: (v) {},
+                                  item:
+                                      controller.stockTransaction.employee ??
+                                      UserModel(),
+                                  highest: false,
+                                  selected: false,
+                                ),
 
                                 Row(
                                   children: [
@@ -203,7 +213,7 @@ class StockTransactionDetailsView<T>
                                           ),
                                           foregroundColor: Colors.white,
                                         ),
-                                        onPressed: controller.print,
+                                        onPressed: controller.printTicket,
                                         label: Text('print_ticket'.tr),
                                       ),
                                     ),

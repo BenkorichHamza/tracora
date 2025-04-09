@@ -84,7 +84,7 @@ class ProductRepository {
     SELECT pt.* 
     FROM product_transaction pt
     INNER JOIN stock_transaction  st on st.id=pt.transaction_id
-    WHERE pt.product_id = $productId
+    WHERE pt.product_id = $productId AND st.type<>"mission"
     ORDER BY st.dateTime DESC 
     LIMIT 100
   ''');
@@ -111,12 +111,7 @@ class ProductRepository {
     final db = await _dbHelper.db;
     var userIds = FirebaseAuth.instance.currentUser?.uid;
     if (product.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("products")
-              .doc();
+      var doc = FirebaseFirestore.instance.collection("products").doc();
       product = product.copyWith(ids: doc.id);
     }
     await Future.forEach(product.categories ?? <CategoryModel>[], (c) async {

@@ -4,14 +4,18 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/views/mission_details_view.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/views/transaction_form_view.dart';
+import 'package:tracora/app/modules/User/controllers/user_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
+import 'package:tracora/app/widgets/employee_selector.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 import 'package:tracora/app/widgets/stock_transaction_tabs.dart';
 import 'package:tracora/app/widgets/stock_transaction_tile.dart';
@@ -128,7 +132,18 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
             color: Colors.white,
             icon: Icon(controller.showSearch ? Icons.close : Icons.search),
           ),
-          SyncView(),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: EmployeeSelector(
+                onSelect: (v) {
+                  controller.employee = v;
+                  controller.getAll();
+                },
+              ),
+            ),
+          ),
         ],
       ),
 
@@ -146,7 +161,6 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                         init: controller,
                         initState: (_) {},
                         builder: (c) {
-                          print(item.id);
                           return StockTransactionTile(
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,

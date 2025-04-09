@@ -58,6 +58,11 @@ dependencies:
   image_picker:
   path_provider:
   mobile_scanner:
+  overlay_support:
+  connectivity_plus:
+  internet_connection_checker:
+  excel: ^2.0.6
+  file_picker: ^6.1.1  # To pick files from the device
 
   flutter:
     sdk: flutter

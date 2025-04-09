@@ -37,9 +37,24 @@ class StockTransactionTile extends StatelessWidget {
       leading: item.user?.circleAvatar(),
       title: Text(item.user?.firstName ?? ''),
       subtitle: Text((item.dateTime ?? item.createdAt).formatDateTime() ?? ''),
-      trailing: Text(
-        (item.topay ?? 0).formatPrice() ?? '',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            (item.topay ?? 0).formatPrice() ?? '',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child:
+                item.employee?.circleAvatar(radius: 15) ??
+                CircleAvatar(
+                  radius: 15,
+                  backgroundColor: Colors.deepPurple,
+                  child: Icon(Icons.admin_panel_settings),
+                ),
+          ),
+        ],
       ),
     );
   }

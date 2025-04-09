@@ -156,8 +156,6 @@ WHERE u.deletedAt IS NULL
       whereArgs: [user.id ?? 0],
     );
     FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
         .collection("users")
         .doc(user.ids)
         .set(user.toMap(), SetOptions(merge: true));

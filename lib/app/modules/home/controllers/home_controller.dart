@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/core/error_handler.dart';
@@ -24,9 +27,8 @@ import 'package:tracora/app/data/repositories/category_repository.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
-import 'package:tracora/app/data/repositories/purchase_repository.dart';
 import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
-import 'package:tracora/app/data/repositories/supplier_repository.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_controller.dart';
 import 'package:tracora/app/modules/FeesPaymentForm/controllers/fees_payment_form_controller.dart';
 import 'package:tracora/app/modules/Login/controllers/login_controller.dart';
@@ -34,13 +36,16 @@ import 'package:tracora/app/modules/Product/controllers/product_controller.dart'
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
 import 'package:tracora/app/modules/ProductForm/views/scanner.dart';
 import 'package:tracora/app/modules/Profile/controllers/profile_controller.dart';
+import 'package:tracora/app/modules/Statistic/controllers/statistic_controller.dart';
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
+import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
 import 'package:tracora/app/modules/User/controllers/user_controller.dart';
 import 'package:tracora/app/modules/UserForm/controllers/user_form_controller.dart';
 import 'package:tracora/app/modules/UserPayment/controllers/user_payment_controller.dart';
 import 'package:tracora/app/modules/UserPaymentForm/controllers/user_payment_form_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
+import 'package:tracora/app/widgets/toast_managet.dart';
 
 class HomeController extends GetxController with GetTickerProviderStateMixin {
   //TODO: Implement HomeController
@@ -149,6 +154,10 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     readSettings();
     // listen();
     listenToAuth();
+    listenToMissions();
+    listenToMissionPayments();
+    listenToUsers();
+    setupNetworkListener();
   }
 
   @override
@@ -432,7 +441,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(data.docs, (element) async {
             element.data()["remoteId"] = element.data()["id"];
             var model = UserModel.fromMap(element.data()!);
-            await SupplierRepository().insertSupplier(model, sync: false);
+            await UserRepository().insertUser(model, sync: false);
           });
         });
   }
@@ -476,7 +485,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(data.docs, (element) async {
             element.data()["remoteId"] = element.data()["id"];
             var model = StockTransaction.fromMap(element.data()!);
-            await PurchaseRepository().insertPurchase(model, sync: false);
+            await StockTransactionRepository().insert(model, sync: false);
           });
         });
   }
@@ -529,5 +538,227 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     } finally {
       scanning = false;
     }
+  }
+
+  late StreamSubscription missionListener;
+
+  listenToMissions() async {
+    try {
+      await missionListener.cancel();
+    } catch (e) {}
+    missionListener = FirebaseFirestore.instance
+        .collectionGroup("stockTransactions")
+        .where(
+          "updatedBy",
+          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
+        )
+        .snapshots(includeMetadataChanges: true)
+        .listen((data) async {
+          if (data.docChanges.isEmpty) return;
+          if (data.metadata.isFromCache) return;
+          var sales =
+              data.docChanges
+                  .where((e) => e.type != DocumentChangeType.removed)
+                  .map((d) => StockTransaction.fromMap(d.doc.data() ?? {}))
+                  .toList();
+          sales = sales.where((e) => (e.topay ?? 0) > 0).toList();
+          print(sales.length);
+          await Future.forEach(sales, (s) async {
+            if (s.type == "sale") {
+              await StockTransactionRepository<Sale>().insert(
+                s,
+                sync:
+                    s.id == null ||
+                    s.updatedBy !=
+                        (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+                mission: false,
+              );
+            } else {
+              await StockTransactionRepository<Purchase>().insert(
+                s,
+                sync:
+                    s.id == null ||
+                    s.updatedBy !=
+                        (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+                mission: false,
+              );
+            }
+            if (s.id == null) {
+              showBottomRightNotification(
+                "new sale created ${s.topay.formatPrice()}",
+              );
+            }
+          });
+          Get.find<StockTransactionController<Sale>>().getAll();
+
+          Get.find<StockTransactionDetailsController<Mission>>()
+              .getMissionStockTransactions();
+          Get.find<StatisticController>().loadStatistics();
+        });
+  }
+
+  late StreamSubscription missionPaymentListener;
+
+  listenToMissionPayments() async {
+    try {
+      await missionPaymentListener.cancel();
+    } catch (e) {}
+    missionPaymentListener = FirebaseFirestore.instance
+        .collectionGroup("moneyTransactions")
+        .where(
+          "updatedBy",
+          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
+        )
+        .snapshots(includeMetadataChanges: true)
+        .listen((data) async {
+          if (data.docChanges.isEmpty) return;
+          if (data.metadata.isFromCache) return;
+          var sales =
+              data.docChanges
+                  .where((e) => e.type != DocumentChangeType.removed)
+                  .map((d) => MoneyTransaction.fromMap(d.doc.data() ?? {}))
+                  .toList();
+          sales = sales.where((e) => (e.amount ?? 0) > 0).toList();
+          print(sales.length);
+          await Future.forEach(sales, (s) async {
+            if (s.type == "sale") {
+              await MoneyTransactionRepository().insertMoneyTransaction(
+                s,
+                sync:
+                    s.updatedBy !=
+                    (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+              );
+              Get.find<UserPaymentController<Sale>>().getAll();
+            } else if (s.type == "purchase") {
+              await MoneyTransactionRepository().insertMoneyTransaction(
+                s,
+                sync:
+                    s.updatedBy !=
+                    (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+              );
+            } else {
+              await MoneyTransactionRepository().insertMoneyTransaction(
+                s,
+                sync:
+                    s.updatedBy !=
+                    (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+              );
+            }
+            if (s.id == null) {
+              showBottomRightNotification(
+                "payment created ${s.amount.formatPrice()}",
+              );
+            }
+          });
+          Get.find<FeesPaymentController>().getAll();
+          Get.find<StockTransactionDetailsController<Mission>>()
+              .getMissionMoneyTransactions();
+          Get.find<StatisticController>().loadStatistics();
+        });
+  }
+
+  late StreamSubscription userListener;
+
+  listenToUsers() async {
+    try {
+      await userListener.cancel();
+    } catch (e) {}
+    userListener = FirebaseFirestore.instance
+        .collectionGroup("users")
+        .where(
+          "updatedBy",
+          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
+        )
+        .snapshots(includeMetadataChanges: true)
+        .listen((data) async {
+          if (data.docChanges.isEmpty) return;
+          if (data.metadata.isFromCache) return;
+          var sales =
+              data.docChanges
+                  .where((e) => e.type != DocumentChangeType.removed)
+                  .map((d) => UserModel.fromMap(d.doc.data() ?? {}))
+                  .toList();
+          await Future.forEach(sales, (s) async {
+            if (s.type == "customer") {
+              await UserRepository<Customer>().insertUser(
+                s,
+                sync:
+                    s.updatedBy !=
+                    (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+              );
+            } else if (s.type == "supplier") {
+              await UserRepository<Supplier>().insertUser(
+                s,
+                sync:
+                    s.updatedBy !=
+                    (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
+              );
+            }
+            if (s.id == null) {
+              showBottomRightNotification("new user created ${s.firstName}");
+            } else {
+              showBottomRightNotification("user updated ${s.firstName}");
+            }
+          });
+          Get.find<UserController<Customer>>().getAll();
+          Get.find<UserController<Supplier>>().getAll();
+
+          Get.find<StockTransactionDetailsController<Mission>>()
+              .getMissionMoneyTransactions();
+          Get.find<StatisticController>().loadStatistics();
+        });
+  }
+
+  void showBottomRightNotification(String content) {
+    showOverlayNotification(
+      (context) {
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: Material(
+            color: Colors.transparent,
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              color: Colors.black87,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notifications, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text(content, style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      duration: Duration(seconds: 4),
+
+      position:
+          NotificationPosition
+              .bottom, // required but ignored when using Positioned
+    );
+  }
+
+  void setupNetworkListener() {
+    InternetConnectionChecker.createInstance().onStatusChange.listen((
+      status,
+    ) async {
+      if (status == InternetConnectionStatus.connected) {
+        showBottomRightNotification("internet restored");
+        listenToMissionPayments();
+        listenToMissions();
+        listenToUsers();
+      } else if (status == InternetConnectionStatus.slow) {
+        showBottomRightNotification("Slow connection");
+      } else {
+        showBottomRightNotification("working offline");
+      }
+    });
   }
 }

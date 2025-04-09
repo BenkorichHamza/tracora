@@ -121,7 +121,11 @@ class ProductView extends GetView<ProductController> {
             color: Colors.white,
             icon: Icon(controller.showSearch ? Icons.close : Icons.search),
           ),
-          SyncView(),
+          TextButton.icon(
+            onPressed: controller.importExcelFile,
+            label: Text('excel_import'.tr),
+            icon: Icon(Icons.import_export),
+          ),
         ],
       ),
 

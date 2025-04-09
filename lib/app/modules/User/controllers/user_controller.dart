@@ -80,6 +80,8 @@ class UserController<T> extends GetxController {
     Get.find<UserDetailsController<T>>().getMoneyTransactions();
     Get.find<UserDetailsController<T>>().getProductTransactions();
     Get.find<UserDetailsController<T>>().getStockTransactions();
+    Get.find<UserDetailsController<T>>().getStockTransactionsByEmployee();
+    Get.find<UserDetailsController<T>>().getEmployeeMoneyTransactions();
   }
 
   late StreamSubscription listener;

@@ -18,6 +18,10 @@ class StockTransactionController<T> extends GetxController
   set transactions(List<StockTransaction> value) =>
       this._stockTransactions.value = value;
 
+  final _employee = UserModel().obs;
+  UserModel get employee => this._employee.value;
+  set employee(UserModel value) => this._employee.value = value;
+
   final _showForm = false.obs;
   bool get showForm => this._showForm.value;
   set showForm(bool value) => this._showForm.value = value;
@@ -99,7 +103,10 @@ class StockTransactionController<T> extends GetxController
   getAll() async {
     try {
       loading = true;
-      transactions = await repository.getAllTransactions(search: search.text);
+      transactions = await repository.getAllTransactions(
+        search: search.text,
+        employee: employee,
+      );
     } catch (e) {
       ErrorHandler.handleError(e);
     } finally {
@@ -140,5 +147,13 @@ class StockTransactionController<T> extends GetxController
     Get.find<StockTransactionDetailsController<T>>().getProductTransactions();
     Get.find<StockTransactionDetailsController<T>>()
         .getMissionStockTransactions();
+
+    Get.find<StockTransactionDetailsController<T>>()
+        .getMissionMoneyTransactions();
+    if (T == Mission) {
+      // Get.find<StockTransactionDetailsController<T>>().listenToSales();
+      // Get.find<StockTransactionDetailsController<T>>().listenToPayments();
+      Get.find<StockTransactionDetailsController<T>>().listenToSync();
+    }
   }
 }

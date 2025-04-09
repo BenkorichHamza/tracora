@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:tracora/app/modules/User/bindings/user_binding.dart';
+import 'package:tracora/app/modules/User/views/user_view.dart';
 
 import '../modules/Brand/bindings/brand_binding.dart';
 import '../modules/Brand/views/brand_view.dart';
@@ -20,7 +22,6 @@ import '../modules/FeesPaymentForm/bindings/fees_payment_form_binding.dart';
 import '../modules/FeesPaymentForm/views/fees_payment_form_view.dart';
 import '../modules/Login/bindings/login_binding.dart';
 import '../modules/Login/views/login_view.dart';
-import '../modules/MissionForm/views/mission_form_view.dart';
 import '../modules/PosHome/bindings/pos_home_binding.dart';
 import '../modules/PosHome/views/pos_home_view.dart';
 import '../modules/Product/bindings/product_binding.dart';
@@ -31,12 +32,6 @@ import '../modules/ProductForm/bindings/product_form_binding.dart';
 import '../modules/ProductForm/views/product_form_view.dart';
 import '../modules/Profile/bindings/profile_binding.dart';
 import '../modules/Profile/views/profile_view.dart';
-import '../modules/Purchase/bindings/purchase_binding.dart';
-import '../modules/Purchase/views/purchase_view.dart';
-import '../modules/PurchaseDetails/bindings/purchase_details_binding.dart';
-import '../modules/PurchaseDetails/views/purchase_details_view.dart';
-import '../modules/PurchaseForm/bindings/purchase_form_binding.dart';
-import '../modules/PurchaseForm/views/purchase_form_view.dart';
 import '../modules/Setting/bindings/setting_binding.dart';
 import '../modules/Setting/views/setting_view.dart';
 import '../modules/Statistic/bindings/statistic_binding.dart';
@@ -45,26 +40,6 @@ import '../modules/StockTransaction/bindings/transaction_binding.dart';
 import '../modules/StockTransaction/views/transaction_view.dart';
 import '../modules/StockTransactionDetails/bindings/sale_details_binding.dart';
 import '../modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
-import '../modules/Supplier/bindings/supplier_binding.dart';
-import '../modules/Supplier/views/supplier_view.dart';
-import '../modules/SupplierDetails/bindings/supplier_details_binding.dart';
-import '../modules/SupplierDetails/views/supplier_details_view.dart';
-import '../modules/SupplierForm/bindings/supplier_form_binding.dart';
-import '../modules/SupplierForm/views/supplier_form_view.dart';
-import '../modules/SupplierPayment/bindings/supplier_payment_binding.dart';
-import '../modules/SupplierPayment/views/supplier_payment_view.dart';
-import '../modules/SupplierPaymentDetails/bindings/supplier_payment_details_binding.dart';
-import '../modules/SupplierPaymentDetails/views/supplier_payment_details_view.dart';
-import '../modules/SupplierPaymentForm/bindings/supplier_payment_form_binding.dart';
-import '../modules/SupplierPaymentForm/views/supplier_payment_form_view.dart';
-import '../modules/TransactionForm/bindings/transaction_form_binding.dart';
-import '../modules/TransactionForm/views/transaction_form_view.dart';
-import '../modules/User/bindings/user_binding.dart';
-import '../modules/User/bindings/user_binding.dart';
-import '../modules/User/views/user_view.dart';
-import '../modules/User/views/user_view.dart';
-import '../modules/UserForm/bindings/user_form_binding.dart';
-import '../modules/UserForm/views/user_form_view.dart';
 import '../modules/UserPayment/bindings/user_payment_binding.dart';
 import '../modules/UserPayment/views/user_payment_view.dart';
 import '../modules/UserPaymentDetails/bindings/user_payment_details_binding.dart';
@@ -127,36 +102,7 @@ class AppPages {
       page: () => const UserView(),
       binding: UserBinding(),
     ),
-    GetPage(
-      name: _Paths.CUSTOMER_FORM,
-      page: () => const CustomerFormView(),
-      binding: CustomerFormBinding(),
-    ),
-    GetPage(
-      name: _Paths.SUPPLIER,
-      page: () => const SupplierView(),
-      binding: SupplierBinding(),
-    ),
-    GetPage(
-      name: _Paths.SUPPLIER_FORM,
-      page: () => const SupplierFormView(),
-      binding: SupplierFormBinding(),
-    ),
-    GetPage(
-      name: _Paths.PURCHASE,
-      page: () => const PurchaseView(),
-      binding: PurchaseBinding(),
-    ),
-    GetPage(
-      name: _Paths.PURCHASE_FORM,
-      page: () => const PurchaseFormView(),
-      binding: UserFormBinding(),
-    ),
-    GetPage(
-      name: _Paths.PURCHASE_DETAILS,
-      page: () => const PurchaseDetailsView(),
-      binding: PurchaseDetailsBinding(),
-    ),
+
     GetPage(
       name: _Paths.SALE_DETAILS,
       page: () => const StockTransactionDetailsView(),
@@ -167,26 +113,7 @@ class AppPages {
       page: () => const StockTransactionView(),
       binding: SaleBinding(),
     ),
-    GetPage(
-      name: _Paths.SALE_FORM,
-      page: () => const TransactionFormView(),
-      binding: TransactionFormBinding(),
-    ),
-    GetPage(
-      name: _Paths.SUPPLIER_PAYMENT,
-      page: () => const SupplierPaymentView(),
-      binding: SupplierPaymentBinding(),
-    ),
-    GetPage(
-      name: _Paths.SUPPLIER_PAYMENT_FORM,
-      page: () => const SupplierPaymentFormView(),
-      binding: SupplierPaymentFormBinding(),
-    ),
-    GetPage(
-      name: _Paths.SUPPLIER_PAYMENT_DETAILS,
-      page: () => const SupplierPaymentDetailsView(),
-      binding: SupplierPaymentDetailsBinding(),
-    ),
+
     GetPage(
       name: _Paths.CUSTOMER_PAYMENT,
       page: () => const UserPaymentView(),
@@ -217,11 +144,7 @@ class AppPages {
       page: () => const FeesPaymentFormView(),
       binding: FeesPaymentFormBinding(),
     ),
-    GetPage(
-      name: _Paths.SUPPLIER_DETAILS,
-      page: () => const SupplierDetailsView(),
-      binding: SupplierDetailsBinding(),
-    ),
+
     GetPage(
       name: _Paths.CUSTOMER_DETAILS,
       page: () => const UserDetailsView(),

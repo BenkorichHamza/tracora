@@ -5,8 +5,13 @@ import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
+import 'package:tracora/app/modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
+import 'package:tracora/app/modules/UserPayment/controllers/user_payment_controller.dart';
+import 'package:tracora/app/modules/UserPaymentDetails/views/user_payment_details_view.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
+import 'package:tracora/app/widgets/money_transaction_tile.dart';
 import 'package:tracora/app/widgets/product_transaction_tile.dart';
 import 'package:tracora/app/widgets/qr_code.dart';
 import 'package:tracora/app/widgets/stock_transaction_tile.dart';
@@ -67,12 +72,21 @@ class MissionDetailsView
                             width: 25,
                           ),
                         ),
+
+                        Tab(
+                          text: "payments-in",
+                          icon: Image.asset(
+                            "assets/money-in.png",
+                            height: 25,
+                            width: 25,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   body: TabBarView(
                     controller: controller.tabCtrl,
-                    children: [details(), products(), sales()],
+                    children: [details(), products(), sales(), payments()],
                   ),
                 ),
       ),
@@ -80,18 +94,97 @@ class MissionDetailsView
   }
 
   sales() {
-    return controller.missionSales.isEmpty
-        ? EmptyWidget()
-        : ListView.builder(
-          itemCount: controller.missionSales.length,
-          itemBuilder:
-              (c, i) => StockTransactionTile(
-                onTap: (t) {},
-                item: controller.missionSales[i],
-                highest: false,
-                selected: false,
+    return Obx(
+      () =>
+          controller.missionSales.isEmpty
+              ? EmptyWidget()
+              : Obx(
+                () => ListView.builder(
+                  itemCount:
+                      controller.missionSales
+                          .where((e) => e.type == "sale")
+                          .length,
+                  itemBuilder:
+                      (c, i) => StockTransactionTile(
+                        onTap: (t) {
+                          showDialog(
+                            context: Get.context!,
+
+                            builder: (c) {
+                              Get.find<StockTransactionController<Sale>>()
+                                  .toDetails(t);
+                              return Center(
+                                child: Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  clipBehavior: Clip.antiAlias,
+                                  elevation: 10,
+                                  child: Container(
+                                    constraints: BoxConstraints(maxWidth: 450),
+
+                                    child: Center(
+                                      child:
+                                          StockTransactionDetailsView<Sale>(),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        item:
+                            controller.missionSales
+                                .where((e) => e.type == "sale")
+                                .toList()[i],
+                        highest: false,
+                        selected: false,
+                      ),
+                ),
               ),
-        );
+    );
+  }
+
+  payments() {
+    return Obx(
+      () =>
+          controller.missionPayments.isEmpty
+              ? EmptyWidget()
+              : Obx(
+                () => ListView.builder(
+                  itemCount: controller.missionPayments.length,
+                  itemBuilder:
+                      (c, i) => MoneyTransactionTile(
+                        onTap: (t) {
+                          showDialog(
+                            context: Get.context!,
+
+                            builder: (c) {
+                              Get.find<UserPaymentController<Sale>>().toDetails(
+                                t,
+                              );
+                              return Center(
+                                child: Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  clipBehavior: Clip.antiAlias,
+                                  elevation: 10,
+                                  child: Container(
+                                    constraints: BoxConstraints(maxWidth: 450),
+
+                                    child: Center(
+                                      child: UserPaymentDetailsView<Sale>(),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        item: controller.missionPayments[i],
+                        highest: false,
+                        selected: false,
+                      ),
+                ),
+              ),
+    );
   }
 
   ListView products() {
@@ -208,9 +301,40 @@ class MissionDetailsView
                                       ),
                                     ),
                                   ),
-                              QrCode(
-                                controller.stockTransaction.ids ?? '123',
-                                size: 200,
+                              Center(
+                                child: Obx(
+                                  () => Stack(
+                                    children: [
+                                      Opacity(
+                                        opacity: controller.sync ? 1 : 0.2,
+                                        child: Center(
+                                          child: QrCode(
+                                            controller.stockTransaction.ids ??
+                                                '123',
+                                            size: 200,
+                                          ),
+                                        ),
+                                      ),
+
+                                      Obx(
+                                        () =>
+                                            controller.sync
+                                                ? SizedBox()
+                                                : Positioned(
+                                                  top: 0,
+                                                  bottom: 0,
+                                                  right: 0,
+                                                  left: 0,
+
+                                                  child: Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
+                                                ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -236,7 +360,7 @@ class MissionDetailsView
                             ),
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: controller.print,
+                          onPressed: controller.printTicket,
                           label: Text('print_ticket'.tr),
                         ),
                       ),

@@ -169,11 +169,7 @@ class PurchaseRepository {
     var now = DateTime.now().millisecondsSinceEpoch;
     if (purchase.ids == null) {
       var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("stockTransactions")
-              .doc();
+          FirebaseFirestore.instance.collection("stockTransactions").doc();
       purchase = purchase.copyWith(ids: doc.id);
     }
     List<Map<String, dynamic>> m = await db.query(
@@ -244,8 +240,6 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
 
     if (sync) {
       FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
           .collection("stockTransactions")
           .doc(purchase.ids)
           .set(
@@ -291,8 +285,6 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       whereArgs: [stockTransaction.id ?? 0],
     );
     FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
         .collection("stockTransactions")
         .doc(stockTransaction.ids)
         .set(stockTransaction.toMap(), SetOptions(merge: true));

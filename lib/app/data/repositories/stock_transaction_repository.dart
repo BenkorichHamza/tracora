@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
@@ -10,7 +9,6 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
-import 'package:tracora/app/data/repositories/supplier_repository.dart';
 
 class StockTransactionRepository<T> {
   final DbHelper _dbHelper = DbHelper();
@@ -30,18 +28,21 @@ class StockTransactionRepository<T> {
 
   Future<List<StockTransaction>> getAllTransactions({
     required String search,
+    required UserModel employee,
   }) async {
-    print(transactionType);
     final db = await _dbHelper.db;
 
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT st.*, u.firstName from
       stock_transaction st
       INNER JOIN user u
-      ON st.user_id=u.id
-      WHERE st.deletedAt IS NULL AND st.type = "$transactionType" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%") ORDER BY st.dateTime DESC
+      ON st.user_id=u.id OR st.userIds=u.ids
+      LEFT JOIN stock_transaction m
+      ON m.ids==st.missionIds
+      WHERE ${(employee.id == null && (employee.ids ?? "").isEmpty) ? '' : '(${transactionType == "mission" ? "st.user_id" : "st.employee_id"} = ${employee.id} OR ${transactionType == "mission" ? "st.userIds" : "st.employeeIds"} = "${employee.ids}") AND'} st.deletedAt IS NULL AND m.deletedAt IS NULL AND st.type = "$transactionType" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%") ORDER BY st.dateTime DESC
       LIMIT 50
 ''');
+    if (maps.isEmpty) return [];
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
@@ -51,8 +52,17 @@ class StockTransactionRepository<T> {
               : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var userIds = maps.map<int>((e) => e['user_id']).toList();
-    final users = await UserRepository().getAllUsersFromArray(ids: userIds);
+    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
+    var allIds =
+        maps
+            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .where((e) => e != '""')
+            .toSet()
+            .toList();
+    final users = await UserRepository().getAllUsersFromArray(
+      allIds: allIds,
+      allId: allId,
+    );
 
     return maps
         .map(
@@ -60,7 +70,9 @@ class StockTransactionRepository<T> {
             employee: (employees).firstWhereOrNull(
               (e) => e.id == map['employee_id'],
             ),
-            user: users.firstWhereOrNull((e) => e.id == map['user_id']),
+            user: users.firstWhereOrNull(
+              (e) => e.id == map['user_id'] || e.ids == map['userIds'],
+            ),
           ),
         )
         .toList();
@@ -102,19 +114,14 @@ class StockTransactionRepository<T> {
   }
 
   Future<int> insert(
-    StockTransaction transaction, {
+    StockTransaction v, {
     bool sync = true,
     bool mission = false,
   }) async {
-    print(transactionType);
-
+    var transaction = v.copyWith();
     if (transaction.ids == null) {
       var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("stockTransactions")
-              .doc();
+          FirebaseFirestore.instance.collection("stockTransactions").doc();
       transaction = transaction.copyWith(ids: doc.id);
     }
     final db = await _dbHelper.db;
@@ -123,73 +130,103 @@ class StockTransactionRepository<T> {
     var products =
         transaction.productTransactions?.map((e) => e.product).toList();
     var user = transaction.user;
-    await UserRepository<T>().insertUser(
+
+    var userId = await UserRepository<T>().insertUser(
       user ?? UserModel(),
       replace: false,
-      sync: false,
+      sync: user?.id == null,
     );
+    user = user?.copyWith(id: userId <= 0 ? user.id ?? userId : userId);
+
+    var insertedProducts = <Product>[];
     await Future.forEach(products ?? <Product>[], (c) async {
-      await ProductRepository().insertProduct(
-        c ?? Product(),
+      if (c == null) return;
+      var productId = await ProductRepository().insertProduct(
+        c,
         sync: false,
         replace: false,
       );
+      insertedProducts.add(
+        c.copyWith(id: productId <= 0 ? c.id ?? productId : productId),
+      );
     });
+    products = insertedProducts;
     transaction = transaction.copyWith(
-      type: "$transactionType",
+      user: user,
+      type: transactionType,
       createdBy: transaction.id != null ? transaction.createdBy : userIds,
-      updatedBy: transaction.id != null ? userIds : transaction.updatedBy,
+      updatedBy: userIds ?? "admin",
       dateTime: (transaction.dateTime ?? 0) <= 0 ? now : transaction.dateTime,
       createdAt: transaction.id != null ? transaction.createdAt : now,
       updatedAt: transaction.id == null ? transaction.createdAt : now,
     );
     var map = transaction.toSqfliteMap();
-    var id = await db.insert(
-      'stock_transaction',
-      map,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return await db.transaction((txn) async {
+      var id = await txn.insert(
+        'stock_transaction',
+        map,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
-    await db.delete(
-      'product_transaction',
-      where: 'transaction_id = ?',
-      whereArgs: [id < 0 ? transaction.id : id],
-    );
+      transaction = transaction.copyWith(
+        id: id <= 0 ? transaction.id ?? id : id,
+      );
 
-    // add categories to the pivot
-    if (transaction.productTransactions != null) {
-      final List<Map<String, dynamic>> productTransactionMaps =
-          transaction.productTransactions!
-              .map(
-                (tr) =>
-                    tr
-                        .copyWith(
-                          transactionId: transaction.copyWith(
-                            id: id < 0 ? transaction.id : id,
-                          ),
-                        )
-                        .toSqfliteMap(),
-              )
-              .toList();
-      await db.rawInsert('''
+      await txn.delete(
+        'product_transaction',
+        where: 'transaction_id = ?',
+        whereArgs: [id < 0 ? transaction.id : id],
+      );
+
+      // add categories to the pivot
+      if (transaction.productTransactions != null) {
+        final List<Map<String, dynamic>> productTransactionMaps =
+            transaction.productTransactions!
+                .map(
+                  (tr) =>
+                      tr
+                          .copyWith(
+                            product: insertedProducts.firstWhere(
+                              (e) =>
+                                  (e.ids ?? e.id) ==
+                                  (tr.product?.ids ?? tr.product?.id),
+                            ),
+                            transactionId: transaction.copyWith(
+                              id: id < 0 ? transaction.id : id,
+                            ),
+                          )
+                          .toSqfliteMap(),
+                )
+                .toList();
+        await txn.rawInsert('''
 INSERT INTO product_transaction 
 (transaction_id, product_id, direction, price, qte  ) VALUES 
 ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product_id']}, ${transactionType == "purchase"
-          ? 1
-          : transactionType == "sale"
-          ? -1
-          : 0}, ${map['price']}, ${map['qte']})').join(', ')}
+            ? 1
+            : transactionType == "sale"
+            ? -1
+            : 0}, ${map['price']}, ${map['qte']})').join(', ')}
           ''');
-    }
+      }
 
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(mission ? "missions" : "stockTransactions")
-          .doc(transaction.ids)
-          .set(transaction.toMap(), SetOptions(merge: sync));
-    }
-
-    return id;
+      if (sync) {
+        if (mission) {
+          FirebaseFirestore.instance
+              .collection("missions")
+              .doc(transaction.ids)
+              .set(transaction.toMap(), SetOptions(merge: sync));
+        } else if ((sync && (transaction.missionIds ?? '').isNotEmpty) ||
+            v.user?.id != id) {
+          FirebaseFirestore.instance
+              .collection("missions")
+              .doc(transaction.missionIds)
+              .collection("stockTransactions")
+              .doc(transaction.ids)
+              .set(transaction.toMap(), SetOptions(merge: sync));
+        }
+      }
+      return id;
+    });
   }
 
   Future<int> updateTransaction(StockTransaction stock_transaction) async {
@@ -224,27 +261,30 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       where: 'id = ?',
       whereArgs: [stockTransaction.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("stockTransactions")
-        .doc(stockTransaction.ids)
-        .set(stockTransaction.toMap(), SetOptions(merge: true));
+    if ((stockTransaction.ids ?? "").isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection("missions")
+          .doc(stockTransaction.missionIds)
+          .collection("stockTransactions")
+          .doc(stockTransaction.ids)
+          .set({"deletedAt": now, "deleted": true}, SetOptions(merge: true));
+    }
     return r;
   }
 
   Future<List<StockTransaction>> getAllTransactionsFor({
-    required int id,
+    required String ids,
   }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT st.*, u.firstName from
       stock_transaction st
       INNER JOIN user u
-      ON st.user_id=u.id
-      WHERE st.deletedAt IS NULL AND st.type = "$transactionType" AND u.id=$id ORDER BY st.dateTime DESC
+      ON st.user_id=u.id  OR st.userIds=u.ids
+      WHERE st.deletedAt IS NULL AND st.type = "$transactionType" AND u.ids="$ids" ORDER BY st.dateTime DESC
       LIMIT 50
 ''');
+    if (maps.isEmpty) return [];
     var employeeIds = maps.map((e) => e['employee_id']);
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
@@ -254,20 +294,27 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
               : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var supplierIds = maps.map((e) => e['user_id']);
-    final List<Map<String, dynamic>> supplierMaps = await db.query(
-      'user',
-      where: supplierIds.isEmpty ? null : 'id IN (${supplierIds.join(', ')})',
+    var supplierIds = maps.map((e) => '"' + (e['userIds'] ?? "") + '"');
+    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
+    var userIds =
+        maps
+            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .toSet()
+            .where((e) => e != '""')
+            .toList();
+    final suppliers = await UserRepository().getAllUsersFromArray(
+      allIds: userIds,
+      allId: allId,
     );
-    var suppliers = supplierMaps.map(((e) => UserModel.fromMap(e))).toList();
-
     return maps
         .map(
           (map) => StockTransaction.fromMap(map).copyWith(
             employee: (employees).firstWhereOrNull(
               (e) => e.id == map['employee_id'],
             ),
-            user: suppliers.firstWhereOrNull((e) => e.id == map['user_id']),
+            user: suppliers.firstWhereOrNull(
+              (e) => e.id == map['user_id'] || e.ids == map["userIds"],
+            ),
           ),
         )
         .toList();
@@ -281,7 +328,7 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       SELECT st.*, u.firstName from
       stock_transaction st
       INNER JOIN user u
-      ON st.user_id=u.id
+      ON st.user_id=u.id  OR st.userIds=u.ids
       WHERE st.deletedAt IS NULL AND st.employee_id=$id ORDER BY st.dateTime DESC
       LIMIT 50
 ''');
@@ -294,13 +341,18 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
               : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var supplierIds = maps.map((e) => e['user_id']);
-    final List<Map<String, dynamic>> supplierMaps = await db.query(
-      'user',
-      where: supplierIds.isEmpty ? null : 'id IN (${supplierIds.join(', ')})',
+    var supplierIds = maps.map((e) => '"' + (e['userIds'] ?? "") + '"');
+    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
+    var userIds =
+        maps
+            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .toSet()
+            .where((e) => e != '""')
+            .toList();
+    final suppliers = await UserRepository().getAllUsersFromArray(
+      allIds: userIds,
+      allId: allId,
     );
-    var suppliers = supplierMaps.map(((e) => UserModel.fromMap(e))).toList();
-
     return maps
         .map(
           (map) => StockTransaction.fromMap(map).copyWith(
@@ -308,6 +360,52 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
               (e) => e.id == map['employee_id'],
             ),
             user: suppliers.firstWhereOrNull((e) => e.id == map['user_id']),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<StockTransaction>> getMissionStockTransactions({
+    required String ids,
+  }) async {
+    final db = await _dbHelper.db;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT st.*, u.firstName from
+      stock_transaction st
+      INNER JOIN user u
+      ON st.user_id=u.id OR st.userIds=u.ids
+      WHERE st.deletedAt IS NULL AND st.missionIds="$ids" ORDER BY st.dateTime DESC
+      LIMIT 50
+''');
+    var employeeIds = maps.map((e) => e['employee_id']);
+    final List<Map<String, dynamic>> employeeMaps = await db.query(
+      'user',
+      where:
+          employeeIds.isEmpty
+              ? null
+              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+    );
+    var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
+    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
+    var userIds =
+        maps
+            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .toSet()
+            .where((e) => e != '""')
+            .toList();
+    final suppliers = await UserRepository().getAllUsersFromArray(
+      allIds: userIds,
+      allId: allId,
+    );
+    return maps
+        .map(
+          (map) => StockTransaction.fromMap(map).copyWith(
+            employee: (employees).firstWhereOrNull(
+              (e) => e.id == map['employee_id'],
+            ),
+            user: suppliers.firstWhereOrNull(
+              (e) => e.id == map['user_id'] || e.ids == map["userIds"],
+            ),
           ),
         )
         .toList();
@@ -345,7 +443,7 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       SELECT st.*, u.firstName from
       stock_transaction st
       INNER JOIN user u
-      ON st.user_id=u.id
+      ON st.user_id=u.id OR st.userIds=u.ids
       WHERE st.deletedAt IS NULL AND st.id = $id
       LIMIT 50
 ''');
@@ -358,12 +456,17 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
               : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var userIds = maps.map((e) => e['user_id']);
-    final List<Map<String, dynamic>> supplierMaps = await db.query(
-      'user',
-      where: userIds.isEmpty ? null : 'id IN (${userIds.join(', ')})',
+    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
+    var userIds =
+        maps
+            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .toSet()
+            .where((e) => e != '""')
+            .toList();
+    final suppliers = await UserRepository().getAllUsersFromArray(
+      allIds: userIds,
+      allId: allId,
     );
-    var suppliers = supplierMaps.map(((e) => UserModel.fromMap(e))).toList();
     if (maps.length != 1) return null;
     return StockTransaction.fromMap(maps[0]).copyWith(
       employee: (employees).firstWhereOrNull(

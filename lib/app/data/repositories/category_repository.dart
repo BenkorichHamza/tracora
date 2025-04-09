@@ -38,12 +38,7 @@ class CategoryRepository {
     final db = await _dbHelper.db;
     var userIds = FirebaseAuth.instance.currentUser?.uid;
     if (category.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("categories")
-              .doc();
+      var doc = FirebaseFirestore.instance.collection("categories").doc();
       category = category.copyWith(ids: doc.id);
     }
     List<Map<String, dynamic>> m = await db.query(

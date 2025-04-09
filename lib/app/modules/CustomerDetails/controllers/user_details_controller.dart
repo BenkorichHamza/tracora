@@ -90,8 +90,8 @@ class UserDetailsController<T> extends GetxController
   Future getMoneyTransactions() async {
     try {
       moneyTransactions = await moneyRepository.getMoneyTransactionsFor(
-        id: user.id ?? 0,
-        type: "$userType",
+        ids: user.ids ?? "",
+        type: "$transactionType",
       );
     } catch (e) {
       ErrorHandler.handleError(e);
@@ -110,7 +110,7 @@ class UserDetailsController<T> extends GetxController
   Future getStockTransactions() async {
     try {
       stockTransactions = await transactionRepository.getAllTransactionsFor(
-        id: user.id ?? 0,
+        ids: user.ids ?? "",
       );
     } catch (e) {
       ErrorHandler.handleError(e);

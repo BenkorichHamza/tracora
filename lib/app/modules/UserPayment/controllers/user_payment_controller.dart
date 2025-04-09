@@ -34,6 +34,10 @@ class UserPaymentController<T> extends GetxController {
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
 
+  final _employee = UserModel().obs;
+  UserModel get employee => this._employee.value;
+  set employee(UserModel value) => this._employee.value = value;
+
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
 
@@ -88,6 +92,7 @@ class UserPaymentController<T> extends GetxController {
       transactions = await repository.getMoneyTransactions(
         search: search.text,
         type: "$transactionType",
+        employee: employee,
       );
       print("transactions.length");
       print(transactions.length);

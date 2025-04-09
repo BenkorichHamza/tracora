@@ -53,91 +53,116 @@ class StatisticView extends GetView<StatisticController> {
           ),
         ],
       ),
-      body: Obx(() {
-        final stats = controller.statistics;
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1,
-            children: [
-              _buildStatCard(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.extent(
+          maxCrossAxisExtent: 200,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1,
+          children: [
+            Obx(
+              () => _buildStatCard(
                 'Total Customer Payment',
-                stats.totalCustomerPayment?.formatPrice(),
+                controller.statistics.totalCustomerPayment?.formatPrice(),
                 LucideIcons.wallet,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Supplier Payment',
-                stats.totalSupplierPayment.formatPrice(),
+                controller.statistics.totalSupplierPayment.formatPrice(),
                 LucideIcons.truck,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Sale Payment',
-                stats.totalSalePayment?.formatPrice(),
+                controller.statistics.totalSalePayment?.formatPrice(),
                 LucideIcons.wallet,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Purchase Payment',
-                stats.totalPurchasePayment.formatPrice(),
+                controller.statistics.totalPurchasePayment.formatPrice(),
                 LucideIcons.truck,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Fees',
-                stats.totalFeesPayment.formatPrice(),
+                controller.statistics.totalFeesPayment.formatPrice(),
                 LucideIcons.receipt,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Purchase',
-                stats.totalPurchase.formatPrice(),
+                controller.statistics.totalPurchase.formatPrice(),
                 LucideIcons.shoppingCart,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Sale',
-                stats.totalSale.formatNumber(),
+                controller.statistics.totalSale.formatNumber(),
                 LucideIcons.dollarSign,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Customer Credit',
-                stats.totalCustomerCredit.formatPrice(),
+                controller.statistics.totalCustomerCredit.formatPrice(),
                 LucideIcons.userCheck,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Total Supplier Credit',
-                stats.totalSupplierCredit.formatPrice(),
+                controller.statistics.totalSupplierCredit.formatPrice(),
                 LucideIcons.userX,
               ),
+            ),
 
-              _buildStatCard(
+            Obx(
+              () => _buildStatCard(
                 'Purchases',
-                stats.purchaseCount?.formatNumber(),
+                controller.statistics.purchaseCount?.formatNumber(),
                 LucideIcons.package,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Sales',
-                stats.saleCount?.formatNumber(),
+                controller.statistics.saleCount?.formatNumber(),
                 LucideIcons.store,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Products',
-                stats.productCount?.formatNumber(),
+                controller.statistics.productCount?.formatNumber(),
                 LucideIcons.list,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Customers',
-                stats.customerCount?.formatNumber(),
+                controller.statistics.customerCount?.formatNumber(),
                 LucideIcons.users,
               ),
-              _buildStatCard(
+            ),
+            Obx(
+              () => _buildStatCard(
                 'Suppliers',
-                stats.supplierCount?.formatNumber(),
+                controller.statistics.supplierCount?.formatNumber(),
                 LucideIcons.factory,
               ),
-            ],
-          ),
-        );
-      }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

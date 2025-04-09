@@ -28,10 +28,7 @@ class DbHelper {
   initDb() async {
     if (GetPlatform.isWindows) {
       final path = 'E:/';
-      final dbPath = join(
-        path,
-        '${Get.find<HomeController>().employee.id ?? 'db'}2.db',
-      );
+      final dbPath = join(path, 'db6.db');
       print(dbPath);
 
       return await databaseFactoryFfi.openDatabase(

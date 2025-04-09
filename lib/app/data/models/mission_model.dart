@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:tracora/app/data/models/employee_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
-import 'package:tracora/app/modules/MissionForm/views/product_mission_view.dart';
 
 class Mission {
   static String sql = '''

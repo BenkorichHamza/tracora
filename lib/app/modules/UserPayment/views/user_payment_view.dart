@@ -10,6 +10,7 @@ import 'package:tracora/app/modules/UserPayment/controllers/user_payment_control
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
+import 'package:tracora/app/widgets/employee_selector.dart';
 import 'package:tracora/app/widgets/empty_widget.dart';
 import 'package:tracora/app/widgets/money_transaction_tile.dart';
 import 'package:tracora/app/widgets/stock_transaction_tabs.dart';
@@ -119,7 +120,18 @@ class UserPaymentView<T> extends GetView<UserPaymentController<T>> {
             color: Colors.white,
             icon: Icon(controller.showSearch ? Icons.close : Icons.search),
           ),
-          SyncView(),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: EmployeeSelector(
+                onSelect: (v) {
+                  controller.employee = v;
+                  controller.getAll();
+                },
+              ),
+            ),
+          ),
         ],
       ),
 
@@ -137,7 +149,6 @@ class UserPaymentView<T> extends GetView<UserPaymentController<T>> {
                         init: controller,
                         initState: (_) {},
                         builder: (c) {
-                          print(item.id);
                           return MoneyTransactionTile(
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,

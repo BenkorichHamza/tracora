@@ -74,8 +74,6 @@ class BrandRepository {
     if (sync) {
       await FirebaseFirestore.instance.disableNetwork();
       FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
           .collection("brands")
           .doc(brand.ids)
           .set(

@@ -403,6 +403,17 @@ CREATE TABLE product (
     if (img != null) {
       result.addAll({'img': img});
     }
+
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
     }

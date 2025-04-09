@@ -29,17 +29,17 @@ SELECT
     COALESCE(st.due, 0) AS due
 FROM user u
 LEFT JOIN (
-    SELECT user_id, SUM(amount) AS payment 
+    SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
     WHERE type = '$transactionType' 
-    GROUP BY user_id
-) mt ON u.id = mt.user_id
+    GROUP BY userIds
+) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
-    SELECT user_id, SUM(payment) AS payment, SUM(toPay) AS due 
+    SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
     WHERE type = '$transactionType' 
-    GROUP BY user_id
-) st ON u.id = st.user_id
+    GROUP BY userIds
+) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
   AND u.type = "$userType"
   AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%" OR u.email LIKE "%$search%" OR u.phone LIKE "%$search%")
@@ -48,7 +48,11 @@ WHERE u.deletedAt IS NULL
     return maps.map((map) => UserModel.fromMap(map)).toList();
   }
 
-  Future<List<UserModel>> getAllUsersFromArray({required List<int> ids}) async {
+  Future<List<UserModel>> getAllUsersFromArray({
+    required List<String> allIds,
+    required List<int> allId,
+  }) async {
+    if (allIds.isEmpty && allId.isEmpty) return [];
     final db = await _dbHelper.db;
 
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
@@ -58,19 +62,19 @@ SELECT
     COALESCE(st.due, 0) AS due
 FROM user u
 LEFT JOIN (
-    SELECT user_id, SUM(amount) AS payment 
+    SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
    
-    GROUP BY user_id
-) mt ON u.id = mt.user_id
+    GROUP BY userIds
+) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
-    SELECT user_id, SUM(payment) AS payment, SUM(toPay) AS due 
+    SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
     
-    GROUP BY user_id
-) st ON u.id = st.user_id
+    GROUP BY userIds
+) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
-  AND id in (${ids.join(', ')})
+  AND (u.ids in (${allIds.join(', ')}) OR u.id in (${allId.join(',')}))
 ''');
 
     return maps.map((map) => UserModel.fromMap(map)).toList();
@@ -85,17 +89,17 @@ SELECT
     COALESCE(st.due, 0) AS due
 FROM user u
 LEFT JOIN (
-    SELECT user_id, SUM(amount) AS payment 
+    SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
     WHERE type = '$transactionType' 
-    GROUP BY user_id
-) mt ON u.id = mt.user_id
+    GROUP BY userIds
+) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
-    SELECT user_id, SUM(payment) AS payment, SUM(toPay) AS due 
+    SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
     WHERE type = '$transactionType' 
-    GROUP BY user_id
-) st ON u.id = st.user_id
+    GROUP BY userIds
+) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
   AND u.type = "$userType"
   AND u.id=$id
@@ -105,20 +109,15 @@ WHERE u.deletedAt IS NULL
   }
 
   Future<int> insertUser(
-    UserModel user, {
+    UserModel u, {
     bool sync = true,
     bool replace = true,
   }) async {
     final db = await _dbHelper.db;
-    user = user.copyWith(type: "$userType");
+    var user = u.copyWith(type: userType);
     var userIds = FirebaseAuth.instance.currentUser?.uid;
     if (user.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection("users")
-              .doc();
+      var doc = FirebaseFirestore.instance.collection("users").doc();
       user = user.copyWith(ids: doc.id);
     }
     List<Map<String, dynamic>> m = await db.query(
@@ -128,12 +127,12 @@ WHERE u.deletedAt IS NULL
     );
     if (m.length == 1) {
       user = user.copyWith(id: m.first['id']?.toInt());
-      if (!replace) return -1;
+      if (!replace) return m.single["id"] ?? -1;
     }
     user = user.copyWith(
       type: "$userType",
-      createdBy: user.id != null ? user.createdBy : userIds,
-      updatedBy: user.id != null ? userIds : user.updatedBy,
+      createdBy: user.id != null ? user.createdBy : userIds ?? "admin",
+      updatedBy: userIds ?? "admin",
       createdAt:
           user.id != null
               ? user.createdAt
@@ -145,14 +144,13 @@ WHERE u.deletedAt IS NULL
     );
     int id = await db.insert(
       'user',
-      user.toMap(),
+      user.toMap()..remove("id"),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    user = user.copyWith(id: id <= 0 ? user.id ?? id : id);
 
-    if (sync) {
+    if (sync || id != u.id) {
       FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
           .collection("users")
           .doc(user.ids)
           .set(
@@ -161,7 +159,7 @@ WHERE u.deletedAt IS NULL
           );
     }
 
-    return id;
+    return id == 0 ? user.id ?? id : id;
   }
 
   Future<int> updateUser(UserModel user) async {
@@ -197,8 +195,6 @@ WHERE u.deletedAt IS NULL
       whereArgs: [user.id ?? 0],
     );
     FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
         .collection("users")
         .doc(user.ids)
         .set(user.toMap(), SetOptions(merge: true));
@@ -212,7 +208,7 @@ WHERE u.deletedAt IS NULL
       '''
     SELECT DISTINCT u.*
     FROM user u
-    INNER JOIN stock_transaction st ON u.id = st.user_id
+    INNER JOIN stock_transaction st ON u.id = st.user_id  OR st.userIds=u.ids
     INNER JOIN product_transaction pt ON st.id = pt.transaction_id
     WHERE pt.product_id = ?
       AND u.deletedAt IS NULL AND u.type="$userType"

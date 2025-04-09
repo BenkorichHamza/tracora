@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
@@ -11,6 +13,8 @@ import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/modules/ProductDetails/controllers/product_details_controller.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:excel/excel.dart';
 
 class ProductController extends GetxController {
   final repository = ProductRepository();
@@ -122,5 +126,38 @@ class ProductController extends GetxController {
     Get.find<ProductDetailsController>().getSuppliers();
     Get.find<ProductDetailsController>().getCustomers();
     Get.find<ProductDetailsController>().getTransactions();
+  }
+
+  Future<void> importExcelFile() async {
+    var db = await DbHelper().db;
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      File file = File(result.files.single.path!);
+      final bytes = await file.readAsBytes();
+      final excel = Excel.decodeBytes(bytes);
+
+      await db.transaction((txn) async {
+        var rows = excel.sheets.values.first.rows;
+        for (int i = 1; i < rows.length; i++) {
+          print('insert row $i / ${rows.length}');
+          var row = rows[i];
+          var product = Product(
+            barcode: row[0]?.value?.toString(),
+            name: row[1]?.value?.toString(),
+            stock: row[2]?.value?.toDouble(),
+            buyPrice: row[3]?.value?.toDouble(),
+            sellPrice: row[4]?.value?.toDouble(),
+          );
+          await txn.insert("product", product.toSqliteMap());
+          // Or store it in your database or state
+        }
+      });
+    } else {
+      print('No file selected');
+    }
   }
 }

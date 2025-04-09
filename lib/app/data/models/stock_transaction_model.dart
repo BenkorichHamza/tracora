@@ -18,6 +18,7 @@ CREATE TABLE stock_transaction (
     employeeIds     STRING,
     employee_id     INTEGER REFERENCES user (id),
     user_id         INTEGER REFERENCES user (id),
+    userIds         STRING REFERENCES user (ids),
     type            TEXT,
     description     TEXT,
     topay           REAL,
@@ -34,6 +35,7 @@ CREATE TABLE stock_transaction (
   final int? id;
   final int? status;
   final String? ids;
+  final String? userIds;
   final String? missionIds;
   final String? createdBy;
   final String? updatedBy;
@@ -57,6 +59,7 @@ CREATE TABLE stock_transaction (
     this.id,
     this.status,
     this.ids,
+    this.userIds,
     this.missionIds,
     this.createdBy,
     this.updatedBy,
@@ -82,6 +85,7 @@ CREATE TABLE stock_transaction (
     int? id,
     int? status,
     String? ids,
+    String? userIds,
     String? missionIds,
     String? createdBy,
     String? updatedBy,
@@ -106,6 +110,7 @@ CREATE TABLE stock_transaction (
       id: id ?? this.id,
       status: status ?? this.status,
       ids: ids ?? this.ids,
+      userIds: userIds ?? this.userIds,
       missionIds: missionIds ?? this.missionIds,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -139,6 +144,9 @@ CREATE TABLE stock_transaction (
     }
     if (ids != null) {
       result.addAll({'ids': ids});
+    }
+    if (userIds != null) {
+      result.addAll({'userIds': userIds});
     }
     if (missionIds != null) {
       result.addAll({'missionIds': missionIds});
@@ -217,13 +225,16 @@ CREATE TABLE stock_transaction (
       result.addAll({'ids': ids});
     }
     if (missionIds != null) {
-      result.addAll({'missionIds': ids});
+      result.addAll({'missionIds': missionIds});
     }
     if (employee?.id != null) {
       result.addAll({'employee_id': employee?.id});
     }
     if (user?.id != null) {
       result.addAll({'user_id': user!.id});
+    }
+    if (user?.ids != null) {
+      result.addAll({'userIds': user!.ids});
     }
     if (type != null) {
       result.addAll({'type': type});
@@ -249,6 +260,17 @@ CREATE TABLE stock_transaction (
     if (dateTime != null) {
       result.addAll({'dateTime': dateTime});
     }
+
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
     }
@@ -267,6 +289,7 @@ CREATE TABLE stock_transaction (
       id: map['id']?.toInt(),
       status: map['status']?.toInt(),
       ids: map['ids'],
+      userIds: map['userIds'],
       missionIds: map['missionIds'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
@@ -304,7 +327,7 @@ CREATE TABLE stock_transaction (
 
   @override
   String toString() {
-    return 'StockTransaction(id: $id, status: $status, ids: $ids, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, employee: $employee, user: $user, type: $type, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'StockTransaction(id: $id, status: $status, ids: $ids, userIds: $userIds, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, employee: $employee, user: $user, type: $type, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -315,6 +338,7 @@ CREATE TABLE stock_transaction (
         other.id == id &&
         other.status == status &&
         other.ids == ids &&
+        other.userIds == userIds &&
         other.missionIds == missionIds &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
@@ -341,6 +365,7 @@ CREATE TABLE stock_transaction (
     return id.hashCode ^
         status.hashCode ^
         ids.hashCode ^
+        userIds.hashCode ^
         missionIds.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
