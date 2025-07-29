@@ -12,7 +12,7 @@ class StatisticController extends GetxController {
   int get from => this._from.value;
   set from(int value) => this._from.value = value;
 
-  final _to = DateTime.now().millisecondsSinceEpoch.obs;
+  final _to = DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch.obs;
   int get to => this._to.value;
   set to(int value) => this._to.value = value;
 

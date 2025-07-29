@@ -10,6 +10,7 @@ import 'package:tracora/app/modules/ProductDetails/controllers/product_details_c
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
 import 'package:tracora/app/modules/Setting/controllers/setting_controller.dart';
 import 'package:tracora/app/modules/Statistic/controllers/statistic_controller.dart';
+import 'package:tracora/app/modules/Synchronisation/controllers/synchronisation_controller.dart';
 import 'package:tracora/app/modules/User/controllers/user_controller.dart';
 import 'package:tracora/app/modules/CustomerDetails/controllers/user_details_controller.dart';
 import 'package:tracora/app/modules/CustomerDetails/views/user_details_view.dart';
@@ -63,6 +64,7 @@ class HomeBinding extends Bindings {
       Get.put(ProductDetailsController());
       Get.put(ProductFormController());
       Get.put(SettingController());
+      Get.put(SynchronisationController());
     }
   }
 }

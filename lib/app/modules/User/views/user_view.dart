@@ -26,13 +26,13 @@ class UserView<T> extends GetView<UserController<T>> {
       () => Column(
         children: [
           StockTransactionTabs(
-            title: "transaction",
+            title: controller.title,
             formTitle:
                 Get.find<UserFormController<T>>().user.id == null
-                    ? ('new_user'.tr)
+                    ? (controller.newTitle)
                     : (Get.find<UserFormController<T>>().user.firstName ??
                         Get.find<UserFormController<T>>().user.firstName ??
-                        'form'),
+                        controller.newTitle),
             onCloseForm: () {
               Get.find<UserFormController<T>>().init(UserModel());
               controller.showForm = false;

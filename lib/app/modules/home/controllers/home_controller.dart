@@ -74,9 +74,9 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   bool get pending => pendingWrites.values.fold(false, (i, v) => i || v);
   bool get cache => fromCache.values.fold(false, (i, v) => i || v);
 
-  final _employee = EmployeeModel().obs;
-  EmployeeModel get employee => this._employee.value;
-  set employee(EmployeeModel value) => this._employee.value = value;
+  final _employee = UserModel().obs;
+  UserModel get employee => this._employee.value;
+  set employee(UserModel value) => this._employee.value = value;
 
   final _lang =
       (["ar", 'fr', "en"].contains(Get.locale?.languageCode)
@@ -149,15 +149,12 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     super.onInit();
-    tabCtrl = TabController(length: 11, vsync: this);
+    tabCtrl = TabController(length: 13, vsync: this);
     drawerCtrl = AdvancedDrawerController();
-    readSettings();
-    // listen();
-    listenToAuth();
-    listenToMissions();
-    listenToMissionPayments();
-    listenToUsers();
-    setupNetworkListener();
+    readSettings().then((v) {
+      listen();
+      listenToAuth();
+    });
   }
 
   @override
@@ -177,78 +174,63 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   // }
 
   listen() {
-    listenToAccount();
-    listenToProducts();
-    listenToBrands();
-    listenToCategories();
-    listenToCustomers();
-    listenToSales();
-    listenToMoneyTransaction();
-    listenToSuppliers();
-    listenToPurchases();
+    // listenToMissions();
+    listenToMissionPayments();
+    listenToUsers();
   }
 
   listenToAuth() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        // cancelListener();
-        // employee = EmployeeModel();
+        employee = UserModel();
+        saveSettings();
+        cancelListener();
       } else {
-        // listen();
+        employee = UserModel(
+          ids: user.uid,
+          email: user.email,
+          img: user.photoURL,
+        );
+
+        setupNetworkListener();
       }
     });
   }
 
   cancelListener() async {
     try {
-      await accountListener.cancel();
-    } catch (e) {}
+      missionListener.cancel();
+    } catch (e) {
+      // TODO
+    }
     try {
-      await productsListener.cancel();
-    } catch (e) {}
+      missionPaymentListener.cancel();
+    } catch (e) {
+      // TODO
+    }
     try {
-      await brandsListener.cancel();
-    } catch (e) {}
-    try {
-      await categoriesListener.cancel();
-    } catch (e) {}
-    try {
-      await customersListener.cancel();
-    } catch (e) {}
-    try {
-      await salesListener.cancel();
-    } catch (e) {}
-    try {
-      await moneyTransactionListener.cancel();
-    } catch (e) {}
-    try {
-      await suppliersListener.cancel();
-    } catch (e) {}
-    try {
-      await purchasesListener.cancel();
-    } catch (e) {}
+      userListener.cancel();
+    } catch (e) {
+      // TODO
+    }
   }
 
-  listenToAccount() {
-    accountListener = FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("employees")
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .snapshots()
-        .listen((event) {
-          employee = EmployeeModel.fromMap(event.data() ?? {});
-        });
-  }
+  final _collection = ''.obs;
+  get collection => this._collection.value;
+  set collection(value) => this._collection.value = value;
 
   readSettings() async {
     // listenToStatus();
     var pref = await SharedPreferences.getInstance();
+    var c = pref.getString("collection");
+    c ??= FirebaseFirestore.instance.collection("def").doc().id;
+    await pref.setString("collection", c);
+    collection = c;
     lang = pref.getString("lang") ?? lang;
     employee =
         pref.getString("employee") == null
             ? employee
-            : EmployeeModel.fromJson(pref.getString("employee")!);
+            : UserModel.fromJson(pref.getString("employee")!);
     mission =
         pref.getString("mission") == null
             ? mission
@@ -342,6 +324,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToProducts() async {
     productsListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('products')
@@ -363,6 +347,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToBrands() async {
     brandsListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('brands')
@@ -384,6 +370,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToCategories() async {
     categoriesListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('categories')
@@ -404,6 +392,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToCustomers() async {
     customersListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('users')
@@ -426,6 +416,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToSuppliers() async {
     suppliersListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('users')
@@ -448,6 +440,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToSales() async {
     salesListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('stockTransactions')
@@ -470,6 +464,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToPurchases() async {
     purchasesListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('stockTransactions')
@@ -492,6 +488,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   listenToMoneyTransaction() async {
     moneyTransactionListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
         .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
         .doc("2025")
         .collection('moneyTransactions')
@@ -523,6 +521,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       var r = await Get.to(ScannerPage());
       if (r is! String) return;
       var d = await FirebaseFirestore.instance
+          .collection("collections")
+          .doc(collection)
           .collection("missions")
           .doc(r)
           .get(GetOptions(source: Source.server));
@@ -547,13 +547,21 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       await missionListener.cancel();
     } catch (e) {}
     missionListener = FirebaseFirestore.instance
+        // .collection("collections")
+        // .doc(collection)
+        // .firestore
         .collectionGroup("stockTransactions")
-        .where(
-          "updatedBy",
-          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
-        )
+        // .where(
+        //   "updatedBy",
+        //   whereNotIn: [
+        //     FirebaseAuth.instance.currentUser?.uid ?? "admin",
+        //     "admin",
+        //   ],
+        // )
         .snapshots(includeMetadataChanges: true)
         .listen((data) async {
+          print(data.docChanges.length);
+          print("data received");
           if (data.docChanges.isEmpty) return;
           if (data.metadata.isFromCache) return;
           var sales =
@@ -566,7 +574,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(sales, (s) async {
             if (s.type == "sale") {
               await StockTransactionRepository<Sale>().insert(
-                s,
+                s.copyWith(status: 0),
                 sync:
                     s.id == null ||
                     s.updatedBy !=
@@ -575,7 +583,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
               );
             } else {
               await StockTransactionRepository<Purchase>().insert(
-                s,
+                s.copyWith(status: 0),
                 sync:
                     s.id == null ||
                     s.updatedBy !=
@@ -594,6 +602,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           Get.find<StockTransactionDetailsController<Mission>>()
               .getMissionStockTransactions();
           Get.find<StatisticController>().loadStatistics();
+          Get.find<StockTransactionDetailsController<Mission>>()
+              .getMissionProductTransactions();
         });
   }
 
@@ -604,10 +614,16 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       await missionPaymentListener.cancel();
     } catch (e) {}
     missionPaymentListener = FirebaseFirestore.instance
+        // .collection("collections")
+        // .doc(collection)
+        // .firestore
         .collectionGroup("moneyTransactions")
         .where(
           "updatedBy",
-          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
+          whereNotIn: [
+            FirebaseAuth.instance.currentUser?.uid ?? "admin",
+            "admin",
+          ],
         )
         .snapshots(includeMetadataChanges: true)
         .listen((data) async {
@@ -623,7 +639,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
           await Future.forEach(sales, (s) async {
             if (s.type == "sale") {
               await MoneyTransactionRepository().insertMoneyTransaction(
-                s,
+                s.copyWith(status: 0),
                 sync:
                     s.updatedBy !=
                     (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
@@ -631,14 +647,14 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
               Get.find<UserPaymentController<Sale>>().getAll();
             } else if (s.type == "purchase") {
               await MoneyTransactionRepository().insertMoneyTransaction(
-                s,
+                s.copyWith(status: 0),
                 sync:
                     s.updatedBy !=
                     (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
               );
             } else {
               await MoneyTransactionRepository().insertMoneyTransaction(
-                s,
+                s.copyWith(status: 0),
                 sync:
                     s.updatedBy !=
                     (FirebaseAuth.instance.currentUser?.uid ?? "admin"),
@@ -664,10 +680,16 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       await userListener.cancel();
     } catch (e) {}
     userListener = FirebaseFirestore.instance
+        .collection("collections")
+        .doc(collection)
+        .firestore
         .collectionGroup("users")
         .where(
           "updatedBy",
-          isNotEqualTo: FirebaseAuth.instance.currentUser?.uid ?? "admin",
+          whereNotIn: [
+            FirebaseAuth.instance.currentUser?.uid ?? "admin",
+            "admin",
+          ],
         )
         .snapshots(includeMetadataChanges: true)
         .listen((data) async {
@@ -751,9 +773,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     ) async {
       if (status == InternetConnectionStatus.connected) {
         showBottomRightNotification("internet restored");
-        listenToMissionPayments();
-        listenToMissions();
-        listenToUsers();
+        listen();
       } else if (status == InternetConnectionStatus.slow) {
         showBottomRightNotification("Slow connection");
       } else {

@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/CustomerDetails/views/employee_detais.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
@@ -207,6 +210,9 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                   itemBuilder: (c, i) {
                     var moneyTransaction = controller.moneyTransactions[i];
                     return MoneyTransactionTile(
+                      onValidate: (item) {
+                        print(item.status);
+                      },
                       onTap: (t) {
                         showDialog(
                           context: Get.context!,
@@ -253,6 +259,23 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                 itemBuilder: (c, i) {
                   var transaction = controller.stockTransactions[i];
                   return StockTransactionTile(
+                    onValidate: (item) {
+                      StockTransactionRepository<T>().insert(
+                        item.copyWith(status: 1),
+                        sync: false,
+                      );
+                      FirebaseFirestore.instance
+                          .collection("collections")
+                          .doc(Get.find<HomeController>().collection)
+                          .collection("missions")
+                          .doc(item.missionIds ?? "default")
+                          .collection("stockTransactions")
+                          .doc(item.ids ?? "default")
+                          .update({"status": 1})
+                          .catchError((e) {
+                            ErrorHandler.handleError(e);
+                          });
+                    },
                     onTap: (t) {
                       showDialog(
                         context: Get.context!,

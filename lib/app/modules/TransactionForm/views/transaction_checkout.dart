@@ -17,8 +17,8 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
         () => ListView(
           children: [
             Container(
-              // margin: EdgeInsets.all(8),
-              // padding: EdgeInsets.symmetric(vertical: 8),
+              margin: EdgeInsets.all(8),
+              // padding: EdgeInsets.all(8),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -26,19 +26,12 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                   DecoratedBox(
                     decoration: BoxDecoration(
                       // border: Border.all(width: 0.5),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(8),
                       color:
                           Get.find<HomeController>()
-                              .theme
-                              .scaffoldBackgroundColor,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 1,
-                          spreadRadius: 1,
-
-                          color: Colors.black12,
-                        ),
-                      ],
+                              .dark
+                              .colorScheme
+                              .primaryContainer,
                     ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
@@ -49,7 +42,7 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                           children: [
                             Column(
                               children: [
-                                controller.user.circleAvatar(radius: 60),
+                                controller.user.circleAvatar(radius: 40),
                                 SizedBox(height: 8),
                                 Center(
                                   child:
@@ -57,7 +50,10 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                                           ? Text('select_user'.tr)
                                           : Text(
                                             '${controller.user.firstName ?? ''} | ${controller.user.companyName ?? ''}',
-                                            style: TextStyle(fontSize: 16),
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                 ),
 
@@ -73,7 +69,12 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                                           fontWeight: FontWeight.bold,
                                           color:
                                               controller.user.toPay <= 0
-                                                  ? Colors.green
+                                                  ? const Color.fromARGB(
+                                                    255,
+                                                    212,
+                                                    255,
+                                                    213,
+                                                  )
                                                   : Colors.deepOrange,
                                         ),
                                       ),

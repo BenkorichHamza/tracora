@@ -6,6 +6,7 @@ import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class MoneyTransactionRepository {
   final DbHelper _dbHelper = DbHelper();
@@ -247,7 +248,11 @@ class MoneyTransactionRepository {
     var now = DateTime.now().millisecondsSinceEpoch;
     if (moneyTransaction.ids == null) {
       var doc =
-          FirebaseFirestore.instance.collection("moneyTransactions").doc();
+          FirebaseFirestore.instance
+              .collection("collections")
+              .doc(Get.find<HomeController>().collection)
+              .collection("moneyTransactions")
+              .doc();
       moneyTransaction = moneyTransaction.copyWith(ids: doc.id);
     }
     var user = moneyTransaction.user;
@@ -295,9 +300,10 @@ class MoneyTransactionRepository {
     moneyTransaction = moneyTransaction.copyWith(
       id: id <= 0 ? moneyTransaction.id ?? id : id,
     );
-    if ((sync && (moneyTransaction.missionIds ?? '').isNotEmpty) ||
-        v.user?.id != id) {
+    if (sync) {
       FirebaseFirestore.instance
+          .collection("collections")
+          .doc(Get.find<HomeController>().collection)
           .collection("missions")
           .doc(moneyTransaction.missionIds ?? '')
           .collection("moneyTransactions")
@@ -346,6 +352,8 @@ class MoneyTransactionRepository {
     );
     if ((moneyTransaction.ids ?? "").isNotEmpty) {
       FirebaseFirestore.instance
+          .collection("collections")
+          .doc(Get.find<HomeController>().collection)
           .collection("missions")
           .doc(moneyTransaction.missionIds)
           .collection("moneyTransactions")

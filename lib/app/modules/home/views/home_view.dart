@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -12,6 +13,7 @@ import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/modules/FeesPayment/views/fees_payment_view.dart';
 import 'package:tracora/app/modules/Setting/views/setting_view.dart';
 import 'package:tracora/app/modules/Statistic/views/statistic_view.dart';
+import 'package:tracora/app/modules/Synchronisation/views/synchronisation_view.dart';
 import 'package:tracora/app/modules/User/views/user_view.dart';
 import 'package:tracora/app/modules/UserPayment/views/user_payment_view.dart';
 import 'package:tracora/app/modules/Login/views/login_view.dart';
@@ -23,6 +25,7 @@ import 'package:tracora/app/modules/home/views/sync_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tracora/app/widgets/toast_managet.dart';
+import 'package:tracora/app/widgets/window_buttons.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -116,58 +119,66 @@ class HomeView extends GetView<HomeController> {
 
           child: Focus(
             autofocus: true,
-            child: Obx(
-              () =>
-                  controller.employee.id == null
-                      ? LoginView()
-                      : Obx(
-                        () =>
-                            !controller.settingsLoaded
-                                ? const Scaffold(
-                                  backgroundColor: Color.fromRGBO(
-                                    0,
-                                    180,
-                                    80,
-                                    1,
-                                  ),
-                                )
-                                : Theme(
-                                  data: controller.theme,
-                                  child: OrientationBuilder(
-                                    builder: (context, o) {
-                                      var w = MediaQuery.of(context).size.width;
-                                      return AdvancedDrawer(
-                                        openRatio:
-                                            Get.width < 600 ? 0.75 : 300 / w,
-                                        rtlOpening:
-                                            Get.locale?.languageCode == "ar",
-                                        controller: controller.drawerCtrl,
-                                        drawer: drawer(),
-                                        backdropColor: controller
-                                            .theme
-                                            .scaffoldBackgroundColor
-                                            .withOpacity(0.95),
-                                        child:
-                                            Platform.isAndroid
-                                                ? PosHomePage()
-                                                : Scaffold(
-                                                  body:
-                                                      Platform.isWindows
-                                                          ? Row(
-                                                            children: [
-                                                              navigationRail(),
-                                                              Expanded(
-                                                                child: views(),
-                                                              ),
-                                                            ],
-                                                          )
-                                                          : content(),
-                                                ),
-                                      );
-                                    },
-                                  ),
+            child: Material(
+              color: controller.theme.scaffoldBackgroundColor,
+              child: Column(
+                children: [
+                  WindowTitleBarBox(
+                    child: Row(
+                      children: [
+                        Expanded(child: MoveWindow()),
+                        WindowButtons(
+                          homeController: controller,
+                        ), // You can create your own minimize/max/close buttons
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child:
+                    // controller.employee.ids == null
+                    //     ? LoginView()
+                    //     :
+                    Obx(
+                      () =>
+                          !controller.settingsLoaded
+                              ? const Scaffold(
+                                backgroundColor: Color.fromRGBO(0, 180, 80, 1),
+                              )
+                              : Theme(
+                                data: controller.theme,
+                                child: OrientationBuilder(
+                                  builder: (context, o) {
+                                    var w = MediaQuery.of(context).size.width;
+                                    return AdvancedDrawer(
+                                      openRatio:
+                                          Get.width < 600 ? 0.75 : 300 / w,
+                                      rtlOpening:
+                                          Get.locale?.languageCode == "ar",
+                                      controller: controller.drawerCtrl,
+                                      drawer: drawer(),
+                                      backdropColor: controller
+                                          .theme
+                                          .scaffoldBackgroundColor
+                                          .withOpacity(0.95),
+                                      child: Scaffold(
+                                        body:
+                                            Platform.isWindows
+                                                ? Row(
+                                                  children: [
+                                                    navigationRail(),
+                                                    Expanded(child: views()),
+                                                  ],
+                                                )
+                                                : content(),
+                                      ),
+                                    );
+                                  },
                                 ),
-                      ),
+                              ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -239,6 +250,8 @@ class HomeView extends GetView<HomeController> {
         UserView<Employee>(),
         FeesPaymentView(),
         ProductView(),
+        SynchronisationView(),
+        SettingView(),
       ],
     );
   }
@@ -255,8 +268,15 @@ class HomeView extends GetView<HomeController> {
   Obx navigationRail() {
     return Obx(
       () => NavigationRail(
-        unselectedLabelTextStyle: TextStyle(fontSize: 16),
-        selectedLabelTextStyle: TextStyle(fontSize: 16),
+        minExtendedWidth: 340,
+        unselectedLabelTextStyle: TextStyle(
+          fontSize: 16,
+          color: controller.theme.colorScheme.onSurface,
+        ),
+        selectedLabelTextStyle: TextStyle(
+          fontSize: 16,
+          color: controller.theme.colorScheme.onSurface,
+        ),
 
         backgroundColor: controller.theme.scaffoldBackgroundColor,
         onDestinationSelected: (i) {
@@ -265,7 +285,10 @@ class HomeView extends GetView<HomeController> {
         },
         trailing: IconButton(
           onPressed: () => controller.extended = !controller.extended,
-          icon: Icon(Icons.explore),
+          icon:
+              controller.extended
+                  ? Icon(Icons.keyboard_arrow_left)
+                  : Icon(Icons.keyboard_arrow_right),
         ),
         extended: controller.extended,
         selectedIndex: controller.index,
@@ -273,39 +296,39 @@ class HomeView extends GetView<HomeController> {
         destinations: [
           NavigationRailDestination(
             icon: Icon(Icons.dashboard_outlined),
-            label: Text('dashboard'),
+            label: Text('dashboard'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/sales.png", height: 28, width: 28),
-            label: Text('sales'),
+            label: Text('sales'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/purchase.png", height: 28, width: 28),
-            label: Text('purchases'),
+            label: Text('purchases'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/mission.png", height: 28, width: 28),
-            label: Text('missions'),
+            label: Text('missions'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/money-in.png", height: 28, width: 28),
-            label: Text('customer_payment'),
+            label: Text('customer_payments'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/money-out.png", height: 28, width: 28),
-            label: Text('supplier_payment'),
+            label: Text('supplier_payments'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/customer.png", height: 28, width: 28),
-            label: Text('customers'),
+            label: Text('customers'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/supplier.png", height: 28, width: 28),
-            label: Text('suppliers'),
+            label: Text('suppliers'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/supplier.png", height: 28, width: 28),
-            label: Text('employees'),
+            label: Text('employees'.tr),
           ),
 
           NavigationRailDestination(
@@ -318,11 +341,11 @@ class HomeView extends GetView<HomeController> {
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/settings.png", height: 28, width: 28),
-            label: Text('settings'.tr),
+            label: Text('synchronisation'.tr),
           ),
           NavigationRailDestination(
             icon: Image.asset("assets/settings.png", height: 28, width: 28),
-            label: Text('missions'.tr),
+            label: Text('settings'.tr),
           ),
         ],
       ),
@@ -521,7 +544,6 @@ class HomeView extends GetView<HomeController> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    SuperAdminMenu(),
                     Obx(
                       () => Padding(
                         padding: const EdgeInsets.all(8.0),

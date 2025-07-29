@@ -73,7 +73,7 @@ class UserPaymentFormView<T> extends GetView<UserPaymentFormController<T>> {
                                         Center(
                                           child:
                                               controller.user.id == null
-                                                  ? Text('select_user'.tr)
+                                                  ? Text(controller.select_user)
                                                   : Text(
                                                     '${controller.user.firstName ?? ''} | ${controller.user.companyName ?? ''}',
                                                     style: TextStyle(

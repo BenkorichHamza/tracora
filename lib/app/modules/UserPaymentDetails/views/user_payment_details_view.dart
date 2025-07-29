@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
-import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/UserPaymentDetails/controllers/user_payment_details_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
-import 'package:tracora/app/routes/app_pages.dart';
+import 'package:tracora/app/widgets/qr_code.dart';
 
 class UserPaymentDetailsView<T>
     extends GetView<UserPaymentDetailsController<T>> {
@@ -31,7 +29,24 @@ class UserPaymentDetailsView<T>
                             .dark
                             .colorScheme
                             .primaryContainer,
+                    actions: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Obx(
+                          () =>
+                              controller.moneyTransaction.status == 1
+                                  ? SizedBox()
+                                  : ElevatedButton.icon(
+                                    onPressed: () {
+                                      controller.approve();
+                                    },
+                                    label: Text("approve".tr),
+                                  ),
+                        ),
+                      ),
+                    ],
                   ),
+
                   body: Obx(
                     () =>
                         controller.loading
@@ -50,69 +65,202 @@ class UserPaymentDetailsView<T>
                                         () => Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            controller.moneyTransaction.user
-                                                    ?.circleAvatar(
-                                                      radius: 60,
-                                                    ) ??
-                                                SizedBox(),
-                                            Center(
-                                              child: Text(
-                                                '${controller.moneyTransaction.user?.firstName} | ${controller.moneyTransaction.user?.companyName}',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                            Container(
+                                              margin: EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 8,
                                               ),
-                                            ),
-                                            Center(
-                                              child: Text(
-                                                'credit ${controller.moneyTransaction.user?.toPay.formatPrice()}',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color:
+                                              padding: EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                gradient: LinearGradient(
+                                                  colors:
                                                       controller
                                                                   .moneyTransaction
-                                                                  .user
-                                                                  ?.toPay ==
-                                                              0
-                                                          ? Colors.green
-                                                          : (controller
-                                                                      .moneyTransaction
-                                                                      .user
-                                                                      ?.toPay ??
-                                                                  0) <
-                                                              0
-                                                          ? Colors.amber
-                                                          : Colors.orange,
+                                                                  .status ==
+                                                              1
+                                                          ? [
+                                                            Color(0xFF56ab2f),
+                                                            Color(0xFFa8e063),
+                                                          ] // Vert validé
+                                                          : [
+                                                            Color(0xFFd31027),
+                                                            Color(0xFFea384d),
+                                                          ], // Rouge non validé
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
                                                 ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black26,
+                                                    blurRadius: 10,
+                                                    offset: Offset(0, 6),
+                                                  ),
+                                                ],
                                               ),
-                                            ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  // ✅ Header avec utilisateur et statut
+                                                  Row(
+                                                    children: [
+                                                      controller
+                                                              .moneyTransaction
+                                                              .user
+                                                              ?.circleAvatar(
+                                                                radius: 20,
+                                                              ) ??
+                                                          SizedBox(),
+                                                      SizedBox(width: 12),
+                                                      Text(
+                                                        controller
+                                                                .moneyTransaction
+                                                                .user
+                                                                ?.firstName ??
+                                                            '',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                      Spacer(),
+                                                      Icon(
+                                                        controller
+                                                                    .moneyTransaction
+                                                                    .status ==
+                                                                1
+                                                            ? Icons.check_circle
+                                                            : Icons
+                                                                .warning_amber_rounded,
+                                                        color: Colors.white,
+                                                        size: 20,
+                                                      ),
+                                                      SizedBox(width: 4),
+                                                      Text(
+                                                        controller
+                                                                    .moneyTransaction
+                                                                    .status ==
+                                                                1
+                                                            ? 'Validée'
+                                                            : 'Non validée',
+                                                        style: TextStyle(
+                                                          color: Colors.white70,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(height: 16),
 
-                                            ListTile(
-                                              title: Text('old_credit'),
-                                              trailing: Text(
-                                                controller
-                                                        .moneyTransaction
-                                                        .credit
-                                                        .formatPrice() ??
-                                                    0.formatPrice()!,
-                                                style: TextStyle(fontSize: 16),
-                                              ),
-                                            ),
-                                            ListTile(
-                                              title: Text('payment'),
-                                              trailing: Text(
-                                                controller
-                                                        .moneyTransaction
-                                                        .amount
-                                                        .formatPrice() ??
-                                                    0.formatPrice()!,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.green,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                                  // 💸 Infos de paiement
+                                                  Row(
+                                                    children: [
+                                                      // Icon for payments
+                                                      Container(
+                                                        padding: EdgeInsets.all(
+                                                          10,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color: Colors
+                                                                  .white
+                                                                  .withOpacity(
+                                                                    0.2,
+                                                                  ),
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
+                                                        child: Icon(
+                                                          Icons.payment,
+                                                          color: Colors.white,
+                                                          size: 28,
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 16),
+
+                                                      // Total payment value
+                                                      Expanded(
+                                                        child: Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            // Total Payment label
+                                                            Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  'Total versé',
+                                                                  style: TextStyle(
+                                                                    color: Colors
+                                                                        .white
+                                                                        .withOpacity(
+                                                                          0.85,
+                                                                        ),
+                                                                    fontSize:
+                                                                        13,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  '${controller.moneyTransaction.amount.formatNumber()} DA',
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        Colors
+                                                                            .white,
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  'Ancien crédit',
+                                                                  style: TextStyle(
+                                                                    color: Colors
+                                                                        .white
+                                                                        .withOpacity(
+                                                                          0.85,
+                                                                        ),
+                                                                    fontSize:
+                                                                        13,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  '${controller.moneyTransaction.credit.formatNumber()} DA',
+                                                                  style: TextStyle(
+                                                                    color:
+                                                                        Colors
+                                                                            .white,
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],

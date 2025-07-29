@@ -19,39 +19,38 @@ class CustomerFormView<T> extends GetView<UserFormController<T>> {
           child: ListView(
             padding: EdgeInsets.all(16),
             children: [
-              Text(controller.user.id.toString()),
-              Obx(
-                () => Center(
-                  child: Container(
-                    height: 200,
-                    width: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(1000),
-                      color:
-                          Get.find<HomeController>()
-                              .theme
-                              .colorScheme
-                              .surfaceContainerHighest,
-                      image: controller.img.toDecorationImage(),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(1000),
-                      onTap: controller.pickImage,
-                      child:
-                          controller.img.toDecorationImage() != null
-                              ? Align(
-                                alignment: Alignment.topRight,
-                                child: IconButton.filled(
-                                  onPressed: () => controller.img = '',
-                                  icon: Icon(Icons.clear),
-                                ),
-                              )
-                              : Icon(Icons.image_outlined, size: 100),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 8),
+              // Obx(
+              //   () => Center(
+              //     child: Container(
+              //       height: 200,
+              //       width: 200,
+              //       decoration: BoxDecoration(
+              //         borderRadius: BorderRadius.circular(1000),
+              //         color:
+              //             Get.find<HomeController>()
+              //                 .theme
+              //                 .colorScheme
+              //                 .surfaceContainerHighest,
+              //         image: controller.img.toDecorationImage(),
+              //       ),
+              //       child: InkWell(
+              //         borderRadius: BorderRadius.circular(1000),
+              //         onTap: controller.pickImage,
+              //         child:
+              //             controller.img.toDecorationImage() != null
+              //                 ? Align(
+              //                   alignment: Alignment.topRight,
+              //                   child: IconButton.filled(
+              //                     onPressed: () => controller.img = '',
+              //                     icon: Icon(Icons.clear),
+              //                   ),
+              //                 )
+              //                 : Icon(Icons.image_outlined, size: 100),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // SizedBox(height: 8),
               TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 controller: controller.name,
@@ -59,21 +58,26 @@ class CustomerFormView<T> extends GetView<UserFormController<T>> {
                     (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('user_name'.tr),
+                  label: Text('name'.tr),
                 ),
               ),
-              SizedBox(height: 8),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                controller: controller.companyName,
-                validator:
-                    (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('company_name'.tr),
-                ),
-              ),
-
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : SizedBox(height: 8),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : controller.userType == "employee"
+                  ? SizedBox()
+                  : TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: controller.companyName,
+                    validator:
+                        (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('company_name'.tr),
+                    ),
+                  ),
               SizedBox(height: 8),
               TextFormField(
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -96,62 +100,69 @@ class CustomerFormView<T> extends GetView<UserFormController<T>> {
                   label: Text('phone'.tr),
                 ),
               ),
-              SizedBox(height: 8),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                controller: controller.nin,
-                // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('nin'.tr),
-                ),
-              ),
-              SizedBox(height: 8),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                controller: controller.nif,
-                // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('nif'.tr),
-                ),
-              ),
-              SizedBox(height: 8),
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                controller: controller.nis,
-                // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('nis'.tr),
-                ),
-              ),
-              SizedBox(height: 8),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : SizedBox(height: 8),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: controller.nin,
+                    // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('nin'.tr),
+                    ),
+                  ),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : SizedBox(height: 8),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: controller.nif,
+                    // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('nif'.tr),
+                    ),
+                  ),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : SizedBox(height: 8),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: controller.nis,
+                    // validator: (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('nis'.tr),
+                    ),
+                  ),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : SizedBox(height: 8),
 
-              TextFormField(
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                controller: controller.address,
-                validator:
-                    (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('address'.tr),
-                ),
-              ),
+              controller.userType == "employee"
+                  ? SizedBox()
+                  : TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    controller: controller.address,
+                    validator:
+                        (v) => (v ?? '').length < 3 ? "less_than_3".tr : null,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('address'.tr),
+                    ),
+                  ),
               SizedBox(height: 8),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(fixedSize: Size.fromHeight(50)),
                 onPressed: controller.save,
                 child: Text('save'.tr),
-              ),
-              SizedBox(height: 8),
-              TextButton(
-                style: TextButton.styleFrom(
-                  overlayColor: Colors.red,
-                  foregroundColor: Colors.red,
-                ),
-                onPressed: controller.delete,
-                child: Text('delete_user'.tr),
               ),
             ],
           ),

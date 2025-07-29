@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tracora/app/data/models/modals.dart';
@@ -27,9 +31,19 @@ class DbHelper {
 
   initDb() async {
     if (GetPlatform.isWindows) {
-      final path = 'E:/';
-      final dbPath = join(path, 'db6.db');
+      // final path = 'E:/';
+      // final dbPath = join(path, 'db6.db');
+      var pref = await SharedPreferences.getInstance();
+      var collection = await pref.getString("collection");
+      collection ??=
+          FirebaseFirestore.instance.collection("collections").doc().id;
+
+      final exePath = Platform.resolvedExecutable; // Path to .exe
+      final exeDir = dirname(exePath); // Directory of the .exe
+
+      final dbPath = join(exeDir, 'db1.db');
       print(dbPath);
+      await pref.setString("collection", collection);
 
       return await databaseFactoryFfi.openDatabase(
         dbPath,

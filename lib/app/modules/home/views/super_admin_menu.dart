@@ -6,17 +6,12 @@ import 'package:tracora/app/routes/app_pages.dart';
 class SuperAdminMenu extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () =>
-          controller.employee.superAdmin == true
-              ? Card(
-                child: ListTile(
-                  title: Text('drivres'.tr),
-                  leading: Icon(Icons.local_shipping),
-                  onTap: () => Get.toNamed(Routes.DRIVER),
-                ),
-              )
-              : SizedBox(),
+    return Card(
+      child: ListTile(
+        title: Text('drivres'.tr),
+        leading: Icon(Icons.local_shipping),
+        onTap: () => Get.toNamed(Routes.DRIVER),
+      ),
     );
   }
 }

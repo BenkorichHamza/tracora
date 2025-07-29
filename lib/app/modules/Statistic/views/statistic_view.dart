@@ -17,6 +17,13 @@ class StatisticView extends GetView<StatisticController> {
         backgroundColor:
             Get.find<HomeController>().theme.scaffoldBackgroundColor,
         actions: [
+          IconButton(
+            icon: Icon(LucideIcons.refreshCw),
+            onPressed: () {
+              controller.loadStatistics();
+            },
+          ),
+
           Obx(
             () => TextButton(
               onPressed: () async {

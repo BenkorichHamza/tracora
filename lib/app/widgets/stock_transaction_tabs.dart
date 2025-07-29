@@ -25,11 +25,11 @@ class StockTransactionTabs extends StatelessWidget {
       child: Row(
         children: [
           InkWell(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
             onTap: () => onHideForm(),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: BorderRadius.all(Radius.circular(8)),
 
                 border:
                     showForm
@@ -54,12 +54,11 @@ class StockTransactionTabs extends StatelessWidget {
           ),
           SizedBox(width: 4),
           InkWell(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
             onTap: () => onFormTap(),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-
+                borderRadius: BorderRadius.all(Radius.circular(8)),
                 border:
                     !showForm
                         ? Border.all(width: 0, color: Colors.transparent)

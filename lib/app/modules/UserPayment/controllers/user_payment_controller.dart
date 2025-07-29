@@ -49,6 +49,19 @@ class UserPaymentController<T> extends GetxController {
           ? Get.find<UserPaymentDetailsController<Purchase>>()
           : Get.find<UserPaymentDetailsController<Sale>>();
 
+  String get title =>
+      transactionType == "sale"
+          ? "customer_payments".tr
+          : transactionType == "purchase"
+          ? "supplier_payments".tr
+          : "fees_payments".tr;
+  String get newTitle =>
+      transactionType == "sale"
+          ? "new_payment".tr
+          : transactionType == "purchase"
+          ? "new_payment".tr
+          : "new_pqy;ent".tr;
+
   next() {
     var i = transactions.indexWhere((e) => e.id == selected.id);
     if (i >= transactions.length - 1) return;

@@ -121,11 +121,11 @@ class ProductView extends GetView<ProductController> {
             color: Colors.white,
             icon: Icon(controller.showSearch ? Icons.close : Icons.search),
           ),
-          TextButton.icon(
-            onPressed: controller.importExcelFile,
-            label: Text('excel_import'.tr),
-            icon: Icon(Icons.import_export),
-          ),
+          // TextButton.icon(
+          //   onPressed: controller.importExcelFile,
+          //   label: Text('excel_import'.tr),
+          //   icon: Icon(Icons.import_export),
+          // ),
         ],
       ),
 
@@ -240,14 +240,52 @@ class ProductView extends GetView<ProductController> {
         contentPadding: EdgeInsets.only(right: 8, top: 0, bottom: 0, left: 8),
         leading: product.leading(),
         title: Text(product.translateName ?? 'product'.tr),
-        trailing: Chip(
-          label: Text('stock ${product.stock.formatNumber() ?? '0'}'),
-          color:
-              (product.stock ?? 0) == 0
-                  ? WidgetStateColor.resolveWith((s) => Colors.redAccent)
-                  : (product.stock ?? 0) < (product.alert ?? 10)
-                  ? WidgetStateColor.resolveWith((s) => Colors.orange)
-                  : null,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Garage stock chip
+            Chip(
+              label: Text(
+                'G: ${((product.rest ?? 0) - (product.missionQte ?? 0)).formatNumber()}',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: () {
+                final rest = (product.rest ?? 0) - (product.missionQte ?? 0);
+                final alert = product.alert ?? 10;
+                if (rest <= 0) return Colors.redAccent;
+                if (rest < alert) return Colors.orange;
+                return Colors.blueGrey; // you can pick a neutral color
+              }(),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+
+            // only show camion chip when there's a missionQte
+            if ((product.missionQte ?? 0) > 0) ...[
+              const SizedBox(width: 6),
+              Chip(
+                avatar: Icon(
+                  Icons.local_shipping,
+                  size: 18,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  'M: ${product.missionQte?.formatNumber()} | S: ${product.missionSelledQte?.formatNumber()}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -305,14 +343,14 @@ class ProductView extends GetView<ProductController> {
                 children: [
                   Expanded(
                     child: Text(
-                      '${product.stock?.formatNumber() ?? '0'} ${product.unity ?? 'u'.tr}',
+                      '${product.rest?.formatNumber() ?? '0'} ${product.unity ?? 'u'.tr}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color:
-                            product.stock == 0
+                            product.rest == 0
                                 ? Colors.red
-                                : (product.stock ?? 0) < (product.alert ?? 0)
+                                : (product.rest ?? 0) < (product.alert ?? 0)
                                 ? Colors.amber
                                 : Colors.green,
                       ),

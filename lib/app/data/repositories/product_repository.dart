@@ -17,15 +17,89 @@ class ProductRepository {
     final db = await _dbHelper.db;
 
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-    SELECT 
-      p.*, 
-      COALESCE(SUM(pt.qte * pt.direction), 0) AS stock
+        SELECT
+        p.*,
+        (p.stock + COALESCE(SUM(CASE
+                                  WHEN (st.status = 1 AND st.type <> "mission" AND (st.missionIds IS NULL OR NOT EXISTS (
+                SELECT 1
+                FROM stock_transaction m
+                WHERE m.ids = st.missionIds
+                  AND m.status = 2
+            ))) THEN pt.qte * pt.direction
+                                  ELSE 0
+                                END), 0)) AS rest,
+(COALESCE(SUM(CASE
+                                  WHEN (st.status = 2 AND st.type = "mission") THEN pt.qte
+                                  ELSE 0
+                                END), 0)) AS missionQte,
+(COALESCE(SUM(CASE
+                                  WHEN (st.type <> "mission" AND  EXISTS (
+                SELECT 1
+                FROM stock_transaction m
+                WHERE m.ids = st.missionIds
+                  AND m.status = 2
+            )) THEN -pt.qte*pt.direction
+                                  ELSE 0
+                                END), 0)) AS missionSelledQte
     FROM product p
     LEFT JOIN product_transaction pt ON p.id = pt.product_id
-    WHERE p.deletedAt IS NULL AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
+    LEFT JOIN stock_transaction st ON st.id = pt.transaction_id
+    WHERE p.deletedAt IS NULL
+      AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
     GROUP BY p.id
-    LIMIT 50
-  ''');
+    LIMIT 50 OFFSET 0;
+      ''');
+
+    //     final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    //         SELECT
+    //   p.*,
+    //   -- garage stock: start with p.stock, then add/subtract
+    //   --   • all non‑mission ins (status=1) that are not linked to a completed mission
+    //   --   • all mission ins/outs *only* when mission.status <> 2
+    //   COALESCE(
+    //     p.stock
+    //     + SUM(
+    //         CASE
+    //           -- non-mission transactions: include only status=1 and exclude those linked to missions with status=2
+    //           WHEN st.type <> 'mission'
+    //             AND st.status = 1
+    //             THEN pt.qte * pt.direction
+
+    //           -- mission transactions: only include when status != 2
+    //           WHEN st.type = 'mission'
+    //             THEN CASE
+    //                    WHEN st.status = 2
+    //                      THEN 0
+    //                    ELSE pt.qte
+    //                  END
+
+    //           ELSE 0
+    //         END
+    //       )
+    //   , 0) AS rest_garage,
+
+    //   -- total moved by missions (you can refine status/direction filters here if needed)
+    //   COALESCE(
+    //     SUM(
+    //       CASE
+    //         WHEN st.type = 'mission'
+    //           THEN pt.qte * pt.direction
+    //         ELSE 0
+    //       END
+    //     )
+    //   , 0) AS rest_camion
+
+    // FROM product p
+    // LEFT JOIN product_transaction pt
+    //   ON p.id = pt.product_id
+    // LEFT JOIN stock_transaction st
+    //   ON st.id = pt.transaction_id
+    //  WHERE p.deletedAt IS NULL
+    //       AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
+    //     GROUP BY p.id
+    //     LIMIT 50 OFFSET 0;
+
+    //       ''');
 
     // final List<Map<String, dynamic>> maps = await db.query(
     //   'product',
@@ -84,11 +158,10 @@ class ProductRepository {
     SELECT pt.* 
     FROM product_transaction pt
     INNER JOIN stock_transaction  st on st.id=pt.transaction_id
-    WHERE pt.product_id = $productId AND st.type<>"mission"
+    WHERE pt.product_id = $productId AND st.type <> "mission" AND st.status=1
     ORDER BY st.dateTime DESC 
     LIMIT 100
   ''');
-
     // Convert each Map to a ProductTransaction object
     return maps.map((map) => ProductTransaction.fromMap(map)).toList();
   }
@@ -169,19 +242,19 @@ class ProductRepository {
         );
     }
 
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-          .doc("2025")
-          .collection("products")
-          .doc(product.ids)
-          .set(
-            product.copyWith(id: id < 0 ? product.id : id).toMap(),
-            SetOptions(merge: sync),
-          );
-    }
+    // if (sync) {
+    //   FirebaseFirestore.instance
+    //       .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
+    //       .doc("2025")
+    //       .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
+    //       .doc("2025")
+    //       .collection("products")
+    //       .doc(product.ids)
+    //       .set(
+    //         product.copyWith(id: id < 0 ? product.id : id).toFirestoreMap(),
+    //         SetOptions(merge: sync),
+    //       );
+    // }
 
     return id;
   }
@@ -217,12 +290,12 @@ class ProductRepository {
       where: 'id = ?',
       whereArgs: [product.id ?? 0],
     );
-    FirebaseFirestore.instance
-        .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-        .doc("2025")
-        .collection("products")
-        .doc(product.ids)
-        .set(product.toMap(), SetOptions(merge: true));
+    // FirebaseFirestore.instance
+    //     .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
+    //     .doc("2025")
+    //     .collection("products")
+    //     .doc(product.ids)
+    //     .set(product.toMap(), SetOptions(merge: true));
     return r;
   }
 

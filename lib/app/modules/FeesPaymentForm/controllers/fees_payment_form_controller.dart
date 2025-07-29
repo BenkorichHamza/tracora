@@ -89,7 +89,7 @@ class FeesPaymentFormController extends GetxController {
         dateTime: dateTime,
         type: "fees",
       );
-      var id = await repository.insertMoneyTransaction(n);
+      var id = await repository.insertMoneyTransaction(n, sync: false);
       if (Get.isRegistered<FeesPaymentController>()) {
         Get.find<FeesPaymentController>().getAll();
       }

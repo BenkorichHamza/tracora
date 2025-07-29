@@ -9,6 +9,7 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class StockTransactionRepository<T> {
   final DbHelper _dbHelper = DbHelper();
@@ -103,6 +104,35 @@ class StockTransactionRepository<T> {
         .toList();
   }
 
+  Future<List<ProductTransaction>> getMissionProductTransactions({
+    required String missionIds,
+  }) async {
+    final db = await _dbHelper.db;
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    SELECT pt.* 
+    FROM product_transaction pt
+    INNER JOIN stock_transaction  st on st.id=pt.transaction_id
+    WHERE st.type <> "mission" AND st.missionIds="$missionIds"
+    ORDER BY st.dateTime DESC 
+    LIMIT 100
+  ''');
+    var productIds = maps.map((e) => e['product_id']).toList();
+    final List<Map<String, dynamic>> productMaps = await db.query(
+      'product',
+      where: productIds.isEmpty ? null : 'id IN (${productIds.join(', ')})',
+    );
+    var products = productMaps.map(((e) => Product.fromMap(e))).toList();
+
+    return maps
+        .map(
+          (e) => ProductTransaction.fromMap(e).copyWith(
+            product: products.firstWhereOrNull((p) => p.id == e['product_id']),
+          ),
+        )
+        .toList();
+  }
+
   Future<StockTransaction> getTransaction(int id) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -121,7 +151,11 @@ class StockTransactionRepository<T> {
     var transaction = v.copyWith();
     if (transaction.ids == null) {
       var doc =
-          FirebaseFirestore.instance.collection("stockTransactions").doc();
+          FirebaseFirestore.instance
+              .collection("collections")
+              .doc(Get.find<HomeController>().collection)
+              .collection("missions")
+              .doc();
       transaction = transaction.copyWith(ids: doc.id);
     }
     final db = await _dbHelper.db;
@@ -212,12 +246,16 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
       if (sync) {
         if (mission) {
           FirebaseFirestore.instance
+              .collection("collections")
+              .doc(Get.find<HomeController>().collection)
               .collection("missions")
               .doc(transaction.ids)
               .set(transaction.toMap(), SetOptions(merge: sync));
         } else if ((sync && (transaction.missionIds ?? '').isNotEmpty) ||
             v.user?.id != id) {
           FirebaseFirestore.instance
+              .collection("collections")
+              .doc(Get.find<HomeController>().collection)
               .collection("missions")
               .doc(transaction.missionIds)
               .collection("stockTransactions")
@@ -263,6 +301,8 @@ ${productTransactionMaps.map((map) => '(${map['transaction_id']}, ${map['product
     );
     if ((stockTransaction.ids ?? "").isNotEmpty) {
       FirebaseFirestore.instance
+          .collection("collections")
+          .doc(Get.find<HomeController>().collection)
           .collection("missions")
           .doc(stockTransaction.missionIds)
           .collection("stockTransactions")

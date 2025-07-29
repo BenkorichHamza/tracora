@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class UserRepository<T> {
   final DbHelper _dbHelper = DbHelper();
@@ -32,12 +34,14 @@ LEFT JOIN (
     SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
     WHERE type = '$transactionType' 
+    and status = 1
     GROUP BY userIds
 ) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
     SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
     WHERE type = '$transactionType' 
+    and status = 1
     GROUP BY userIds
 ) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
@@ -64,13 +68,13 @@ FROM user u
 LEFT JOIN (
     SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
-   
+    WHERE status = 1
     GROUP BY userIds
 ) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
     SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
-    
+    WHERE status = 1
     GROUP BY userIds
 ) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
@@ -92,12 +96,14 @@ LEFT JOIN (
     SELECT user_id, userIds, SUM(amount) AS payment 
     FROM money_transaction 
     WHERE type = '$transactionType' 
+    and status = 1
     GROUP BY userIds
 ) mt ON u.id = mt.user_id  OR mt.userIds=u.ids
 LEFT JOIN (
     SELECT user_id, userIds, SUM(payment) AS payment, SUM(toPay) AS due 
     FROM stock_transaction 
     WHERE type = '$transactionType' 
+    and status == 1
     GROUP BY userIds
 ) st ON u.id = st.user_id  OR st.userIds=u.ids
 WHERE u.deletedAt IS NULL 
@@ -117,7 +123,12 @@ WHERE u.deletedAt IS NULL
     var user = u.copyWith(type: userType);
     var userIds = FirebaseAuth.instance.currentUser?.uid;
     if (user.ids == null) {
-      var doc = FirebaseFirestore.instance.collection("users").doc();
+      var doc =
+          FirebaseFirestore.instance
+              .collection("collections")
+              .doc(Get.find<HomeController>().collection)
+              .collection("users")
+              .doc();
       user = user.copyWith(ids: doc.id);
     }
     List<Map<String, dynamic>> m = await db.query(
@@ -151,10 +162,12 @@ WHERE u.deletedAt IS NULL
 
     if (sync || id != u.id) {
       FirebaseFirestore.instance
+          .collection("collections")
+          .doc(Get.find<HomeController>().collection)
           .collection("users")
           .doc(user.ids)
           .set(
-            user.copyWith(id: id < 0 ? user.id : id).toMap(),
+            user.copyWith(id: id < 0 ? user.id : id).toFirestoreMap(),
             SetOptions(merge: sync),
           );
     }
@@ -195,9 +208,11 @@ WHERE u.deletedAt IS NULL
       whereArgs: [user.id ?? 0],
     );
     FirebaseFirestore.instance
+        .collection("collections")
+        .doc(Get.find<HomeController>().collection)
         .collection("users")
         .doc(user.ids)
-        .set(user.toMap(), SetOptions(merge: true));
+        .set(user.toFirestoreMap(), SetOptions(merge: true));
     return r;
   }
 

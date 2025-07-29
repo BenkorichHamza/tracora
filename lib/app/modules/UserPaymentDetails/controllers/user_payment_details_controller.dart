@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
@@ -5,8 +6,10 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/helper/delete_dialog.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/UserPaymentForm/controllers/user_payment_form_controller.dart';
 import 'package:tracora/app/modules/UserPayment/controllers/user_payment_controller.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class UserPaymentDetailsController<T> extends GetxController {
   final _loading = false.obs;
@@ -71,6 +74,29 @@ class UserPaymentDetailsController<T> extends GetxController {
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
     }
+  }
+
+  void approve() async {
+    await MoneyTransactionRepository().insertMoneyTransaction(
+      moneyTransaction.copyWith(status: 1),
+
+      sync: false,
+    );
+    FirebaseFirestore.instance
+        .collection("collections")
+        .doc(Get.find<HomeController>().collection)
+        .collection("missions")
+        .doc(moneyTransaction.missionIds ?? "default")
+        .collection("moneyTransactions")
+        .doc(moneyTransaction.ids ?? "default")
+        .update({"status": 1})
+        .catchError((e) {
+          ErrorHandler.handleError(e);
+        });
+    var missionsCtrl = Get.find<StockTransactionController<Mission>>();
+    if (missionsCtrl.selected.id == null) return;
+    getMoneyTransaction();
+    missionsCtrl.toDetails(missionsCtrl.selected);
   }
 
   void print() {}

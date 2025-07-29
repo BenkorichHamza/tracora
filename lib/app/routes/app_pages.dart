@@ -1,6 +1,4 @@
 import 'package:get/get.dart';
-import 'package:tracora/app/modules/User/bindings/user_binding.dart';
-import 'package:tracora/app/modules/User/views/user_view.dart';
 
 import '../modules/Brand/bindings/brand_binding.dart';
 import '../modules/Brand/views/brand_view.dart';
@@ -12,8 +10,6 @@ import '../modules/CategoryForm/bindings/category_form_binding.dart';
 import '../modules/CategoryForm/views/category_form_view.dart';
 import '../modules/CustomerDetails/bindings/user_details_binding.dart';
 import '../modules/CustomerDetails/views/user_details_view.dart';
-import '../modules/Driver/bindings/driver_binding.dart';
-import '../modules/Driver/views/driver_view.dart';
 import '../modules/FeesPayment/bindings/fees_payment_binding.dart';
 import '../modules/FeesPayment/views/fees_payment_view.dart';
 import '../modules/FeesPaymentDetails/bindings/fees_payment_details_binding.dart';
@@ -40,6 +36,10 @@ import '../modules/StockTransaction/bindings/transaction_binding.dart';
 import '../modules/StockTransaction/views/transaction_view.dart';
 import '../modules/StockTransactionDetails/bindings/sale_details_binding.dart';
 import '../modules/StockTransactionDetails/views/stock_transaction_details_view.dart';
+import '../modules/Synchronisation/bindings/synchronisation_binding.dart';
+import '../modules/Synchronisation/views/synchronisation_view.dart';
+import '../modules/User/bindings/user_binding.dart';
+import '../modules/User/views/user_view.dart';
 import '../modules/UserPayment/bindings/user_payment_binding.dart';
 import '../modules/UserPayment/views/user_payment_view.dart';
 import '../modules/UserPaymentDetails/bindings/user_payment_details_binding.dart';
@@ -102,7 +102,6 @@ class AppPages {
       page: () => const UserView(),
       binding: UserBinding(),
     ),
-
     GetPage(
       name: _Paths.SALE_DETAILS,
       page: () => const StockTransactionDetailsView(),
@@ -113,7 +112,6 @@ class AppPages {
       page: () => const StockTransactionView(),
       binding: SaleBinding(),
     ),
-
     GetPage(
       name: _Paths.CUSTOMER_PAYMENT,
       page: () => const UserPaymentView(),
@@ -144,7 +142,6 @@ class AppPages {
       page: () => const FeesPaymentFormView(),
       binding: FeesPaymentFormBinding(),
     ),
-
     GetPage(
       name: _Paths.CUSTOMER_DETAILS,
       page: () => const UserDetailsView(),
@@ -161,11 +158,6 @@ class AppPages {
       binding: StatisticBinding(),
     ),
     GetPage(
-      name: _Paths.DRIVER,
-      page: () => const DriverView(),
-      binding: DriverBinding(),
-    ),
-    GetPage(
       name: _Paths.PRODUCT_DETAILS,
       page: () => const ProductDetailsView(),
       binding: ProductDetailsBinding(),
@@ -179,6 +171,11 @@ class AppPages {
       name: _Paths.POS_HOME,
       page: () => const PosHomeView(),
       binding: PosHomeBinding(),
+    ),
+    GetPage(
+      name: _Paths.SYNCHRONISATION,
+      page: () => const SynchronisationView(),
+      binding: SynchronisationBinding(),
     ),
   ];
 }

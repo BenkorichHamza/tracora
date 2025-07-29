@@ -17,13 +17,12 @@ class TransactionFormView<T> extends GetView<TransactionFormController<T>> {
       body: Row(
         children: [
           Expanded(child: ProductShoppingView<T>()),
+          SizedBox(width: 8),
           Container(
-            width: 400,
-            margin: EdgeInsets.all(4),
-            padding: EdgeInsets.all(8),
+            width: 500,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(width: 0.2),
+              // border: Border.all(width: 0.2),
             ),
             child: TransactionCheckoutPage<T>(),
           ),

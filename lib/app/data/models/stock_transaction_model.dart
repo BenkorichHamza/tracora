@@ -219,7 +219,7 @@ CREATE TABLE stock_transaction (
       result.addAll({'id': id});
     }
     if (status != null) {
-      result.addAll({'status': id});
+      result.addAll({'status': status});
     }
     if (ids != null) {
       result.addAll({'ids': ids});

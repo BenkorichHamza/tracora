@@ -41,6 +41,7 @@ class ProductFormController extends GetxController {
   late TextEditingController name;
   late TextEditingController nameAr;
   late TextEditingController alert;
+  late TextEditingController stock;
   late TextEditingController packaging;
   late TextEditingController barcode;
   late TextEditingController unity;
@@ -110,6 +111,7 @@ class ProductFormController extends GetxController {
         sellPrice: double.tryParse(sellPrice.text),
         sellPrice1: double.tryParse(sellPrice1.text),
         sellPrice2: double.tryParse(sellPrice2.text),
+        stock: double.tryParse(stock.text),
         barcode: barcode.text,
         unity: unity.text.isEmpty ? 'u'.tr : unity.text,
         brand: brand,
@@ -180,6 +182,7 @@ class ProductFormController extends GetxController {
     );
     barcode = TextEditingController(text: product.barcode ?? '');
     unity = TextEditingController(text: product.unity ?? '');
+    stock = TextEditingController(text: product.stock.formatNumber() ?? '');
     buyPrice = TextEditingController(
       text: product.buyPrice?.formatNumber() ?? '',
     );
@@ -194,5 +197,6 @@ class ProductFormController extends GetxController {
     );
     brand = product.brand ?? brand;
     categories = product.categories ?? categories;
+    img = "";
   }
 }

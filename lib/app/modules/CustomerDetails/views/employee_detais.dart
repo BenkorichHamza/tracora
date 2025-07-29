@@ -169,6 +169,9 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                     var moneyTransaction =
                         controller.employeeMoneyTransactions[i];
                     return MoneyTransactionTile(
+                      onValidate: (item) {
+                        print(item.status);
+                      },
                       onTap: (t) {
                         showDialog(
                           context: Get.context!,
@@ -215,6 +218,9 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                 itemBuilder: (c, i) {
                   var transaction = controller.stockTransactions[i];
                   return StockTransactionTile(
+                    onValidate: (item) {
+                      print(item.status);
+                    },
                     onTap: (t) {
                       showDialog(
                         context: Get.context!,
@@ -257,6 +263,9 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                 itemBuilder: (c, i) {
                   var transaction = controller.employeeTransaction[i];
                   return StockTransactionTile(
+                    onValidate: (item) {
+                      print(item.status);
+                    },
                     onTap: (t) {
                       showDialog(
                         context: Get.context!,

@@ -15,11 +15,6 @@ class FeesPaymentFormView extends GetView<FeesPaymentFormController> {
       child: Container(
         constraints: BoxConstraints(maxWidth: 600),
         child: Scaffold(
-          appBar: AppBar(
-            title: Text("checkout".tr),
-            backgroundColor:
-                Get.find<HomeController>().theme.scaffoldBackgroundColor,
-          ),
           body: Center(
             child: SingleChildScrollView(
               child: Column(

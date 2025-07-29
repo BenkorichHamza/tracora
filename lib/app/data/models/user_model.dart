@@ -177,9 +177,97 @@ CREATE TABLE user (
     if (type != null) {
       result.addAll({'type': type});
     }
-    if (data != null) {
-      result.addAll({'data': data});
+    // if (data != null) {
+    //   result.addAll({'data': data});
+    // }
+    if (firstName != null) {
+      result.addAll({'firstName': firstName});
     }
+    if (lastName != null) {
+      result.addAll({'lastName': lastName});
+    }
+    if (address != null) {
+      result.addAll({'address': address});
+    }
+    if (phone != null) {
+      result.addAll({'phone': phone});
+    }
+    if (fax != null) {
+      result.addAll({'fax': fax});
+    }
+    if (fix != null) {
+      result.addAll({'fix': fix});
+    }
+    if (email != null) {
+      result.addAll({'email': email});
+    }
+    if (companyName != null) {
+      result.addAll({'companyName': companyName});
+    }
+    if (updatedAt != null) {
+      result.addAll({'updatedAt': updatedAt});
+    }
+    if (due != null) {
+      result.addAll({'due': due});
+    }
+    if (payment != null) {
+      result.addAll({'payment': payment});
+    }
+    if (createdAt != null) {
+      result.addAll({'createdAt': createdAt});
+    }
+    if (deletedAt != null) {
+      result.addAll({'deletedAt': deletedAt});
+    }
+    if (code != null) {
+      result.addAll({'code': code});
+    }
+    if (nif != null) {
+      result.addAll({'nif': nif});
+    }
+    if (nis != null) {
+      result.addAll({'nis': nis});
+    }
+    if (nin != null) {
+      result.addAll({'nin': nin});
+    }
+    if (password != null) {
+      result.addAll({'password': password});
+    }
+    if (img != null) {
+      result.addAll({'img': img});
+    }
+
+    return result;
+  }
+
+  Map<String, dynamic> toFirestoreMap() {
+    final result = <String, dynamic>{};
+
+    if (id != null) {
+      result.addAll({'id': id});
+    }
+    if (remoteId != null) {
+      result.addAll({'remoteId': remoteId});
+    }
+    if (ids != null) {
+      result.addAll({'ids': ids});
+    }
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+    if (type != null) {
+      result.addAll({'type': type});
+    }
+    // if (data != null) {
+    //   result.addAll({'data': data});
+    // }
     if (firstName != null) {
       result.addAll({'firstName': firstName});
     }

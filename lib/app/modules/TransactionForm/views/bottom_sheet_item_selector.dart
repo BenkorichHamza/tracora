@@ -114,7 +114,14 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                                 ),
                               ),
                               trailing: IconButton(
-                                onPressed: () => Get.back(result: 0.0),
+                                onPressed:
+                                    () => Get.back(
+                                      result: ProductTransaction(
+                                        price: double.tryParse(priceCtrl.text),
+                                        qte: 0,
+                                        product: product,
+                                      ),
+                                    ),
                                 icon: Icon(Icons.delete_outline),
                                 color: Colors.red,
                               ),

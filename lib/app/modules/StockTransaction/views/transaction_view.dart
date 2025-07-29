@@ -28,10 +28,10 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
       () => Column(
         children: [
           StockTransactionTabs(
-            title: "transaction",
+            title: controller.title,
             formTitle:
                 Get.find<TransactionFormController<T>>().transaction.id == null
-                    ? ('new_tansaction'.tr)
+                    ? (controller.newTitle)
                     : (Get.find<TransactionFormController<T>>()
                             .transaction
                             .user
@@ -39,7 +39,7 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                         Get.find<TransactionFormController<T>>()
                             .user
                             .firstName ??
-                        'form'),
+                        'form'.tr),
             onCloseForm: () {
               Get.find<TransactionFormController<T>>().init(StockTransaction());
               controller.showForm = false;
@@ -121,7 +121,7 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                       controller.getAll();
                     },
                   )
-                  : Text('transactions'.tr),
+                  : Text(controller.title),
         ),
         actions: [
           IconButton(
@@ -162,6 +162,9 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                         initState: (_) {},
                         builder: (c) {
                           return StockTransactionTile(
+                            onValidate: (item) {
+                              print(item.status);
+                            },
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,
                             onTap: controller.toDetails,

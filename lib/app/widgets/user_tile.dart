@@ -22,25 +22,23 @@ class UserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      selected: selected,
-      // selectedColor: Colors.amber.withAlpha(200),
-      selectedTileColor: Colors.amber.withAlpha(50),
-      tileColor:
-          highest
-              ? Get.find<HomeController>()
-                  .theme
-                  .colorScheme
-                  .surfaceContainerHigh
-              : null,
-      contentPadding: EdgeInsets.symmetric(horizontal: 8),
-      onTap: () => onTap(item),
-      leading: item.circleAvatar(),
-      title: Text(item.firstName ?? ''),
-      subtitle: Text(item.email ?? ''),
-      trailing: Text(
-        (item.toPay).formatPrice() ?? '',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: ListTile(
+        selected: selected,
+        // selectedColor: Colors.amber.withAlpha(200),
+        selectedTileColor: Colors.amber.withAlpha(50),
+
+        tileColor: Get.find<HomeController>().theme.colorScheme.surface,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8),
+        onTap: () => onTap(item),
+        leading: item.circleAvatar(),
+        title: Text(item.firstName ?? ''),
+        subtitle: Text((item.email ?? '').isEmpty ? 'email' : item.email!),
+        trailing: Text(
+          (item.toPay).formatPrice() ?? '',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

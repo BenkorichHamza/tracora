@@ -238,6 +238,7 @@ class TransactionFormController<T> extends GetxController {
       var n = transaction.copyWith(
         user: user,
         topay: total,
+        status: 1,
         total: total,
         productTransactions: productTransactions,
         payment: double.tryParse(payment.text),

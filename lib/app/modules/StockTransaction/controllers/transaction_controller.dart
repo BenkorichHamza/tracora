@@ -50,6 +50,18 @@ class StockTransactionController<T> extends GetxController
           : T == Purchase || T == Supplier
           ? "purchase"
           : "mission";
+  String get title =>
+      transactionType == "sale"
+          ? "sales".tr
+          : transactionType == "purchase"
+          ? "purchases".tr
+          : "missions".tr;
+  String get newTitle =>
+      transactionType == "sale"
+          ? "new_sale".tr
+          : transactionType == "purchase"
+          ? "new_purchase".tr
+          : "new_mission".tr;
   delete() {
     if (selected.id == null) return;
     Get.find<StockTransactionDetailsController<T>>().delete();
@@ -153,6 +165,8 @@ class StockTransactionController<T> extends GetxController
     if (T == Mission) {
       // Get.find<StockTransactionDetailsController<T>>().listenToSales();
       // Get.find<StockTransactionDetailsController<T>>().listenToPayments();
+      Get.find<StockTransactionDetailsController<T>>()
+          .getMissionProductTransactions();
       Get.find<StockTransactionDetailsController<T>>().listenToSync();
     }
   }

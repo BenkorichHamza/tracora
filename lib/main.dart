@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tracora/app/locale/translations.dart';
 import 'package:tracora/firebase_options.dart';
 
 import 'app/routes/app_pages.dart';
@@ -28,6 +30,7 @@ void main() async {
       child: GetMaterialApp(
         title: "tracora",
         initialRoute: AppPages.INITIAL,
+        translations: AppTranslation(),
         getPages: AppPages.routes,
 
         locale:
@@ -62,4 +65,9 @@ void main() async {
       ),
     ),
   );
+
+  doWhenWindowReady(() {
+    appWindow.maximize(); // Make it full screen
+    appWindow.show();
+  });
 }

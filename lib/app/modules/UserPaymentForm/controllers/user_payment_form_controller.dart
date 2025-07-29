@@ -34,6 +34,13 @@ class UserPaymentFormController<T> extends GetxController {
   UserModel get employee => this._employee.value;
   set employee(UserModel value) => this._employee.value = value;
 
+  String get select_user =>
+      transactionType == "sale"
+          ? "select_customer".tr
+          : transactionType == "purchase"
+          ? "select_supplier".tr
+          : "".tr;
+
   late TextEditingController payment;
   late FocusNode paymentFn;
 
@@ -111,12 +118,13 @@ class UserPaymentFormController<T> extends GetxController {
       if (!validate) return;
       var n = transaction.copyWith(
         user: user,
+        status: 1,
         amount: double.tryParse(payment.text),
         credit: user.toPay,
         dateTime: dateTime,
         type: "$transactionType",
       );
-      var id = await repository.insertMoneyTransaction(n);
+      var id = await repository.insertMoneyTransaction(n, sync: false);
       if (Get.isRegistered<UserPaymentController<T>>()) {
         Get.find<UserPaymentController<T>>().getAll();
       }

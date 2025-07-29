@@ -14,321 +14,182 @@ class ProductFormView extends GetView<ProductFormController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text('Product Details'), centerTitle: true),
       body: Center(
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
-          child: Form(
-            key: controller.formKey,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 1000),
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: EdgeInsets.all(16),
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Form(
+                key: controller.formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Three columns: Image | Field group A | Field group B
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Column 1: Image
                         Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.name,
-                            textInputAction: TextInputAction.next,
-
-                            validator:
-                                (v) =>
-                                    (v ?? '').length < 3
-                                        ? "less_than_3".tr
-                                        : null,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('product_name'.tr),
+                          flex: 1,
+                          child: Center(
+                            child: SizedBox(
+                              height: 250,
+                              width: 250,
+                              child: productImage(),
                             ),
                           ),
                         ),
-                        SizedBox(width: 8),
+
+                        SizedBox(width: 24),
+
+                        // Column 2: fields group A
                         Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.buyPrice,
-                            textInputAction: TextInputAction.next,
-                            validator:
-                                (v) =>
-                                    double.tryParse(v ?? '') == null
-                                        ? "not_double".tr
-                                        : null,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r"[0-9]"),
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              _numberField(
+                                controller: controller.stock,
+                                label: 'initial_stock'.tr,
+                                isDecimal: true,
                               ),
-                              TextInputFormatter.withFunction((
-                                oldValue,
-                                newValue,
-                              ) {
-                                final text = newValue.text;
-                                if (text.contains('.')) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('0') && text.length > 1) {
-                                  return TextEditingValue(
-                                    text: text.substring(1),
-                                  );
-                                }
-                                if (text.startsWith('.')) {
-                                  return oldValue;
-                                }
-
-                                if (text.characters
-                                        .where((c) => c == ".")
-                                        .length >
-                                    1) {
-                                  return oldValue;
-                                }
-
-                                return newValue;
-                              }),
+                              SizedBox(height: 16),
+                              _numberField(
+                                controller: controller.alert,
+                                label: 'alert_stock'.tr,
+                              ),
+                              SizedBox(height: 16),
+                              _textField(
+                                controller: controller.unity,
+                                label: 'unity'.tr,
+                              ),
+                              SizedBox(height: 16),
+                              _textField(
+                                controller: controller.barcode,
+                                label: 'barcode'.tr,
+                              ),
                             ],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('buy_price'.tr),
-                            ),
                           ),
                         ),
-                        SizedBox(width: 8),
+
+                        SizedBox(width: 24),
+
+                        // Column 3: fields group B
                         Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.sellPrice,
-                            textInputAction: TextInputAction.next,
-                            validator:
-                                (v) =>
-                                    double.tryParse(v ?? '') == null
-                                        ? "not_double".tr
-                                        : null,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r"[0-9]"),
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              _textField(
+                                controller: controller.name,
+                                label: 'product_name'.tr,
+                                validator:
+                                    (v) =>
+                                        (v ?? '').length < 3
+                                            ? 'less_than_3'.tr
+                                            : null,
                               ),
-                              TextInputFormatter.withFunction((
-                                oldValue,
-                                newValue,
-                              ) {
-                                final text = newValue.text;
-                                if (text.contains('.')) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('0') && text.length > 1) {
-                                  return TextEditingValue(
-                                    text: text.substring(1),
-                                  );
-                                }
-                                if (text.startsWith('.')) {
-                                  return oldValue;
-                                }
-
-                                if (text.characters
-                                        .where((c) => c == ".")
-                                        .length >
-                                    1) {
-                                  return oldValue;
-                                }
-
-                                return newValue;
-                              }),
+                              SizedBox(height: 16),
+                              _numberField(
+                                controller: controller.buyPrice,
+                                label: 'buy_price'.tr,
+                              ),
+                              SizedBox(height: 16),
+                              _numberField(
+                                controller: controller.sellPrice,
+                                label: 'sell_price'.tr,
+                              ),
                             ],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('sell_price'.tr),
-                            ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.unity,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('unity'.tr),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.barcode,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('barcode'.tr),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.packaging,
-                            textInputAction: TextInputAction.next,
-                            validator:
-                                (v) =>
-                                    (v ?? '').isEmpty
-                                        ? null
-                                        : double.tryParse(v ?? '') == null
-                                        ? "not_double".tr
-                                        : null,
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r"[0-9.]"),
-                              ),
-                              TextInputFormatter.withFunction((
-                                oldValue,
-                                newValue,
-                              ) {
-                                final text = newValue.text;
-                                if (text.contains('.') &&
-                                    text.split('.').last.length > 2) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('00')) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('.')) {
-                                  return oldValue;
-                                }
 
-                                if (text.startsWith('0') &&
-                                    !text.startsWith('0.') &&
-                                    text.length > 1) {
-                                  return oldValue.copyWith(
-                                    text: int.tryParse(text)?.toString() ?? '0',
-                                  );
-                                }
-                                if (text.characters
-                                        .where((c) => c == ".")
-                                        .length >
-                                    1) {
-                                  return oldValue;
-                                }
+                    SizedBox(height: 32),
 
-                                return newValue;
-                              }),
-                            ],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('packaging'.tr),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode:
-                                AutovalidateMode.onUserInteraction,
-                            controller: controller.alert,
-                            textInputAction: TextInputAction.next,
-                            validator:
-                                (v) =>
-                                    (v ?? '').isEmpty
-                                        ? null
-                                        : double.tryParse(v ?? '') == null
-                                        ? "not_double".tr
-                                        : null,
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r"[0-9.]"),
-                              ),
-                              TextInputFormatter.withFunction((
-                                oldValue,
-                                newValue,
-                              ) {
-                                final text = newValue.text;
-                                if (text.contains('.') &&
-                                    text.split('.').last.length > 2) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('00')) {
-                                  return oldValue;
-                                }
-                                if (text.startsWith('.')) {
-                                  return oldValue;
-                                }
-
-                                if (text.startsWith('0') &&
-                                    !text.startsWith('0.') &&
-                                    text.length > 1) {
-                                  return oldValue.copyWith(
-                                    text: int.tryParse(text)?.toString() ?? '0',
-                                  );
-                                }
-                                if (text.characters
-                                        .where((c) => c == ".")
-                                        .length >
-                                    1) {
-                                  return oldValue;
-                                }
-
-                                return newValue;
-                              }),
-                            ],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('alert_stock'.tr),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
+                    // Save button
                     Center(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          fixedSize: Size.fromHeight(50),
-                        ),
+                      child: ElevatedButton.icon(
                         onPressed: controller.save,
-                        child: Text('save'.tr),
+                        icon: Icon(Icons.save),
+                        label: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          child: Text(
+                            'save'.tr,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
+                        ),
                       ),
                     ),
-                    SizedBox(height: 64),
-
-                    controller.product.id == null
-                        ? SizedBox()
-                        : TextButton(
-                          style: TextButton.styleFrom(
-                            overlayColor: Colors.red,
-                            foregroundColor: Colors.red,
-                          ),
-                          onPressed: controller.delete,
-                          child: Text('delete_product'.tr),
-                        ),
                   ],
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      textInputAction: TextInputAction.next,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+
+  Widget _numberField({
+    required TextEditingController controller,
+    required String label,
+    bool isDecimal = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      textInputAction: TextInputAction.next,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator:
+          (v) =>
+              (v ?? '').isEmpty
+                  ? null
+                  : double.tryParse(v!) == null
+                  ? 'not_double'.tr
+                  : null,
+      keyboardType: TextInputType.numberWithOptions(
+        decimal: isDecimal,
+        signed: false,
+      ),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(
+          RegExp(isDecimal ? r"[0-9.]" : r"[0-9]"),
+        ),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
       ),
     );
   }

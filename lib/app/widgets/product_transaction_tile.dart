@@ -12,7 +12,7 @@ class ProductTransactionTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     var product = productTransaction.product;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.only(top: 4),
       child: ListTile(
         dense: true,
         leading: product?.leading(),

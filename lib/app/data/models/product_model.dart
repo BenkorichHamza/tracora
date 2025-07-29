@@ -55,6 +55,9 @@ CREATE TABLE product (
   final String? name;
   final String? nameAr;
   final double? alert;
+  final double? rest;
+  final double? missionQte;
+  final double? missionSelledQte;
   final double? packaging;
   final bool? isInteger;
   final double? stock;
@@ -82,6 +85,9 @@ CREATE TABLE product (
     this.name,
     this.nameAr,
     this.alert,
+    this.rest,
+    this.missionQte,
+    this.missionSelledQte,
     this.packaging,
     this.isInteger,
     this.stock,
@@ -111,6 +117,9 @@ CREATE TABLE product (
     String? name,
     String? nameAr,
     double? alert,
+    double? rest,
+    double? missionQte,
+    double? missionSelledQte,
     double? packaging,
     bool? isInteger,
     double? stock,
@@ -139,6 +148,9 @@ CREATE TABLE product (
       name: name ?? this.name,
       nameAr: nameAr ?? this.nameAr,
       alert: alert ?? this.alert,
+      rest: rest ?? this.rest,
+      missionQte: missionQte ?? this.missionQte,
+      missionSelledQte: missionSelledQte ?? this.missionSelledQte,
       packaging: packaging ?? this.packaging,
       isInteger: isInteger ?? this.isInteger,
       stock: stock ?? this.stock,
@@ -190,6 +202,105 @@ CREATE TABLE product (
     }
     if (alert != null) {
       result.addAll({'alert': alert});
+    }
+    if (rest != null) {
+      result.addAll({'rest': rest});
+    }
+    if (missionQte != null) {
+      result.addAll({'missionQte': missionQte});
+    }
+    if (missionSelledQte != null) {
+      result.addAll({'missionSelledQte': missionSelledQte});
+    }
+    if (packaging != null) {
+      result.addAll({'packaging': packaging});
+    }
+    if (isInteger != null) {
+      result.addAll({'isInteger': isInteger});
+    }
+    if (stock != null) {
+      result.addAll({'stock': stock});
+    }
+    if (barcode != null) {
+      result.addAll({'barcode': barcode});
+    }
+    if (unity != null) {
+      result.addAll({'unity': unity});
+    }
+    if (brand != null) {
+      result.addAll({'brand': brand!.toMap()});
+    }
+    if (image != null) {
+      result.addAll({'image': image!.toMap()});
+    }
+    if (categories != null) {
+      result.addAll({
+        'categories': categories!.map((x) => x?.toMap()).toList(),
+      });
+    }
+    if (buyPrice != null) {
+      result.addAll({'buyPrice': buyPrice});
+    }
+    if (sellPrice != null) {
+      result.addAll({'sellPrice': sellPrice});
+    }
+    if (sellPrice1 != null) {
+      result.addAll({'sellPrice1': sellPrice1});
+    }
+    if (sellPrice2 != null) {
+      result.addAll({'sellPrice2': sellPrice2});
+    }
+    if (img != null) {
+      result.addAll({'img': img});
+    }
+    if (createdAt != null) {
+      result.addAll({'createdAt': createdAt});
+    }
+    if (updatedAt != null) {
+      result.addAll({'updatedAt': updatedAt});
+    }
+    if (deletedAt != null) {
+      result.addAll({'deletedAt': deletedAt});
+    }
+
+    return result;
+  }
+
+  Map<String, dynamic> toFirestoreMap() {
+    final result = <String, dynamic>{};
+
+    if (id != null) {
+      result.addAll({'id': id});
+    }
+    if (remoteId != null) {
+      result.addAll({'remoteId': remoteId});
+    }
+    // if (data != null) {
+    //   result.addAll({'data': data});
+    // }
+    if (ids != null) {
+      result.addAll({'ids': ids});
+    }
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
+    }
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
+    }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+    if (name != null) {
+      result.addAll({'name': name});
+    }
+    if (nameAr != null) {
+      result.addAll({'nameAr': nameAr});
+    }
+    if (alert != null) {
+      result.addAll({'alert': alert});
+    }
+    if (rest != null) {
+      result.addAll({'rest': rest});
     }
     if (packaging != null) {
       result.addAll({'packaging': packaging});
@@ -260,8 +371,11 @@ CREATE TABLE product (
     if (ids != null) {
       result.addAll({'ids': ids});
     }
-    if (createdBy != null) {
-      result.addAll({'createdBy': createdBy});
+    if (rest != null) {
+      result.addAll({'rest': rest});
+    }
+    if (rest != null) {
+      result.addAll({'rest': rest});
     }
     if (updatedBy != null) {
       result.addAll({'updatedBy': updatedBy});
@@ -343,6 +457,9 @@ CREATE TABLE product (
     }
     if (data != null) {
       result.addAll({'data': data});
+    }
+    if (stock != null) {
+      result.addAll({'stock': stock});
     }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
@@ -439,6 +556,9 @@ CREATE TABLE product (
       name: map['name'],
       nameAr: map['nameAr'],
       alert: map['alert']?.toDouble(),
+      rest: map['rest']?.toDouble(),
+      missionQte: map['missionQte']?.toDouble(),
+      missionSelledQte: map['missionSelledQte']?.toDouble(),
       packaging: map['packaging']?.toDouble(),
       isInteger: map['isInteger'],
       stock: map['stock']?.toDouble(),
@@ -470,7 +590,7 @@ CREATE TABLE product (
 
   @override
   String toString() {
-    return 'Product(id: $id, remoteId: $remoteId, data: $data, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, image: $image, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Product(id: $id, remoteId: $remoteId, data: $data, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, rest: $rest, missionQte: $missionQte, missionSelledQte: $missionSelledQte, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, image: $image, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -488,6 +608,9 @@ CREATE TABLE product (
         other.name == name &&
         other.nameAr == nameAr &&
         other.alert == alert &&
+        other.rest == rest &&
+        other.missionQte == missionQte &&
+        other.missionSelledQte == missionSelledQte &&
         other.packaging == packaging &&
         other.isInteger == isInteger &&
         other.stock == stock &&
@@ -518,6 +641,9 @@ CREATE TABLE product (
         name.hashCode ^
         nameAr.hashCode ^
         alert.hashCode ^
+        rest.hashCode ^
+        missionQte.hashCode ^
+        missionSelledQte.hashCode ^
         packaging.hashCode ^
         isInteger.hashCode ^
         stock.hashCode ^

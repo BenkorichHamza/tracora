@@ -68,6 +68,20 @@ class UserController<T> extends GetxController {
   UserModel get selected => this._selected.value;
   set selected(UserModel value) => this._selected.value = value;
 
+  String get title =>
+      transactionType == "sale"
+          ? "customers".tr
+          : transactionType == "purchase"
+          ? "suppliers".tr
+          : "employees".tr;
+
+  String get newTitle =>
+      transactionType == "sale"
+          ? "new_customer".tr
+          : transactionType == "purchase"
+          ? "new_supplier".tr
+          : "new_employee".tr;
+
   void toDetails(UserModel user) async {
     if (Get.arguments?["select"] == true) {
       Get.back(result: user);

@@ -11,40 +11,43 @@ class LoginView extends GetView<LoginController> {
     return Scaffold(
       // appBar: AppBar(title: const Text('LoginView'), centerTitle: true),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FlutterLogo(size: 200),
-            SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+        child: Container(
+          width: 600,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FlutterLogo(size: 200),
+              SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+                controller: controller.email,
               ),
-              controller: controller.email,
-            ),
-            SizedBox(height: 16),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+              SizedBox(height: 16),
+              TextField(
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                controller: controller.password,
               ),
-              controller: controller.password,
-            ),
-            SizedBox(height: 16),
-            Obx(
-              () =>
-                  controller.loading
-                      ? CircularProgressIndicator()
-                      : OutlinedButton(
-                        onPressed: () async {
-                          await controller.googleLogin();
-                        },
-                        child: Text('LOGIN'),
-                      ),
-            ),
-          ],
+              SizedBox(height: 16),
+              Obx(
+                () =>
+                    controller.loading
+                        ? CircularProgressIndicator()
+                        : OutlinedButton(
+                          onPressed: () async {
+                            await controller.googleLogin();
+                          },
+                          child: Text('LOGIN'),
+                        ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -44,26 +44,8 @@ class LoginController extends GetxController {
       );
       var user = u.user;
       if (user == null) throw ('null_user');
-      var e = EmployeeModel(
-        id: user.uid,
-        email: user.email,
-        img: user.photoURL,
-      );
-      var doc =
-          await FirebaseFirestore.instance
-              .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-              .doc("2025")
-              .collection('employees')
-              .doc(user.uid)
-              .get();
-      if (doc.exists) {
-        e = EmployeeModel.fromMap(doc.data() ?? {});
-      } else {
-        await FirebaseFirestore.instance
-            .collection('employees')
-            .doc(user.uid)
-            .set(e.toMap());
-      }
+      var e = UserModel(ids: user.uid, email: user.email, img: user.photoURL);
+
       var pref = await SharedPreferences.getInstance();
       await pref.setString("employee", e.toJson());
       Get.find<HomeController>().employee = e;

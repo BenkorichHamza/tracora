@@ -149,8 +149,8 @@ class ProductController extends GetxController {
             barcode: row[0]?.value?.toString(),
             name: row[1]?.value?.toString(),
             stock: row[2]?.value?.toDouble(),
-            buyPrice: row[3]?.value?.toDouble(),
-            sellPrice: row[4]?.value?.toDouble(),
+            buyPrice: row[3]?.value?.toDouble()?.round()?.toDouble() ?? 0,
+            sellPrice: row[4]?.value?.toDouble()?.round()?.toDouble() ?? 0,
           );
           await txn.insert("product", product.toSqliteMap());
           // Or store it in your database or state

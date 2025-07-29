@@ -41,6 +41,7 @@ abstract class Routes {
   static const SETTING = _Paths.SETTING;
   static const MISSION_DETAILS = _Paths.MISSION_DETAILS;
   static const POS_HOME = _Paths.POS_HOME;
+  static const SYNCHRONISATION = _Paths.SYNCHRONISATION;
 }
 
 abstract class _Paths {
@@ -83,4 +84,5 @@ abstract class _Paths {
   static const SETTING = '/setting';
   static const MISSION_DETAILS = '/mission-details';
   static const POS_HOME = '/pos-home';
+  static const SYNCHRONISATION = '/synchronisation';
 }

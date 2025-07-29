@@ -23,23 +23,29 @@ class ProductShoppingView<T> extends GetView<ProductController> {
         child: Scaffold(
           appBar: AppBar(
             backgroundColor:
-                Get.find<HomeController>().theme.scaffoldBackgroundColor,
-            title: Obx(
-              () =>
-                  controller.showSearch
-                      ? TextField(
-                        controller: controller.search,
-                        autofocus: true,
-                        autocorrect: true,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "search".tr,
-                        ),
-                        onChanged: (v) {
-                          controller.getAll();
-                        },
-                      )
-                      : Text('products'.tr),
+                Get.find<HomeController>().dark.colorScheme.primaryContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            foregroundColor: Colors.white,
+            title: Theme(
+              data: Get.find<HomeController>().dark,
+              child: TextField(
+                controller: controller.search,
+                autofocus: true,
+                cursorColor: Colors.white,
+
+                style: TextStyle(fontSize: 16, color: Colors.white),
+                autocorrect: true,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "search".tr,
+                  suffixIconColor: Colors.white,
+                ),
+                onChanged: (v) {
+                  controller.getAll();
+                },
+              ),
             ),
             actions: [
               IconButton(
@@ -47,11 +53,13 @@ class ProductShoppingView<T> extends GetView<ProductController> {
                   controller.showSearch = true;
                 },
                 icon: Icon(Icons.search),
+                color: Colors.white,
               ),
               IconButton(
                 onPressed: () {
                   controller.gridView = !controller.gridView;
                 },
+                color: Colors.white,
                 icon: Icon(
                   controller.gridView ? Icons.grid_view_outlined : Icons.list,
                 ),
@@ -79,7 +87,7 @@ class ProductShoppingView<T> extends GetView<ProductController> {
   Widget listView(TransactionFormController<T> saleFormController) {
     return Obx(
       () => ListView.builder(
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.symmetric(vertical: 8),
         itemCount: controller.products.length,
         itemBuilder: (c, i) {
           var product = controller.products[i];
@@ -98,7 +106,7 @@ class ProductShoppingView<T> extends GetView<ProductController> {
       id: 'shop_${product.id}',
       builder: (c) {
         return Padding(
-          padding: const EdgeInsets.all(4.0),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: ListTile(
             onTap: () {
               saleFormController.setQte(product);

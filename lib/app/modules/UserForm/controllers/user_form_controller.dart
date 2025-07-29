@@ -14,7 +14,12 @@ import 'package:tracora/app/routes/app_pages.dart';
 
 class UserFormController<T> extends GetxController {
   final repository = UserRepository<T>();
-  String get userType => T == Sale || T == Customer ? "customer" : "supplier";
+  String get userType =>
+      T == Sale || T == Customer
+          ? "customer"
+          : T == Purchase || T == Supplier
+          ? "supplier"
+          : "employee";
   String get transactionType =>
       T == Sale || T == Customer ? "sale" : "purchase";
 

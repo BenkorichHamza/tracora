@@ -5,7 +5,7 @@ class StatisticsRepository {
   final DbHelper _dbHelper = DbHelper();
   Future<StatisticModel> getStatistic({int? from, int? to}) async {
     from = from ?? 0;
-    to = to ?? DateTime.now().millisecondsSinceEpoch;
+    to = to ?? DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch;
     var db = await _dbHelper.db;
     var maps = await db.rawQuery('''
 SELECT 

@@ -23,10 +23,10 @@ class UserPaymentView<T> extends GetView<UserPaymentController<T>> {
       () => Column(
         children: [
           StockTransactionTabs(
-            title: "transaction",
+            title: controller.title,
             formTitle:
                 Get.find<UserPaymentFormController<T>>().transaction.id == null
-                    ? ('new_tansaction'.tr)
+                    ? (controller.newTitle)
                     : (Get.find<UserPaymentFormController<T>>()
                             .transaction
                             .user
@@ -154,6 +154,9 @@ class UserPaymentView<T> extends GetView<UserPaymentController<T>> {
                             highest: i.isEven,
                             onTap: controller.toDetails,
                             item: item,
+                            onValidate: (item) {
+                              print(item.status);
+                            },
                           );
                         },
                       );
