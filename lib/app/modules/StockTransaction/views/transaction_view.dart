@@ -6,6 +6,8 @@ import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/StockTransaction/views/transaction_forms.dart';
+import 'package:tracora/app/modules/StockTransaction/views/transaction_tabs.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/views/mission_details_view.dart';
@@ -27,31 +29,33 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
     return Obx(
       () => Column(
         children: [
-          StockTransactionTabs(
-            title: controller.title,
-            formTitle:
-                Get.find<TransactionFormController<T>>().transaction.id == null
-                    ? (controller.newTitle)
-                    : (Get.find<TransactionFormController<T>>()
-                            .transaction
-                            .user
-                            ?.firstName ??
-                        Get.find<TransactionFormController<T>>()
-                            .user
-                            .firstName ??
-                        'form'.tr),
-            onCloseForm: () {
-              Get.find<TransactionFormController<T>>().init(StockTransaction());
-              controller.showForm = false;
-            },
-            onFormTap: () => controller.showForm = true,
-            onHideForm: () => controller.showForm = false,
-            showForm: controller.showForm,
-          ),
+          // StockTransactionTabs(
+          //   title: controller.title,
+          //   formTitle:
+          //       Get.find<TransactionFormController<T>>().transaction.id == null
+          //           ? (controller.newTitle)
+          //           : (Get.find<TransactionFormController<T>>()
+          //                   .transaction
+          //                   .user
+          //                   ?.firstName ??
+          //               Get.find<TransactionFormController<T>>()
+          //                   .user
+          //                   .firstName ??
+          //               'form'.tr),
+          //   onCloseForm: () {
+          //     Get.find<TransactionFormController<T>>().init(StockTransaction());
+          //     controller.showForm = false;
+          //   },
+          //   onFormTap: () => controller.showForm = true,
+          //   onHideForm: () => controller.showForm = false,
+          //   showForm: controller.showForm,
+          // ),
+          TransactionTabs<T>(),
           Expanded(
             child:
-                controller.showForm
-                    ? TransactionFormView<T>()
+                controller.selectedFormIndex >= 0
+                    ? TransactionFormsPage<T>()
+                    // ? TransactionFormView<T>()
                     : stockTransactions(),
           ),
         ],
@@ -101,49 +105,72 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
   Scaffold list() {
     return Scaffold(
       appBar: AppBar(
+        // Make all icons and text white by default:
         foregroundColor: Colors.white,
         backgroundColor:
             Get.find<HomeController>().dark.colorScheme.primaryContainer,
 
-        title: Obx(
-          () =>
-              controller.showSearch
-                  ? TextField(
-                    controller: controller.search,
-                    focusNode: controller.searchFn,
-                    autofocus: true,
-                    autocorrect: true,
-                    decoration: InputDecoration(
-                      border: UnderlineInputBorder(),
-                      hintText: "search".tr,
-                    ),
-                    onChanged: (v) {
-                      controller.getAll();
-                    },
-                  )
-                  : Text(controller.title),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              controller.showSearch = !controller.showSearch;
-              controller.searchFn.requestFocus(controller.focusNode);
-            },
-            color: Colors.white,
-            icon: Icon(controller.showSearch ? Icons.close : Icons.search),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 250),
-              child: EmployeeSelector(
-                onSelect: (v) {
-                  controller.employee = v;
+        // Always show the TextField as the title
+        title: Focus(
+          onKeyEvent: (node, event) {
+            // only intercept key-down, arrow-up
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowUp) {
+              controller.previous();
+              return KeyEventResult.skipRemainingHandlers;
+            } else if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowDown) {
+              controller.next();
+              return KeyEventResult.skipRemainingHandlers;
+            }
+            // otherwise ignore and let the normal flow resume
+            return KeyEventResult.ignored;
+          },
+          child: TextField(
+            controller: controller.search,
+            autofocus: true,
+            focusNode: controller.searchFn,
+            style: TextStyle(color: Colors.white), // typed text is white
+            cursorColor: Colors.white, // cursor is white
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 8),
+              hintText: "${'search'.tr} CTRL+F",
+              hintStyle: TextStyle(color: Colors.white54), // hint is semi-white
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.clear, color: Colors.white),
+                onPressed: () {
+                  controller.search.clear();
                   controller.getAll();
                 },
               ),
             ),
+            onChanged: (_) => controller.getAll(),
+            onSubmitted: (_) => controller.searchFn.requestFocus(),
           ),
+        ),
+
+        actions: [
+          // Example additional action, all icons are white by default
+          // IconButton(
+          //   icon: Icon(Icons.import_export),
+          //   onPressed: controller.importExcelFile,
+          //   tooltip: 'excel_import'.tr,
+          // ),
+          // IconButton(
+          //   icon: Icon(Icons.refresh),
+          //   onPressed: controller.getAll,
+          //   tooltip: 'refresh',
+          // ),
         ],
       ),
 
@@ -153,6 +180,7 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                 ? EmptyWidget()
                 : Obx(() {
                   return ListView.builder(
+                    controller: controller.scrollController,
                     itemCount: controller.transactions.length,
                     itemBuilder: (c, i) {
                       var item = controller.transactions[i];
@@ -162,6 +190,10 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
                         initState: (_) {},
                         builder: (c) {
                           return StockTransactionTile(
+                            key:
+                                item.id == controller.selected.id
+                                    ? controller.selectedKey
+                                    : null,
                             onValidate: (item) {
                               print(item.status);
                             },

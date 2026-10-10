@@ -4,12 +4,14 @@ import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/views/cart_list_transaction_button.dart';
-import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
-class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
+class TransactionCheckoutPage<T>
+    extends GetView<StockTransactionController<T>> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,8 +27,7 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                 children: [
                   DecoratedBox(
                     decoration: BoxDecoration(
-                      // border: Border.all(width: 0.5),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       color:
                           Get.find<HomeController>()
                               .dark
@@ -34,70 +35,84 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                               .primaryContainer,
                     ),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       onTap: controller.selectUser,
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Stack(
-                          children: [
-                            Column(
-                              children: [
-                                controller.user.circleAvatar(radius: 40),
-                                SizedBox(height: 8),
-                                Center(
-                                  child:
-                                      controller.user.id == null
-                                          ? Text('select_user'.tr)
-                                          : Text(
-                                            '${controller.user.firstName ?? ''} | ${controller.user.companyName ?? ''}',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                ),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          leading: (controller.selectedForm.user ?? UserModel())
+                              .circleAvatar(radius: 28),
 
-                                controller.transactionType == "mission"
-                                    ? SizedBox()
-                                    : controller.user.id == null
-                                    ? Text(' ')
-                                    : Center(
-                                      child: Text(
-                                        '${'credit'.tr} | ${controller.user.toPay.formatPrice()}',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              controller.user.toPay <= 0
-                                                  ? const Color.fromARGB(
-                                                    255,
-                                                    212,
-                                                    255,
-                                                    213,
-                                                  )
-                                                  : Colors.deepOrange,
-                                        ),
-                                      ),
+                          title:
+                              controller.selectedForm.user?.id == null
+                                  ? Text(
+                                    'select_user'.tr,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                              ],
-                            ),
-                          ],
+                                  )
+                                  : Text(
+                                    '${controller.selectedForm.user?.firstName ?? ''} | ${controller.selectedForm.user?.companyName ?? ''}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+
+                          subtitle:
+                              controller.transactionType == "mission" ||
+                                      controller.selectedForm.user?.id == null
+                                  ? null
+                                  : Text(
+                                    '${'credit'.tr} | ${controller.selectedForm.user?.toPay.formatPrice()}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          (controller
+                                                          .selectedForm
+                                                          .user
+                                                          ?.toPay ??
+                                                      0) <=
+                                                  0
+                                              ? const Color.fromARGB(
+                                                255,
+                                                212,
+                                                255,
+                                                213,
+                                              )
+                                              : Colors.deepOrange,
+                                    ),
+                                  ),
+
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 18,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
                   ),
 
-                  ...List.generate(controller.productTransactions.length, (i) {
-                    var transaction = controller.productTransactions[i];
-                    return cartItem(transaction);
-                  }),
+                  ...List.generate(
+                    (controller.selectedForm.productTransactions ?? []).length,
+                    (i) {
+                      var transaction =
+                          (controller.selectedForm.productTransactions ??
+                              [])[i];
+                      return cartItem(transaction);
+                    },
+                  ),
                   Divider(),
                   controller.transactionType == "mission"
                       ? SizedBox()
                       : ListTile(
                         title: Text('total'),
                         trailing: Text(
-                          controller.total.formatPrice()!,
+                          controller.selectedForm.total.formatPrice()!,
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -106,7 +121,7 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                       : ListTile(
                         title: Text('old_credit'),
                         trailing: Text(
-                          controller.user.toPay.formatPrice() ??
+                          controller.selectedForm.user?.toPay.formatPrice() ??
                               0.formatPrice()!,
                           style: TextStyle(fontSize: 16, color: Colors.orange),
                         ),
@@ -116,7 +131,9 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                       : ListTile(
                         title: Text('topay'.tr),
                         trailing: Text(
-                          (controller.total + controller.user.toPay)
+                          (controller.selectedForm.total +
+                                      (controller.selectedForm.user?.toPay ??
+                                          0))
                                   .formatPrice() ??
                               0.formatPrice()!,
                           style: TextStyle(fontSize: 18, color: Colors.green),
@@ -134,10 +151,11 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                 onTap: () => controller.editTime(),
                 leading: Icon(Icons.calendar_month),
                 title:
-                    controller.dateTime == 0
+                    controller.selectedForm.dateTime == 0
                         ? Text('select_date'.tr)
                         : Text(
-                          controller.dateTime.formatDate() ?? '-- / -- / ----',
+                          controller.selectedForm.dateTime.formatDate() ??
+                              '-- / -- / ----',
                         ),
                 trailing: OutlinedButton.icon(
                   icon: Icon(Icons.edit_calendar),
@@ -148,7 +166,7 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
             ),
             controller.transactionType == "mission"
                 ? SizedBox()
-                : GetBuilder<TransactionFormController<T>>(
+                : GetBuilder<StockTransactionController<T>>(
                   id: 'checkout',
                   init: controller,
                   initState: (_) {},
@@ -156,8 +174,8 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                     return TextFormField(
                       textDirection: TextDirection.ltr,
                       autovalidateMode: AutovalidateMode.disabled,
-                      controller: controller.payment,
-                      focusNode: controller.paymentFn,
+                      controller: controller.selectedForm.payment,
+                      focusNode: controller.selectedForm.paymentFn,
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       style: TextStyle(
@@ -189,7 +207,10 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                       onChanged: (v) => controller.update(['checkout']),
                       decoration: InputDecoration(
                         error:
-                            int.tryParse(controller.payment.text) != null
+                            int.tryParse(
+                                      controller.selectedForm.payment.text,
+                                    ) !=
+                                    null
                                 ? null
                                 : SizedBox(),
                         border: OutlineInputBorder(
@@ -198,8 +219,9 @@ class TransactionCheckoutPage<T> extends GetView<TransactionFormController<T>> {
                         // label: Text('${'payment'.tr}'),
                         prefixIcon: TextButton(
                           onPressed: () {
-                            controller.payment.text =
-                                (controller.user.toPay + controller.total)
+                            controller.selectedForm.payment.text =
+                                ((controller.selectedForm.user?.toPay ?? 0) +
+                                        controller.total)
                                     .floor()
                                     .toString();
                             controller.update(['checkout']);

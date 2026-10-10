@@ -54,6 +54,10 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   bool get isDark => this._isDark.value;
   set isDark(bool value) => this._isDark.value = value;
 
+  final _sellMode = 0.obs;
+  int get sellMode => this._sellMode.value;
+  set sellMode(int value) => this._sellMode.value = value;
+
   final _scanning = false.obs;
   bool get scanning => this._scanning.value;
   set scanning(bool value) => this._scanning.value = value;
@@ -110,9 +114,24 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   late StreamSubscription suppliersListener;
   late StreamSubscription purchasesListener;
 
+  late FocusScopeNode statisticsNode;
+  late FocusScopeNode saleNode;
+  late FocusScopeNode purchaseNode;
+  late FocusScopeNode missionNode;
+  late FocusScopeNode salePaymentNode;
+  late FocusScopeNode purchasePaymentNode;
+  late FocusScopeNode customerNode;
+  late FocusScopeNode supplierNode;
+  late FocusScopeNode employeeNode;
+  late FocusScopeNode feesPaymentNode;
+  late FocusScopeNode productNode;
+  late FocusScopeNode settingNode;
+  late FocusScopeNode synchronizationNode;
+
   late TabController tabCtrl;
 
   List<Map> get controllers => [
+    {Get.find<StatisticController>(): Get.find<StatisticController>()},
     {
       Get.find<StockTransactionController<Sale>>():
           Get.find<TransactionFormController<Sale>>(),
@@ -141,6 +160,10 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
       Get.find<UserController<Supplier>>():
           Get.find<UserFormController<Supplier>>(),
     },
+    {
+      Get.find<UserController<Employee>>():
+          Get.find<UserFormController<Employee>>(),
+    },
 
     {Get.find<FeesPaymentController>(): Get.find<FeesPaymentFormController>()},
     {Get.find<ProductController>(): Get.find<ProductFormController>()},
@@ -150,6 +173,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   void onInit() {
     super.onInit();
     tabCtrl = TabController(length: 13, vsync: this);
+    initNodes();
     drawerCtrl = AdvancedDrawerController();
     readSettings().then((v) {
       listen();
@@ -166,6 +190,38 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   void onClose() {
     super.onClose();
   }
+
+  initNodes() {
+    statisticsNode = FocusScopeNode();
+    saleNode = FocusScopeNode();
+    purchaseNode = FocusScopeNode();
+    missionNode = FocusScopeNode();
+    salePaymentNode = FocusScopeNode();
+    purchasePaymentNode = FocusScopeNode();
+    customerNode = FocusScopeNode();
+    supplierNode = FocusScopeNode();
+    employeeNode = FocusScopeNode();
+    feesPaymentNode = FocusScopeNode();
+    productNode = FocusScopeNode();
+    settingNode = FocusScopeNode();
+    synchronizationNode = FocusScopeNode();
+  }
+
+  get nodes => [
+    statisticsNode,
+    saleNode,
+    purchaseNode,
+    missionNode,
+    salePaymentNode,
+    purchasePaymentNode,
+    customerNode,
+    supplierNode,
+    employeeNode,
+    feesPaymentNode,
+    productNode,
+    settingNode,
+    synchronizationNode,
+  ];
 
   // void openPlayStore() async {
   //   const url =
@@ -239,6 +295,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     await Get.updateLocale(Locale(lang));
     isDark = pref.getBool('isDark') ?? isDark;
     Get.changeThemeMode(isDark ? ThemeMode.dark : ThemeMode.light);
+    sellMode = pref.getInt("sellMode") ?? 0;
     settingsLoaded = true;
 
     // Get.find<ProfileController>().initilize();
@@ -303,7 +360,7 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
 
   get profileController => null;
 
-  Map? get aciveController => index == 0 ? null : controllers[index - 1];
+  Map? get aciveController => controllers[index];
 
   logout() async {
     // var pref = await SharedPreferences.getInstance();
@@ -674,6 +731,8 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
   }
 
   late StreamSubscription userListener;
+
+  get selectedNode => nodes[index];
 
   listenToUsers() async {
     try {

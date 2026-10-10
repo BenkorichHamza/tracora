@@ -8,6 +8,7 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:tracora/app/core/intents.dart';
+import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/modules/FeesPayment/views/fees_payment_view.dart';
@@ -32,153 +33,161 @@ class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Shortcuts(
-      shortcuts: <LogicalKeySet, Intent>{
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyN):
-            NewIntent(),
-        LogicalKeySet(LogicalKeyboardKey.delete): DeleteIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
-            SearchIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowDown): NextIntent(),
-        LogicalKeySet(LogicalKeyboardKey.arrowUp): PreviousIntent(),
-        LogicalKeySet(LogicalKeyboardKey.escape): EscapeIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyW):
-            CloseIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS):
-            SaveIntent(),
-        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyE):
-            EditIntent(),
-      },
-
+    return FocusScope(
       child: Obx(
         () => Actions(
-          actions:
-              controller.index == 0
-                  ? {}
-                  : <Type, Action<Intent>>{
-                    NewIntent: CallbackAction<NewIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.showForm = true;
-                        controller.aciveController?.values.first.init();
-                      },
-                    ),
-                    CloseIntent: CallbackAction<CloseIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.showForm = false;
-                      },
-                    ),
-                    DeleteIntent: CallbackAction<DeleteIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.delete();
-                      },
-                    ),
-                    SearchIntent: CallbackAction<SearchIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.showSearch =
-                            controller.aciveController?.keys.first.showSearch;
-                        controller.aciveController?.keys.first.searchFn
-                            .requestFocus();
-                      },
-                    ),
-                    NextIntent: CallbackAction<NextIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.next();
-                      },
-                    ),
-                    PreviousIntent: CallbackAction<PreviousIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.previous();
-                      },
-                    ),
-                    EscapeIntent: CallbackAction<EscapeIntent>(
-                      onInvoke: (intent) {
-                        controller.aciveController?.keys.first.showSearch =
-                            false;
-                      },
-                    ),
-                    SaveIntent: CallbackAction<SaveIntent>(
-                      onInvoke: (intent) {
-                        if (controller.aciveController?.keys.first.showForm !=
-                            true) {
-                          return;
-                        }
-                        controller.aciveController?.values.first.save();
-                      },
-                    ),
-                    EditIntent: CallbackAction<EditIntent>(
-                      onInvoke: (intent) {
-                        if (controller.aciveController?.keys.first.showForm ==
-                            true) {
-                          return;
-                        }
-                        controller.aciveController?.keys.first.detailsController
-                            .edit();
-                      },
-                    ),
-                  },
+          actions: <Type, Action<Intent>>{
+            NewIntent: CallbackAction<NewIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.newIntent();
+              },
+            ),
+            EditIntent: CallbackAction<EditIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.editIntent();
+              },
+            ),
+            EscapeIntent: CallbackAction<EscapeIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.escapeIntent();
+              },
+            ),
+            SaveIntent: CallbackAction<SaveIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.saveIntent();
+              },
+            ),
+            SaveAndNewIntent: CallbackAction<SaveAndNewIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.saveAndNewIntent();
+              },
+            ),
 
-          child: Focus(
-            autofocus: true,
-            child: Material(
-              color: controller.theme.scaffoldBackgroundColor,
-              child: Column(
-                children: [
-                  WindowTitleBarBox(
-                    child: Row(
-                      children: [
-                        Expanded(child: MoveWindow()),
-                        WindowButtons(
-                          homeController: controller,
-                        ), // You can create your own minimize/max/close buttons
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child:
-                    // controller.employee.ids == null
-                    //     ? LoginView()
-                    //     :
-                    Obx(
-                      () =>
-                          !controller.settingsLoaded
-                              ? const Scaffold(
-                                backgroundColor: Color.fromRGBO(0, 180, 80, 1),
-                              )
-                              : Theme(
-                                data: controller.theme,
-                                child: OrientationBuilder(
-                                  builder: (context, o) {
-                                    var w = MediaQuery.of(context).size.width;
-                                    return AdvancedDrawer(
-                                      openRatio:
-                                          Get.width < 600 ? 0.75 : 300 / w,
-                                      rtlOpening:
-                                          Get.locale?.languageCode == "ar",
-                                      controller: controller.drawerCtrl,
-                                      drawer: drawer(),
-                                      backdropColor: controller
-                                          .theme
-                                          .scaffoldBackgroundColor
-                                          .withOpacity(0.95),
-                                      child: Scaffold(
-                                        body:
-                                            Platform.isWindows
-                                                ? Row(
-                                                  children: [
-                                                    navigationRail(),
-                                                    Expanded(child: views()),
-                                                  ],
-                                                )
-                                                : content(),
+            DeleteIntent: CallbackAction<DeleteIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.deleteIntent();
+              },
+            ),
+            SearchIntent: CallbackAction<SearchIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.searchIntent();
+              },
+            ),
+            NextIntent: CallbackAction<NextIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.nextIntent();
+              },
+            ),
+            PreviousIntent: CallbackAction<PreviousIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.previousIntent();
+              },
+            ),
+            PrintIntent: CallbackAction<PrintIntent>(
+              onInvoke: (intent) {
+                controller.aciveController?.keys.first.printIntent();
+              },
+            ),
+          },
+
+          child: Material(
+            color: controller.theme.scaffoldBackgroundColor,
+            child: Row(
+              children: [
+                sideMenu(),
+                Expanded(
+                  child: Column(
+                    children: [
+                      WindowTitleBarBox(
+                        child: Row(
+                          children: [
+                            Expanded(child: MoveWindow()),
+                            Obx(
+                              () => DropdownButton<int>(
+                                value: controller.sellMode,
+                                onChanged: (value) {
+                                  controller.sellMode = value ?? 0;
+                                },
+                                items:
+                                    const [
+                                      DropdownMenuItem(
+                                        child: Text('Detail'),
+                                        value: 0,
                                       ),
-                                    );
-                                  },
-                                ),
+                                      DropdownMenuItem(
+                                        child: Text('Semi Detail'),
+                                        value: 1,
+                                      ),
+                                      DropdownMenuItem(
+                                        child: Text('Gros'),
+                                        value: 2,
+                                      ),
+                                    ].toList(),
                               ),
-                    ),
+                            ),
+                            WindowButtons(
+                              homeController: controller,
+                            ), // You can create your own minimize/max/close buttons
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child:
+                        // controller.employee.ids == null
+                        //     ? LoginView()
+                        //     :
+                        Obx(
+                          () =>
+                              !controller.settingsLoaded
+                                  ? const Scaffold(
+                                    backgroundColor: Color.fromRGBO(
+                                      0,
+                                      180,
+                                      80,
+                                      1,
+                                    ),
+                                  )
+                                  : Theme(
+                                    data: controller.theme,
+                                    child: OrientationBuilder(
+                                      builder: (context, o) {
+                                        var w =
+                                            MediaQuery.of(context).size.width;
+                                        return AdvancedDrawer(
+                                          openRatio:
+                                              Get.width < 600 ? 0.75 : 300 / w,
+                                          rtlOpening:
+                                              Get.locale?.languageCode == "ar",
+                                          controller: controller.drawerCtrl,
+                                          drawer: drawer(),
+                                          backdropColor: controller
+                                              .theme
+                                              .scaffoldBackgroundColor
+                                              .withOpacity(0.95),
+                                          child: Scaffold(
+                                            body:
+                                                Platform.isWindows
+                                                    ? Row(
+                                                      children: [
+                                                        // navigationRail(),
+                                                        // sideMenu(),
+                                                        Expanded(
+                                                          child: views(),
+                                                        ),
+                                                      ],
+                                                    )
+                                                    : content(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -190,6 +199,7 @@ class HomeView extends GetView<HomeController> {
     return Container(
       width: 240,
       padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(color: const Color.fromARGB(255, 0, 31, 56)),
       child: ListView(
         children: [
           menuTile(0, "Dashboard", icon: Icons.dashboard),
@@ -209,49 +219,84 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget menuTile(int index, String label, {String? img, IconData? icon}) {
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: ListTile(
-        tileColor:
-            controller.index == index
-                ? controller.theme.colorScheme.surfaceContainerHighest
-                : null,
-        onTap: () {
-          controller.tabCtrl.index = index;
-          controller.index = index;
-        },
-        // dense: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 0),
-        minVerticalPadding: 0,
-        leading:
-            icon == null
-                ? img == null
-                    ? null
-                    : Image.asset("assets/$img", height: 35, width: 35)
-                : Icon(Icons.dashboard),
-        title: Text(label),
+    return Obx(
+      () => Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: Material(
+          color: Colors.transparent,
+          child: ListTile(
+            tileColor:
+                controller.index == index
+                    ? const Color.fromARGB(255, 4, 0, 24)
+                    : null,
+            onTap: () {
+              controller.tabCtrl.index = index;
+              controller.index = index;
+              controller.selectedNode.requestFocus();
+            },
+            // dense: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 0),
+            minVerticalPadding: 0,
+            leading:
+                icon == null
+                    ? img == null
+                        ? null
+                        : Image.asset("assets/$img", height: 35, width: 35)
+                    : Icon(
+                      Icons.dashboard,
+                      color:
+                          index == controller.index
+                              ? Colors.white
+                              : Colors.white70,
+                    ),
+            title: Text(
+              label,
+              style: TextStyle(
+                fontWeight: index == controller.index ? FontWeight.bold : null,
+                color:
+                    index == controller.index ? Colors.white : Colors.white70,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
   TabBarView views() {
     return TabBarView(
+      physics: NeverScrollableScrollPhysics(),
       controller: controller.tabCtrl,
+
       children: [
-        StatisticView(),
-        StockTransactionView<Sale>(),
-        StockTransactionView<Purchase>(),
-        StockTransactionView<Mission>(),
-        UserPaymentView<Sale>(),
-        UserPaymentView<Purchase>(),
-        UserView<Customer>(),
-        UserView<Supplier>(),
-        UserView<Employee>(),
-        FeesPaymentView(),
-        ProductView(),
-        SynchronisationView(),
-        SettingView(),
+        FocusScope(node: controller.nodes[1], child: StatisticView()),
+        FocusScope(
+          node: controller.nodes[1],
+          child: StockTransactionView<Sale>(),
+        ),
+        FocusScope(
+          node: controller.nodes[1],
+          child: StockTransactionView<Purchase>(),
+        ),
+        FocusScope(
+          node: controller.nodes[1],
+          child: StockTransactionView<Mission>(),
+        ),
+        FocusScope(node: controller.nodes[1], child: UserPaymentView<Sale>()),
+        FocusScope(
+          node: controller.nodes[1],
+          child: UserPaymentView<Purchase>(),
+        ),
+        FocusScope(node: controller.nodes[1], child: UserView<Customer>()),
+        FocusScope(node: controller.nodes[1], child: UserView<Supplier>()),
+        FocusScope(node: controller.nodes[1], child: UserView<Employee>()),
+        FocusScope(node: controller.nodes[1], child: FeesPaymentView()),
+        FocusScope(node: controller.nodes[1], child: ProductView()),
+        FocusScope(node: controller.nodes[1], child: SynchronisationView()),
+        FocusScope(node: controller.nodes[1], child: SettingView()),
       ],
     );
   }
@@ -281,6 +326,8 @@ class HomeView extends GetView<HomeController> {
         backgroundColor: controller.theme.scaffoldBackgroundColor,
         onDestinationSelected: (i) {
           controller.index = i;
+          controller.selectedNode.requestFocus();
+
           controller.tabCtrl.index = i;
         },
         trailing: IconButton(
@@ -290,7 +337,9 @@ class HomeView extends GetView<HomeController> {
                   ? Icon(Icons.keyboard_arrow_left)
                   : Icon(Icons.keyboard_arrow_right),
         ),
-        extended: controller.extended,
+        extended: controller.extended ? true : true,
+        elevation: 5,
+
         selectedIndex: controller.index,
         leading: FittedBox(child: CircleAvatar(child: Icon(Icons.person))),
         destinations: [

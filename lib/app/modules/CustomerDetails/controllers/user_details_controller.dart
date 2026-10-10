@@ -148,8 +148,8 @@ class UserDetailsController<T> extends GetxController
     var b = await deleteConfirmation();
     if (b != true) return;
     await UserRepository().deleteUser(user);
-    Get.find<UserController>().getAll();
-    Get.find<UserDetailsController>().user = UserModel();
+    Get.find<UserController<T>>().getAll();
+    Get.find<UserDetailsController<T>>().user = UserModel();
 
     Get.back(result: true);
   }

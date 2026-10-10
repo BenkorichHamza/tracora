@@ -16,4 +16,10 @@ class EscapeIntent extends Intent {}
 
 class CloseIntent extends Intent {}
 
+class SaveAndNewIntent extends Intent {}
+
 class SaveIntent extends Intent {}
+
+class CancelIntent extends Intent {}
+
+class PrintIntent extends Intent {}

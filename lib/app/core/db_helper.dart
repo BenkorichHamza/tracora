@@ -9,6 +9,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:tracora/app/data/models/modals.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DbHelper {
   static final DbHelper _instance = DbHelper.internal();
@@ -38,10 +39,12 @@ class DbHelper {
       collection ??=
           FirebaseFirestore.instance.collection("collections").doc().id;
 
-      final exePath = Platform.resolvedExecutable; // Path to .exe
-      final exeDir = dirname(exePath); // Directory of the .exe
+      // final exePath = Platform.resolvedExecutable; // Path to .exe
+      // final exeDir = dirname(exePath); // Directory of the .exe
 
-      final dbPath = join(exeDir, 'db1.db');
+      // final dbPath = join(exeDir, 'db1.db');
+      final docsDir = await getApplicationSupportDirectory();
+      final dbPath = join(docsDir.path, 'app_data.db');
       print(dbPath);
       await pref.setString("collection", collection);
 

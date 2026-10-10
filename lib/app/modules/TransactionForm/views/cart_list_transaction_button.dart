@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
-class CartListButton<T> extends GetView<TransactionFormController<T>> {
+class CartListButton<T> extends GetView<StockTransactionController<T>> {
   final Product product;
 
   CartListButton({super.key, required this.product});

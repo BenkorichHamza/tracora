@@ -77,8 +77,7 @@ LEFT JOIN (
     WHERE status = 1
     GROUP BY userIds
 ) st ON u.id = st.user_id  OR st.userIds=u.ids
-WHERE u.deletedAt IS NULL 
-  AND (u.ids in (${allIds.join(', ')}) OR u.id in (${allId.join(',')}))
+WHERE  (u.ids in (${allIds.join(', ')}) OR u.id in (${allId.join(',')}))
 ''');
 
     return maps.map((map) => UserModel.fromMap(map)).toList();

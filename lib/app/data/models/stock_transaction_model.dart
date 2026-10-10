@@ -392,6 +392,8 @@ class Sale {}
 
 class Purchase {}
 
+class Transfert {}
+
 class Mission {}
 
 class Fees {}

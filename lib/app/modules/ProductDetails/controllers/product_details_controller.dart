@@ -70,6 +70,7 @@ class ProductDetailsController extends GetxController
   }
 
   delete() async {
+    if (Get.isDialogOpen == true) return;
     var b = await deleteConfirmation();
     if (b != true) return;
     await ProductRepository().deleteProduct(product);

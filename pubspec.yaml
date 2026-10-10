@@ -40,7 +40,7 @@ dependencies:
   intl: any
   async:
   location: 
-  flex_color_scheme: any
+  flex_color_scheme: ^8.4.0
   cached_network_image: any
   url_launcher:
   shared_preferences: any
@@ -83,7 +83,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  msix: ^3.16.8
+  msix: ^3.16.10
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -126,22 +126,40 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+# msix_config:
+#   display_name: tracora
+#   publisher_display_name: benkosoft
+#   identity_name: com.benkosoft.tracora
+#   msix_version: 1.0.0.0
+#   logo_path: E:\programmation\flutter\tracora\assets\windows.png
+#   capabilities: internetClient, location, microphone, webcam
+#   certificate_path: E:\CERTIFICATE.pfx
+#   certificate_password: azerAZER
+#   app_installer: #<-- app installer configuration
+#     publish_folder_path: E:/
+#     hours_between_update_checks: 0
+#     automatic_background_task: true
+#     update_blocks_activation: true
+#     show_prompt: true
+#     force_update_from_any_version: false
+
 msix_config:
   display_name: tracora
-  publisher_display_name: benkosoft
-  identity_name: com.benkosoft.tracora
-  msix_version: 1.0.0.0
+  msix_version: 1.0.0.7
   logo_path: E:\programmation\flutter\tracora\assets\windows.png
-  capabilities: internetClient, location, microphone, webcam
-  certificate_path: C:\Users\Benkorich Hamza\CERTIFICATE.pfx
-  certificate_password: azerAZER
-  app_installer: #<-- app installer configuration
-    publish_folder_path: E:/
-    hours_between_update_checks: 0
-    automatic_background_task: true
-    update_blocks_activation: true
-    show_prompt: true
-    force_update_from_any_version: false
+  # file_digest_algorithm:       SHA256        # maps to /fd SHA256
+  # timestamp_url:               http://timestamp.digicert.com
+  # timestamp_digest_algorithm:  SHA256        # maps to /td SHA256
+  # capabilities: internetClient, location, microphone, webcam
+
+  # app_installer:
+  #   publish_folder_path: E:/
+  #   hours_between_update_checks: 0
+  #   automatic_background_task: true
+  #   update_blocks_activation: true
+  #   show_prompt: true
+  #   force_update_from_any_version: false
+
 
 flutter_launcher_icons:
   android: "launcher_icon"

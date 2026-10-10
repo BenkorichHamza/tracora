@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/locale/translations.dart';
 import 'package:tracora/firebase_options.dart';
 
@@ -32,6 +33,21 @@ void main() async {
         initialRoute: AppPages.INITIAL,
         translations: AppTranslation(),
         getPages: AppPages.routes,
+        shortcuts: <LogicalKeySet, Intent>{
+          LogicalKeySet(LogicalKeyboardKey.f1): NewIntent(),
+          LogicalKeySet(LogicalKeyboardKey.f2): EditIntent(),
+          LogicalKeySet(LogicalKeyboardKey.escape): EscapeIntent(),
+          LogicalKeySet(LogicalKeyboardKey.f4): SaveIntent(),
+          LogicalKeySet(LogicalKeyboardKey.f5): SaveAndNewIntent(),
+          LogicalKeySet(LogicalKeyboardKey.delete): DeleteIntent(),
+
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyF):
+              SearchIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowDown): NextIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowUp): PreviousIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyP):
+              PrintIntent(),
+        },
 
         locale:
             lang == null
@@ -67,7 +83,7 @@ void main() async {
   );
 
   doWhenWindowReady(() {
-    appWindow.maximize(); // Make it full screen
+    appWindow.maximize(); // Make it full screenr
     appWindow.show();
   });
 }

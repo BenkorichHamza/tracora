@@ -95,22 +95,17 @@ class UserView<T> extends GetView<UserController<T>> {
         backgroundColor:
             Get.find<HomeController>().dark.colorScheme.primaryContainer,
 
-        title: Obx(
-          () =>
-              controller.showSearch
-                  ? TextField(
-                    controller: controller.search,
-                    autofocus: true,
-                    autocorrect: true,
-                    decoration: InputDecoration(
-                      border: UnderlineInputBorder(),
-                      hintText: "search".tr,
-                    ),
-                    onChanged: (v) {
-                      controller.getAll();
-                    },
-                  )
-                  : Text('users'.tr),
+        title: TextField(
+          controller: controller.search,
+          autofocus: true,
+          autocorrect: true,
+          decoration: InputDecoration(
+            border: UnderlineInputBorder(),
+            hintText: "search".tr,
+          ),
+          onChanged: (v) {
+            controller.getAll();
+          },
         ),
         actions: [
           IconButton(

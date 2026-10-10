@@ -69,7 +69,7 @@ class UserFormController<T> extends GetxController {
     img = path;
   }
 
-  void save() async {
+  void save(Function onSuccess) async {
     try {
       if (!validate) return;
       user = user.copyWith(
@@ -93,9 +93,10 @@ class UserFormController<T> extends GetxController {
         await Get.find<UserDetailsController<T>>().getStockTransactions();
       }
       user = user.copyWith(id: r <= 0 ? null : r);
-      Get.find<UserController<T>>().showForm = false;
+      // Get.find<UserController<T>>().showForm = false;
       Get.find<UserDetailsController<T>>().user = user;
       init(UserModel());
+      onSuccess();
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
       rethrow;

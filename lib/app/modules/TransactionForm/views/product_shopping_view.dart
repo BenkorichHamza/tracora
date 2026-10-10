@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
+import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/views/cart_grid_transaction_button.dart';
 import 'package:tracora/app/modules/TransactionForm/views/cart_list_transaction_button.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
@@ -12,8 +15,8 @@ class ProductShoppingView<T> extends GetView<ProductController> {
   const ProductShoppingView({super.key});
   @override
   Widget build(BuildContext context) {
-    TransactionFormController<T> saleFormController =
-        Get.find<TransactionFormController<T>>();
+    StockTransactionController<T> saleFormController =
+        Get.find<StockTransactionController<T>>();
     return Obx(
       () => PopScope(
         canPop: !controller.showSearch,
@@ -30,21 +33,55 @@ class ProductShoppingView<T> extends GetView<ProductController> {
             foregroundColor: Colors.white,
             title: Theme(
               data: Get.find<HomeController>().dark,
-              child: TextField(
-                controller: controller.search,
-                autofocus: true,
-                cursorColor: Colors.white,
-
-                style: TextStyle(fontSize: 16, color: Colors.white),
-                autocorrect: true,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "search".tr,
-                  suffixIconColor: Colors.white,
-                ),
-                onChanged: (v) {
-                  controller.getAll();
+              child: Focus(
+                onKeyEvent: (node, event) {
+                  // only intercept key-down, arrow-up
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                    controller.previous();
+                    return KeyEventResult.skipRemainingHandlers;
+                  } else if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                    controller.next();
+                    return KeyEventResult.skipRemainingHandlers;
+                  }
+                  // otherwise ignore and let the normal flow resume
+                  return KeyEventResult.ignored;
                 },
+                child: TextField(
+                  controller: controller.search,
+                  autofocus: true,
+                  focusNode: controller.searchFn,
+                  style: TextStyle(color: Colors.white), // typed text is white
+                  cursorColor: Colors.white, // cursor is white
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    hintText: "${'search'.tr} CTRL+F",
+                    hintStyle: TextStyle(
+                      color: Colors.white54,
+                    ), // hint is semi-white
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white54),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white54),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.clear, color: Colors.white),
+                      onPressed: () {
+                        controller.search.clear();
+                        controller.getAll();
+                      },
+                    ),
+                  ),
+                  onChanged: (_) => controller.getAll(),
+                  onSubmitted:
+                      (v) => saleFormController.setQte(controller.selected),
+                ),
               ),
             ),
             actions: [
@@ -84,7 +121,7 @@ class ProductShoppingView<T> extends GetView<ProductController> {
     );
   }
 
-  Widget listView(TransactionFormController<T> saleFormController) {
+  Widget listView(StockTransactionController<T> saleFormController) {
     return Obx(
       () => ListView.builder(
         padding: EdgeInsets.symmetric(vertical: 8),
@@ -99,46 +136,60 @@ class ProductShoppingView<T> extends GetView<ProductController> {
 
   Widget listItem(
     Product product,
-    TransactionFormController<T> saleFormController,
+    StockTransactionController<T> saleFormController,
   ) {
     return GetBuilder<TransactionFormController<T>>(
       initState: (_) {},
       id: 'shop_${product.id}',
       builder: (c) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: ListTile(
-            onTap: () {
-              saleFormController.setQte(product);
-            },
-            subtitle: Text(product.getPrice<T>().formatPrice() ?? '0'),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            tileColor:
-                Get.find<HomeController>().isDark
-                    ? Get.find<HomeController>()
-                        .theme
-                        .colorScheme
-                        .surfaceContainerHigh
-                    : Colors.white,
-            contentPadding: EdgeInsets.only(
-              right: 8,
-              top: 0,
-              bottom: 0,
-              left: 8,
-            ),
-            leading: product.leading(),
+        return Obx(
+          () => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: ListTile(
+              selected: controller.selected.id == product.id,
+              onTap: () {
+                saleFormController.setQte(product);
+              },
+              subtitle: Text(
+                product
+                        .getPrice<T>(Get.find<HomeController>().sellMode)
+                        .formatPrice() ??
+                    '0',
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(
+                  color:
+                      controller.selected.id == product.id
+                          ? Colors.green
+                          : Colors.grey.withAlpha(100),
+                ),
+              ),
+              tileColor:
+                  Get.find<HomeController>().isDark
+                      ? Get.find<HomeController>()
+                          .theme
+                          .colorScheme
+                          .surfaceContainerHigh
+                      : Colors.white,
+              contentPadding: EdgeInsets.only(
+                right: 8,
+                top: 0,
+                bottom: 0,
+                left: 8,
+              ),
+              leading: product.leading(),
 
-            title: Text(product.translateName ?? 'product'.tr),
-            trailing: CartListButton<T>(product: product),
+              title: Text(product.translateName ?? 'product'.tr),
+              trailing: CartListButton<T>(product: product),
+            ),
           ),
         );
       },
     );
   }
 
-  GridView gridView(TransactionFormController<T> saleFormController) {
+  GridView gridView(StockTransactionController<T> saleFormController) {
     return GridView.builder(
       padding: EdgeInsets.all(8),
       itemCount: controller.products.length,
@@ -156,7 +207,7 @@ class ProductShoppingView<T> extends GetView<ProductController> {
   }
 
   Widget gridItem(
-    TransactionFormController<T> transactionFormController,
+    StockTransactionController<T> transactionFormController,
     Product product,
   ) {
     return GestureDetector(
@@ -228,7 +279,10 @@ class ProductShoppingView<T> extends GetView<ProductController> {
                     ),
                   ),
                   Text(
-                    product.getPrice<T>().formatPrice() ?? '',
+                    product
+                            .getPrice<T>(Get.find<HomeController>().sellMode)
+                            .formatPrice() ??
+                        '',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.green,

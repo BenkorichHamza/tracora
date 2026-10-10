@@ -7,7 +7,9 @@ import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
+import 'package:tracora/app/helper/delete_dialog.dart';
 import 'package:tracora/app/modules/CustomerDetails/controllers/user_details_controller.dart';
+import 'package:tracora/app/modules/UserForm/controllers/user_form_controller.dart';
 
 class UserController<T> extends GetxController {
   final repository = UserRepository<T>();
@@ -45,6 +47,68 @@ class UserController<T> extends GetxController {
       transactionType == "purchase"
           ? Get.find<UserDetailsController<Supplier>>()
           : Get.find<UserDetailsController<Customer>>();
+  delete() async {
+    if (selected.id == null) return;
+    var b = await deleteConfirmation();
+    if (b != true) return;
+    await UserRepository().deleteUser(selected);
+    Get.find<UserController<T>>().getAll();
+    Get.find<UserDetailsController<T>>().user = UserModel();
+
+    Get.back(result: true);
+  }
+
+  edit() {
+    Get.find<UserFormController<T>>().init(selected);
+    Get.find<UserController<T>>().showForm = true;
+  }
+
+  newIntent() {
+    showForm = true;
+  }
+
+  editIntent() {
+    edit();
+  }
+
+  escapeIntent() {
+    showForm = false;
+    Get.find<UserFormController<T>>().init(UserModel());
+  }
+
+  saveIntent() {
+    Get.find<UserFormController<T>>().save(() {
+      showForm = false;
+      Get.find<UserFormController<T>>().init(UserModel());
+    });
+  }
+
+  saveAndNewIntent() {
+    Get.find<UserFormController<T>>().save(() {});
+  }
+
+  deleteIntent() {
+    if (selected.id == null) return;
+    if (showForm) return;
+    delete();
+  }
+
+  searchIntent() {
+    showSearch = !showSearch;
+    // searchFn.requestFocus();
+  }
+
+  nextIntent() {
+    next();
+  }
+
+  previousIntent() {
+    previous();
+  }
+
+  printIntent() {
+    print("not implemented ....");
+  }
 
   next() {
     var i = users.indexWhere((e) => e.id == selected.id);
@@ -57,11 +121,6 @@ class UserController<T> extends GetxController {
     var i = users.indexWhere((e) => e.id == selected.id);
     if (i == 0) return;
     toDetails(users[i - 1]);
-  }
-
-  delete() {
-    if (selected.id == null) return;
-    Get.find<UserController<T>>().delete();
   }
 
   final _selected = UserModel().obs;

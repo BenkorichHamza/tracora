@@ -12,6 +12,7 @@ import 'package:tracora/app/modules/CustomerDetails/controllers/user_details_con
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/views/bottom_sheet_item_selector.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class TransactionFormController<T> extends GetxController {
   String get userType =>
@@ -122,7 +123,11 @@ class TransactionFormController<T> extends GetxController {
   void increment(Product p) {
     var pt = productTransactions.firstWhereOrNull((e) => e.product?.id == p.id);
     if (pt == null) {
-      pt = ProductTransaction(product: p, qte: 0, price: p.getPrice<T>());
+      pt = ProductTransaction(
+        product: p,
+        qte: 0,
+        price: p.getPrice<T>(Get.find<HomeController>().sellMode),
+      );
       productTransactions.insert(0, pt);
     }
     pt = pt.copyWith(qte: (pt.qte ?? 0) + 1);
@@ -138,7 +143,11 @@ class TransactionFormController<T> extends GetxController {
   void decrement(Product p) {
     var pt = productTransactions.firstWhereOrNull((e) => e.product?.id == p.id);
     if (pt == null) {
-      pt = ProductTransaction(product: p, qte: 0, price: p.getPrice<T>());
+      pt = ProductTransaction(
+        product: p,
+        qte: 0,
+        price: p.getPrice<T>(Get.find<HomeController>().sellMode),
+      );
       productTransactions.insert(0, pt);
     }
     if ((pt.qte ?? 0) <= 0) return;
@@ -166,7 +175,7 @@ class TransactionFormController<T> extends GetxController {
         ProductTransaction(
           product: product,
           qte: 0,
-          price: product.getPrice<T>() ?? 0,
+          price: product.getPrice<T>(Get.find<HomeController>().sellMode) ?? 0,
         );
   }
 

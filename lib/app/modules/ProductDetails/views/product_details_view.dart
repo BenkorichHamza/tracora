@@ -76,14 +76,20 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                         controller: controller.tabCtrl,
                         children: [
                           Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                            child: ListView(
+                              // crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 _buildDetailCard(
                                   icon: Icons.label,
                                   title: controller.product.translateName ?? '',
                                   subtitle: 'name'.tr,
                                 ),
+                                _buildDetailCard(
+                                  icon: Icons.label,
+                                  title: controller.product.code ?? '',
+                                  subtitle: 'code'.tr,
+                                ),
+
                                 _buildDetailCard(
                                   icon: Icons.attach_money,
                                   title:
@@ -93,13 +99,31 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                                   subtitle: 'buy_price'.tr,
                                 ),
                                 _buildDetailCard(
-                                  icon: Icons.shopping_cart,
+                                  icon: Icons.attach_money,
                                   title:
                                       controller.product.sellPrice
                                           .formatPrice() ??
                                       '',
                                   subtitle: 'sell_price'.tr,
                                 ),
+                                _buildDetailCard(
+                                  icon: Icons.attach_money,
+                                  title:
+                                      controller.product.sellPrice1
+                                          .formatPrice() ??
+                                      '',
+                                  subtitle: 'sell_price_1'.tr,
+                                ),
+
+                                _buildDetailCard(
+                                  icon: Icons.attach_money,
+                                  title:
+                                      controller.product.sellPrice2
+                                          .formatPrice() ??
+                                      '',
+                                  subtitle: 'sell_price_2'.tr,
+                                ),
+
                                 _buildDetailCard(
                                   icon: Icons.inventory,
                                   title:
@@ -114,7 +138,109 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                                       controller.product.alert.formatNumber() ??
                                       '',
                                   subtitle: 'alert_stock'.tr,
-                                  iconColor: Colors.red,
+                                ),
+
+                                Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  margin: EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 16,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // Section title
+                                        Text(
+                                          'stock_info'.tr,
+                                          style:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge,
+                                        ),
+                                        SizedBox(height: 12),
+
+                                        // Your chips row
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Garage stock chip
+                                            Chip(
+                                              label: Text(
+                                                'G: ${((controller.product.rest ?? 0) - (controller.product.missionQte ?? 0)).formatNumber()}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              backgroundColor: () {
+                                                final rest =
+                                                    (controller.product.rest ??
+                                                        0) -
+                                                    (controller
+                                                            .product
+                                                            .missionQte ??
+                                                        0);
+                                                final alert =
+                                                    controller.product.alert ??
+                                                    10;
+                                                if (rest <= 0)
+                                                  return Colors.redAccent;
+                                                if (rest < alert)
+                                                  return Colors.orange;
+                                                return Colors.blueGrey;
+                                              }(),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                            ),
+
+                                            // Camion chip only if there’s a mission quantity
+                                            if ((controller
+                                                        .product
+                                                        .missionQte ??
+                                                    0) >
+                                                0) ...[
+                                              const SizedBox(width: 8),
+                                              Chip(
+                                                avatar: Icon(
+                                                  Icons.local_shipping,
+                                                  size: 18,
+                                                  color: Colors.white,
+                                                ),
+                                                label: Text(
+                                                  'M: ${controller.product.missionQte?.formatNumber()} | S: ${controller.product.missionSelledQte?.formatNumber()}',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                backgroundColor: Colors.green,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -143,7 +269,7 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                               foregroundColor: Colors.white,
                             ),
                             onPressed: controller.print,
-                            label: Text('print'.tr),
+                            label: Text("${'print'.tr}"),
                           ),
                         ),
                         SizedBox(width: 4),
@@ -159,7 +285,7 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                               foregroundColor: Colors.white,
                             ),
                             onPressed: controller.edit,
-                            label: Text('edit_product'.tr),
+                            label: Text("${'edit'.tr}"),
                           ),
                         ),
                         SizedBox(width: 4),
@@ -175,7 +301,7 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
                               foregroundColor: Colors.white,
                             ),
                             onPressed: controller.delete,
-                            label: Text('delete_product'.tr),
+                            label: Text("${'delete'.tr}"),
                           ),
                         ),
                       ],
@@ -190,14 +316,13 @@ class ProductDetailsView extends GetView<ProductDetailsController> {
     required IconData icon,
     required String title,
     required String subtitle,
-    Color iconColor = Colors.blue,
   }) {
     return Card(
       elevation: 2,
       margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Icon(icon, color: iconColor),
+        leading: Icon(icon),
         title: Text(
           title,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

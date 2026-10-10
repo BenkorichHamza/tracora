@@ -282,8 +282,10 @@ class StockTransactionDetailsController<T> extends GetxController
   edit() {
     Get.lazyPut(() => ProductController());
     changed = true;
-    Get.find<TransactionFormController<T>>().init(stockTransaction);
-    Get.find<StockTransactionController<T>>().showForm = true;
+    // Get.find<StockTransactionController<T>>().init(stockTransaction);
+    Get.find<StockTransactionController<T>>().addNewForm(
+      stockTransaction.copyWith(productTransactions: productTransactions),
+    );
   }
 
   late StreamSubscription syncListener;

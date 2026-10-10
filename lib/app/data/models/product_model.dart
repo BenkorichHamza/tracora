@@ -11,24 +11,25 @@ import 'package:tracora/app/data/models/user_model.dart';
 
 class Product {
   final String sql = '''
+
 CREATE TABLE product (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    remoteId       INTEGER,
-    ids  STRING UNIQUE,
-    createdBy  STRING,
-    updatedBy  STRING,
-    deletedBy  STRING,
+    remoteId    INTEGER,
+    ids         STRING  UNIQUE,
+    createdBy   STRING,
+    updatedBy   STRING,
+    deletedBy   STRING,
     alert       DOUBLE,
-    data       BLOB,
+    data        BLOB,
     stock       DOUBLE,
     name        TEXT,
     nameAr      TEXT,
-    description      TEXT,
+    description TEXT,
     isInteger   BOOLEAN,
-    isOnline   BOOLEAN,
-    inputPrice   BOOLEAN,
+    isOnline    BOOLEAN,
+    inputPrice  BOOLEAN,
     barcode     TEXT,
-    code       STRING,
+    code        STRING,
     unity       STRING,
     brand_id    INTEGER REFERENCES brand (id),
     image_id    INTEGER REFERENCES image (id),
@@ -41,7 +42,15 @@ CREATE TABLE product (
     url         STRING,
     createdAt   INTEGER,
     updatedAt   INTEGER,
-    deletedAt   INTEGER
+    deletedAt   INTEGER,
+    tva         DOUBLE,
+    marge1      DOUBLE,
+    marge2      DOUBLE,
+    marge       DOUBLE,
+    ttc         DOUBLE,
+    fabDate     INTEGER,
+    perDate     INTEGER,
+    stockValue  DOUBLE
 )
 ''';
 
@@ -70,7 +79,16 @@ CREATE TABLE product (
   final double? sellPrice;
   final double? sellPrice1;
   final double? sellPrice2;
+  final double? tva;
+  final double? ttc;
+  final double? marge;
+  final double? marge1;
+  final double? marge2;
+  final String? code;
   final String? img;
+  final double? stockValue;
+  final int? fabDate;
+  final int? perDate;
   final int? createdAt;
   final int? updatedAt;
   final int? deletedAt;
@@ -100,7 +118,16 @@ CREATE TABLE product (
     this.sellPrice,
     this.sellPrice1,
     this.sellPrice2,
+    this.tva,
+    this.ttc,
+    this.marge,
+    this.marge1,
+    this.marge2,
+    this.code,
     this.img,
+    this.stockValue,
+    this.fabDate,
+    this.perDate,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -132,7 +159,16 @@ CREATE TABLE product (
     double? sellPrice,
     double? sellPrice1,
     double? sellPrice2,
+    double? tva,
+    double? ttc,
+    double? marge,
+    double? marge1,
+    double? marge2,
+    String? code,
     String? img,
+    double? stockValue,
+    int? fabDate,
+    int? perDate,
     int? createdAt,
     int? updatedAt,
     int? deletedAt,
@@ -163,7 +199,16 @@ CREATE TABLE product (
       sellPrice: sellPrice ?? this.sellPrice,
       sellPrice1: sellPrice1 ?? this.sellPrice1,
       sellPrice2: sellPrice2 ?? this.sellPrice2,
+      tva: tva ?? this.tva,
+      ttc: ttc ?? this.ttc,
+      marge: marge ?? this.marge,
+      marge1: marge1 ?? this.marge1,
+      marge2: marge2 ?? this.marge2,
+      code: code ?? this.code,
       img: img ?? this.img,
+      stockValue: stockValue ?? this.stockValue,
+      fabDate: fabDate ?? this.fabDate,
+      perDate: perDate ?? this.perDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -250,8 +295,35 @@ CREATE TABLE product (
     if (sellPrice2 != null) {
       result.addAll({'sellPrice2': sellPrice2});
     }
+    if (tva != null) {
+      result.addAll({'tva': tva});
+    }
+    if (ttc != null) {
+      result.addAll({'ttc': ttc});
+    }
+    if (marge != null) {
+      result.addAll({'marge': marge});
+    }
+    if (marge1 != null) {
+      result.addAll({'marge1': marge1});
+    }
+    if (marge2 != null) {
+      result.addAll({'marge2': marge2});
+    }
+    if (code != null) {
+      result.addAll({'code': code});
+    }
     if (img != null) {
       result.addAll({'img': img});
+    }
+    if (stockValue != null) {
+      result.addAll({'stockValue': stockValue});
+    }
+    if (fabDate != null) {
+      result.addAll({'fabDate': fabDate});
+    }
+    if (perDate != null) {
+      result.addAll({'perDate': perDate});
     }
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
@@ -517,6 +589,27 @@ CREATE TABLE product (
     if (sellPrice2 != null) {
       result.addAll({'sellPrice2': sellPrice2});
     }
+    if (marge != null) {
+      result.addAll({'marge': marge});
+    }
+    if (marge1 != null) {
+      result.addAll({'marge1': marge1});
+    }
+    if (marge2 != null) {
+      result.addAll({'marge2': marge2});
+    }
+    if (tva != null) {
+      result.addAll({'tva': tva});
+    }
+    if (ttc != null) {
+      result.addAll({'ttc': ttc});
+    }
+    if (code != null) {
+      result.addAll({'code': code});
+    }
+    if (stockValue != null) {
+      result.addAll({'stockValue': stockValue});
+    }
     if (img != null) {
       result.addAll({'img': img});
     }
@@ -576,7 +669,16 @@ CREATE TABLE product (
       sellPrice: map['sellPrice']?.toDouble(),
       sellPrice1: map['sellPrice1']?.toDouble(),
       sellPrice2: map['sellPrice2']?.toDouble(),
+      tva: map['tva']?.toDouble(),
+      ttc: map['ttc']?.toDouble(),
+      marge: map['marge']?.toDouble(),
+      marge1: map['marge1']?.toDouble(),
+      marge2: map['marge2']?.toDouble(),
+      code: map['code'],
       img: map['img'],
+      stockValue: map['stockValue']?.toDouble(),
+      fabDate: map['fabDate']?.toInt(),
+      perDate: map['perDate']?.toInt(),
       createdAt: map['createdAt']?.toInt(),
       updatedAt: map['updatedAt']?.toInt(),
       deletedAt: map['deletedAt']?.toInt(),
@@ -590,7 +692,7 @@ CREATE TABLE product (
 
   @override
   String toString() {
-    return 'Product(id: $id, remoteId: $remoteId, data: $data, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, rest: $rest, missionQte: $missionQte, missionSelledQte: $missionSelledQte, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, image: $image, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Product(id: $id, remoteId: $remoteId, data: $data, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, alert: $alert, rest: $rest, missionQte: $missionQte, missionSelledQte: $missionSelledQte, packaging: $packaging, isInteger: $isInteger, stock: $stock, barcode: $barcode, unity: $unity, brand: $brand, image: $image, categories: $categories, buyPrice: $buyPrice, sellPrice: $sellPrice, sellPrice1: $sellPrice1, sellPrice2: $sellPrice2, tva: $tva, ttc: $ttc, marge: $marge, marge1: $marge1, marge2: $marge2, code: $code, img: $img, stockValue: $stockValue, fabDate: $fabDate, perDate: $perDate, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -623,7 +725,16 @@ CREATE TABLE product (
         other.sellPrice == sellPrice &&
         other.sellPrice1 == sellPrice1 &&
         other.sellPrice2 == sellPrice2 &&
+        other.tva == tva &&
+        other.ttc == ttc &&
+        other.marge == marge &&
+        other.marge1 == marge1 &&
+        other.marge2 == marge2 &&
+        other.code == code &&
         other.img == img &&
+        other.stockValue == stockValue &&
+        other.fabDate == fabDate &&
+        other.perDate == perDate &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.deletedAt == deletedAt;
@@ -656,7 +767,16 @@ CREATE TABLE product (
         sellPrice.hashCode ^
         sellPrice1.hashCode ^
         sellPrice2.hashCode ^
+        tva.hashCode ^
+        ttc.hashCode ^
+        marge.hashCode ^
+        marge1.hashCode ^
+        marge2.hashCode ^
+        code.hashCode ^
         img.hashCode ^
+        stockValue.hashCode ^
+        fabDate.hashCode ^
+        perDate.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
         deletedAt.hashCode;
@@ -664,7 +784,7 @@ CREATE TABLE product (
 
   String? get translateName =>
       Get.locale?.languageCode == 'ar' ? nameAr ?? name : name ?? nameAr;
-
-  double getPrice<T>() =>
-      [Sale, Customer].contains(T) ? sellPrice ?? 0 : buyPrice ?? 0;
+  List<double> get prices => [sellPrice ?? 0, sellPrice1 ?? 0, sellPrice2 ?? 0];
+  double getPrice<T>(int sellMode) =>
+      [Sale, Customer].contains(T) ? prices[sellMode] ?? 0 : buyPrice ?? 0;
 }

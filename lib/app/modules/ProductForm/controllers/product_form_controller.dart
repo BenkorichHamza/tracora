@@ -49,6 +49,13 @@ class ProductFormController extends GetxController {
   late TextEditingController sellPrice;
   late TextEditingController sellPrice1;
   late TextEditingController sellPrice2;
+  late TextEditingController code;
+  late TextEditingController tva;
+  late TextEditingController ttc;
+  late TextEditingController marge;
+  late TextEditingController marge1;
+  late TextEditingController marge2;
+  late TextEditingController stockValue;
 
   @override
   void onInit() {
@@ -93,7 +100,7 @@ class ProductFormController extends GetxController {
     categories = r;
   }
 
-  void save() async {
+  void save(Function onSuccess) async {
     try {
       if (!(formKey.currentState?.validate() ?? false)) return;
       // try {
@@ -105,6 +112,7 @@ class ProductFormController extends GetxController {
       product = product.copyWith(
         name: name.text,
         nameAr: nameAr.text,
+        code: code.text,
         alert: double.tryParse(alert.text),
         packaging: double.tryParse(packaging.text),
         buyPrice: double.tryParse(buyPrice.text),
@@ -112,6 +120,12 @@ class ProductFormController extends GetxController {
         sellPrice1: double.tryParse(sellPrice1.text),
         sellPrice2: double.tryParse(sellPrice2.text),
         stock: double.tryParse(stock.text),
+        stockValue: double.tryParse(stockValue.text),
+        tva: double.tryParse(tva.text),
+        ttc: double.tryParse(ttc.text),
+        marge: double.tryParse(marge.text),
+        marge1: double.tryParse(marge1.text),
+        marge2: double.tryParse(marge2.text),
         barcode: barcode.text,
         unity: unity.text.isEmpty ? 'u'.tr : unity.text,
         brand: brand,
@@ -128,11 +142,10 @@ class ProductFormController extends GetxController {
         Get.find<ProductController>().getAll();
       }
       product = product.copyWith(id: r <= 0 ? null : r);
-      Get.find<ProductController>().showForm = false;
-      init(Product());
+      onSuccess();
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
-      rethrow;
+      // rethrow;
     }
   }
 
@@ -175,6 +188,7 @@ class ProductFormController extends GetxController {
   void init(Product? t) {
     product = t ?? Product();
     name = TextEditingController(text: product.name ?? '');
+    code = TextEditingController(text: product.code ?? '');
     nameAr = TextEditingController(text: product.nameAr ?? '');
     alert = TextEditingController(text: product.alert?.formatNumber() ?? '');
     packaging = TextEditingController(
@@ -183,6 +197,9 @@ class ProductFormController extends GetxController {
     barcode = TextEditingController(text: product.barcode ?? '');
     unity = TextEditingController(text: product.unity ?? '');
     stock = TextEditingController(text: product.stock.formatNumber() ?? '');
+    stockValue = TextEditingController(
+      text: product.stockValue.formatNumber() ?? '',
+    );
     buyPrice = TextEditingController(
       text: product.buyPrice?.formatNumber() ?? '',
     );
@@ -195,6 +212,11 @@ class ProductFormController extends GetxController {
     sellPrice2 = TextEditingController(
       text: product.sellPrice2?.formatNumber() ?? '',
     );
+    tva = TextEditingController(text: product.tva?.formatNumber() ?? '');
+    ttc = TextEditingController(text: product.ttc?.formatNumber() ?? '');
+    marge = TextEditingController(text: product.marge?.formatNumber() ?? '');
+    marge1 = TextEditingController(text: product.marge1?.formatNumber() ?? '');
+    marge2 = TextEditingController(text: product.marge2?.formatNumber() ?? '');
     brand = product.brand ?? brand;
     categories = product.categories ?? categories;
     img = "";

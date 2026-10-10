@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/views/pos_product_view.dart';
@@ -21,33 +23,33 @@ class ProductView extends GetView<ProductController> {
   const ProductView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Platform.isAndroid
-        ? PosProductPage()
-        : Obx(
-          () => Column(
-            children: [
-              StockTransactionTabs(
-                title: "products",
-                formTitle:
-                    Get.find<ProductFormController>().product.id == null
-                        ? ('new_product'.tr)
-                        : (Get.find<ProductFormController>().product.name ??
-                            Get.find<ProductFormController>().product.nameAr ??
-                            'form'),
-                onCloseForm: () {
-                  Get.find<ProductFormController>().init(Product());
-                  controller.showForm = false;
-                },
-                onFormTap: () => controller.showForm = true,
-                onHideForm: () => controller.showForm = false,
-                showForm: controller.showForm,
-              ),
-              Expanded(
-                child: controller.showForm ? ProductFormView() : users(),
-              ),
-            ],
-          ),
-        );
+    if (Platform.isAndroid) {
+      return PosProductPage();
+    } else {
+      return Obx(
+        () => Column(
+          children: [
+            StockTransactionTabs(
+              title: "products".tr,
+              formTitle:
+                  Get.find<ProductFormController>().product.id == null
+                      ? ('${'new_product'.tr} F1')
+                      : (Get.find<ProductFormController>().product.name ??
+                          Get.find<ProductFormController>().product.nameAr ??
+                          'form'),
+              onCloseForm: () {
+                Get.find<ProductFormController>().init(Product());
+                controller.showForm = false;
+              },
+              onFormTap: () => controller.showForm = true,
+              onHideForm: () => controller.showForm = false,
+              showForm: controller.showForm,
+            ),
+            Expanded(child: controller.showForm ? ProductFormView() : users()),
+          ],
+        ),
+      );
+    }
   }
 
   Row users() {
@@ -92,39 +94,71 @@ class ProductView extends GetView<ProductController> {
   Scaffold list() {
     return Scaffold(
       appBar: AppBar(
+        // Make all icons and text white by default:
         foregroundColor: Colors.white,
         backgroundColor:
             Get.find<HomeController>().dark.colorScheme.primaryContainer,
 
-        title: Obx(
-          () =>
-              controller.showSearch
-                  ? TextField(
-                    controller: controller.search,
-                    autofocus: true,
-                    autocorrect: true,
-                    decoration: InputDecoration(
-                      border: UnderlineInputBorder(),
-                      hintText: "search".tr,
-                    ),
-                    onChanged: (v) {
-                      controller.getAll();
-                    },
-                  )
-                  : Text('users'.tr),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              controller.showSearch = !controller.showSearch;
-            },
-            color: Colors.white,
-            icon: Icon(controller.showSearch ? Icons.close : Icons.search),
+        // Always show the TextField as the title
+        title: Focus(
+          onKeyEvent: (node, event) {
+            // only intercept key-down, arrow-up
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowUp) {
+              controller.previous();
+              return KeyEventResult.skipRemainingHandlers;
+            } else if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowDown) {
+              controller.next();
+              return KeyEventResult.skipRemainingHandlers;
+            }
+            // otherwise ignore and let the normal flow resume
+            return KeyEventResult.ignored;
+          },
+          child: TextField(
+            controller: controller.search,
+            autofocus: true,
+            focusNode: controller.searchFn,
+            style: TextStyle(color: Colors.white), // typed text is white
+            cursorColor: Colors.white, // cursor is white
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: 8),
+              hintText: "${'search'.tr} CTRL+F",
+              hintStyle: TextStyle(color: Colors.white54), // hint is semi-white
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.clear, color: Colors.white),
+                onPressed: () {
+                  controller.search.clear();
+                  controller.getAll();
+                },
+              ),
+            ),
+            onChanged: (_) => controller.getAll(),
+            onSubmitted: (_) => controller.searchFn.requestFocus(),
           ),
-          // TextButton.icon(
-          //   onPressed: controller.importExcelFile,
-          //   label: Text('excel_import'.tr),
+        ),
+
+        actions: [
+          // Example additional action, all icons are white by default
+          // IconButton(
           //   icon: Icon(Icons.import_export),
+          //   onPressed: controller.importExcelFile,
+          //   tooltip: 'excel_import'.tr,
+          // ),
+          // IconButton(
+          //   icon: Icon(Icons.refresh),
+          //   onPressed: controller.getAll,
+          //   tooltip: 'refresh',
           // ),
         ],
       ),
@@ -212,6 +246,7 @@ class ProductView extends GetView<ProductController> {
 
   Widget listView() {
     return ListView.builder(
+      controller: controller.scrollController,
       padding: EdgeInsets.all(8),
       itemCount: controller.products.length,
       itemBuilder: (c, i) {
@@ -224,68 +259,86 @@ class ProductView extends GetView<ProductController> {
   Padding listItem(Product product) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
-      child: ListTile(
-        onTap: () {
-          controller.toDetails(product);
-        },
-        subtitle: Text(product.sellPrice.formatPrice() ?? ''),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        tileColor:
-            Get.find<HomeController>().isDark
-                ? Get.find<HomeController>()
-                    .theme
-                    .colorScheme
-                    .surfaceContainerHigh
-                : Colors.white,
-        contentPadding: EdgeInsets.only(right: 8, top: 0, bottom: 0, left: 8),
-        leading: product.leading(),
-        title: Text(product.translateName ?? 'product'.tr),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Garage stock chip
-            Chip(
-              label: Text(
-                'G: ${((product.rest ?? 0) - (product.missionQte ?? 0)).formatNumber()}',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: () {
-                final rest = (product.rest ?? 0) - (product.missionQte ?? 0);
-                final alert = product.alert ?? 10;
-                if (rest <= 0) return Colors.redAccent;
-                if (rest < alert) return Colors.orange;
-                return Colors.blueGrey; // you can pick a neutral color
-              }(),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+      child: Obx(
+        () => ListTile(
+          selected: controller.selected.id == product.id,
+          key:
+              product.id == controller.selected.id
+                  ? controller.selectedKey
+                  : null,
+          onTap: () {
+            controller.toDetails(product);
+          },
+          subtitle: Text(product.sellPrice.formatPrice() ?? ''),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color:
+                  controller.selected.id == product.id
+                      ? Colors.green
+                      : Colors.grey.withAlpha(100),
             ),
-
-            // only show camion chip when there's a missionQte
-            if ((product.missionQte ?? 0) > 0) ...[
-              const SizedBox(width: 6),
+          ),
+          tileColor:
+              Get.find<HomeController>().isDark
+                  ? Get.find<HomeController>()
+                      .theme
+                      .colorScheme
+                      .surfaceContainerHigh
+                  : Colors.white,
+          contentPadding: EdgeInsets.only(right: 8, top: 0, bottom: 0, left: 8),
+          leading: product.leading(),
+          title: Text(product.translateName ?? 'product'.tr),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Garage stock chip
               Chip(
-                avatar: Icon(
-                  Icons.local_shipping,
-                  size: 18,
-                  color: Colors.white,
-                ),
                 label: Text(
-                  'M: ${product.missionQte?.formatNumber()} | S: ${product.missionSelledQte?.formatNumber()}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'G: ${((product.rest ?? 0) - (product.missionQte ?? 0)).formatNumber()}',
+                  style: TextStyle(color: Colors.white),
                 ),
-                backgroundColor: Colors.green,
+                backgroundColor: () {
+                  final rest = (product.rest ?? 0) - (product.missionQte ?? 0);
+                  final alert = product.alert ?? 10;
+                  if (rest <= 0) return Colors.redAccent;
+                  if (rest < alert) return Colors.orange;
+                  return Colors.blueGrey; // you can pick a neutral color
+                }(),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
+
+              // only show camion chip when there's a missionQte
+              if ((product.missionQte ?? 0) > 0) ...[
+                const SizedBox(width: 6),
+                Chip(
+                  avatar: Icon(
+                    Icons.local_shipping,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: Text(
+                    'M: ${product.missionQte?.formatNumber()} | S: ${product.missionSelledQte?.formatNumber()}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

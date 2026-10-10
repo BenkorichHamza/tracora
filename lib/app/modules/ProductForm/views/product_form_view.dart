@@ -4,138 +4,288 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
+import 'package:tracora/app/core/intents.dart';
+import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:tracora/app/widgets/number_field.dart';
+import 'package:tracora/app/widgets/panel.dart';
+import 'package:tracora/app/widgets/text_field.dart';
 
 import '../controllers/product_form_controller.dart';
 
 class ProductFormView extends GetView<ProductFormController> {
   const ProductFormView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Product Details'), centerTitle: true),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 1000),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Form(
-                key: controller.formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Three columns: Image | Field group A | Field group B
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      body: FocusScope(
+        autofocus: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 1000),
+            child: Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(24),
+                child: Form(
+                  key: controller.formKey,
+                  child: FocusTraversalGroup(
+                    policy: OrderedTraversalPolicy(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Column 1: Image
-                        Expanded(
-                          flex: 1,
-                          child: Center(
-                            child: SizedBox(
-                              height: 250,
-                              width: 250,
-                              child: productImage(),
+                        // Panels side by side
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Panel(
+                                title: 'product_info'.tr,
+                                children: [
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(1),
+                                    child: InputField(
+                                      controller: controller.code,
+                                      label: 'product_code'.tr,
+                                      autoFocus: true,
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(2),
+                                    child: InputField(
+                                      controller: controller.barcode,
+                                      label: 'barcode'.tr,
+                                      validator:
+                                          (v) =>
+                                              (v ?? '').isEmpty
+                                                  ? null
+                                                  : (v!.length < 3
+                                                      ? 'less_than_3'.tr
+                                                      : null),
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(3),
+                                    child: InputField(
+                                      controller: controller.name,
+                                      isRequired: true,
+                                      label: 'product_name'.tr,
+                                      validator:
+                                          (v) =>
+                                              (v ?? '').length < 3
+                                                  ? 'less_than_3'.tr
+                                                  : null,
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(4),
+                                    child: InputField(
+                                      controller: controller.unity,
+                                      label: 'unity'.tr,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                            SizedBox(width: 24),
+                            Expanded(
+                              child: Panel(
+                                title: 'stock_info'.tr,
+                                children: [
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(5),
+                                    child: NumberField(
+                                      controller: controller.packaging,
+                                      label: 'package_qte'.tr,
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(6),
+                                    child: NumberField(
+                                      controller: controller.stock,
+                                      label: 'initial_stock'.tr,
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(7),
+                                    child: NumberField(
+                                      controller: controller.stockValue,
+                                      label: 'stock_value'.tr,
+                                    ),
+                                  ),
+                                  _spacer,
+                                  FocusTraversalOrder(
+                                    order: NumericFocusOrder(8),
+                                    child: NumberField(
+                                      controller: controller.alert,
+                                      label: 'alert_stock'.tr,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-
-                        SizedBox(width: 24),
-
-                        // Column 2: fields group A
-                        Expanded(
-                          flex: 1,
-                          child: Column(
+                        SizedBox(height: 24),
+                        // Pricing panel below
+                        Center(
+                          child: Panel(
+                            title: 'pricing'.tr,
                             children: [
-                              _numberField(
-                                controller: controller.stock,
-                                label: 'initial_stock'.tr,
-                                isDecimal: true,
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(9),
+                                child: NumberField(
+                                  controller: controller.buyPrice,
+                                  label: 'buy_price'.tr,
+                                  isRequired: true,
+                                ),
                               ),
-                              SizedBox(height: 16),
-                              _numberField(
-                                controller: controller.alert,
-                                label: 'alert_stock'.tr,
+                              _spacer,
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(10),
+                                child: NumberField(
+                                  controller: controller.sellPrice,
+                                  label: 'sell_price'.tr,
+                                  isRequired: true,
+                                ),
                               ),
-                              SizedBox(height: 16),
-                              _textField(
-                                controller: controller.unity,
-                                label: 'unity'.tr,
+                              _spacer,
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(11),
+                                child: NumberField(
+                                  controller: controller.sellPrice1,
+                                  label: 'sell_price_1'.tr,
+                                ),
                               ),
-                              SizedBox(height: 16),
-                              _textField(
-                                controller: controller.barcode,
-                                label: 'barcode'.tr,
+                              _spacer,
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(12),
+                                child: NumberField(
+                                  controller: controller.sellPrice2,
+                                  label: 'sell_price_2'.tr,
+                                ),
                               ),
                             ],
                           ),
                         ),
-
-                        SizedBox(width: 24),
-
-                        // Column 3: fields group B
-                        Expanded(
-                          flex: 1,
-                          child: Column(
+                        SizedBox(height: 32),
+                        // Save button
+                        Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _textField(
-                                controller: controller.name,
-                                label: 'product_name'.tr,
-                                validator:
-                                    (v) =>
-                                        (v ?? '').length < 3
-                                            ? 'less_than_3'.tr
-                                            : null,
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(13),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    controller.save(() {
+                                      Get.find<ProductController>().showForm =
+                                          false;
+                                      controller.init(Product());
+                                    });
+                                  },
+                                  icon: Icon(Icons.save, size: 20),
+                                  label: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                    child: Text(
+                                      "${'save_cancel'.tr} (F4)",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 2,
+                                    iconColor: Colors.white,
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
                               ),
-                              SizedBox(height: 16),
-                              _numberField(
-                                controller: controller.buyPrice,
-                                label: 'buy_price'.tr,
+                              SizedBox(width: 16),
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(15),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    controller.save(() {
+                                      controller.init(Product());
+                                    });
+                                  },
+                                  icon: Icon(Icons.save, size: 20),
+                                  label: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                    child: Text(
+                                      "${'save_create'.tr} (F5)",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 2,
+                                    iconColor: Colors.white,
+                                    backgroundColor: Colors.deepOrange,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                ),
                               ),
-                              SizedBox(height: 16),
-                              _numberField(
-                                controller: controller.sellPrice,
-                                label: 'sell_price'.tr,
+                              SizedBox(width: 16),
+                              FocusTraversalOrder(
+                                order: NumericFocusOrder(15),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Get.find<ProductController>().showForm =
+                                        false;
+                                    controller.init(Product());
+                                  },
+                                  icon: Icon(Icons.cancel, size: 20),
+
+                                  label: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 10,
+                                    ),
+                                    child: Text(
+                                      "${'cancel'.tr} (ECHAP)",
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    iconColor: Colors.white,
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ),
-
-                    SizedBox(height: 32),
-
-                    // Save button
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: controller.save,
-                        icon: Icon(Icons.save),
-                        label: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          child: Text(
-                            'save'.tr,
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 2,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -145,93 +295,5 @@ class ProductFormView extends GetView<ProductFormController> {
     );
   }
 
-  Widget _textField({
-    required TextEditingController controller,
-    required String label,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-      ),
-    );
-  }
-
-  Widget _numberField({
-    required TextEditingController controller,
-    required String label,
-    bool isDecimal = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator:
-          (v) =>
-              (v ?? '').isEmpty
-                  ? null
-                  : double.tryParse(v!) == null
-                  ? 'not_double'.tr
-                  : null,
-      keyboardType: TextInputType.numberWithOptions(
-        decimal: isDecimal,
-        signed: false,
-      ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(
-          RegExp(isDecimal ? r"[0-9.]" : r"[0-9]"),
-        ),
-      ],
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-      ),
-    );
-  }
-
-  AspectRatio productImage() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Obx(
-        () => InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: controller.pickImage,
-          child: Container(
-            child:
-                controller.img.isNotEmpty
-                    ? Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton.filled(
-                            onPressed: () => controller.img = '',
-                            icon: Icon(Icons.clear),
-                          ),
-                        ),
-                      ],
-                    )
-                    : controller.product.data != null
-                    ? null
-                    : Icon(Icons.image_outlined, size: 100),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color:
-                  Get.find<HomeController>()
-                      .theme
-                      .colorScheme
-                      .surfaceContainerHighest,
-              image:
-                  controller.img.toDecorationImage() ??
-                  controller.product.toDecorationImage(),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget get _spacer => SizedBox(height: 16);
 }

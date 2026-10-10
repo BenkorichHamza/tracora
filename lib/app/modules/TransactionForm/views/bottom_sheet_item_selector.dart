@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class ItemBottomSheet<T> extends StatefulWidget {
   final ProductTransaction productTransaction;
@@ -107,7 +108,7 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                                 maxLines: 3,
                               ),
                               subtitle: Text(
-                                '${product.getPrice<T>()}/${product.unity?.toUpperCase() ?? 'U'}',
+                                '${product.getPrice<T>(Get.find<HomeController>().sellMode)}/${product.unity?.toUpperCase() ?? 'U'}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
