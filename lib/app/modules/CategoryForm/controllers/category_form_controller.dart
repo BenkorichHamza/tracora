@@ -27,7 +27,6 @@ class CategoryFormController extends GetxController {
   void onInit() {
     if (Get.arguments?['category'] is CategoryModel) {
       category = Get.arguments?["category"] ?? category;
-      img = category.img ?? img;
     }
     name = TextEditingController(text: category.name ?? '');
     nameAr = TextEditingController(text: category.nameAr ?? '');
@@ -62,7 +61,6 @@ class CategoryFormController extends GetxController {
       // } on Exception catch (_) {}
       category = category.copyWith(
         name: name.text,
-        data: img.isEmpty ? null : File(img).readAsBytesSync(),
         nameAr: nameAr.text,
         order: int.tryParse(order.text),
       );

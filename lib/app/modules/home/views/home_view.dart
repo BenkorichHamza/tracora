@@ -6,14 +6,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 import 'package:get/get.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/repositories/sync_repository.dart';
+import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/FeesPayment/views/fees_payment_view.dart';
+import 'package:tracora/app/modules/RolePermission/views/role_permission_view.dart';
 import 'package:tracora/app/modules/Setting/views/setting_view.dart';
 import 'package:tracora/app/modules/Statistic/views/statistic_view.dart';
+import 'package:tracora/app/modules/Synchronisation/views/synchronisation_state.dart';
 import 'package:tracora/app/modules/Synchronisation/views/synchronisation_view.dart';
 import 'package:tracora/app/modules/User/views/user_view.dart';
 import 'package:tracora/app/modules/UserPayment/views/user_payment_view.dart';
@@ -23,6 +28,7 @@ import 'package:tracora/app/modules/StockTransaction/views/transaction_view.dart
 import 'package:tracora/app/modules/home/views/pos_home.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart';
 import 'package:tracora/app/modules/home/views/sync_view.dart';
+import 'package:tracora/app/modules/warehouse/views/warehouse_view.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tracora/app/widgets/toast_managet.dart';
@@ -92,172 +98,75 @@ class HomeView extends GetView<HomeController> {
 
           child: Material(
             color: controller.theme.scaffoldBackgroundColor,
-            child: Row(
-              children: [
-                sideMenu(),
-                Expanded(
-                  child: Column(
-                    children: [
-                      WindowTitleBarBox(
-                        child: Row(
-                          children: [
-                            Expanded(child: MoveWindow()),
-                            Obx(
-                              () => DropdownButton<int>(
-                                value: controller.sellMode,
-                                onChanged: (value) {
-                                  controller.sellMode = value ?? 0;
-                                },
-                                items:
-                                    const [
-                                      DropdownMenuItem(
-                                        child: Text('Detail'),
-                                        value: 0,
+            child: Container(
+              child: Row(
+                children: [
+                  controller.settingsLoaded
+                      ? sideMenu(Get.context!)
+                      : SizedBox(),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child:
+                          // controller.employee.ids == null
+                          //     ? LoginView()
+                          //     :
+                          Obx(
+                            () =>
+                                !controller.settingsLoaded
+                                    ? const Scaffold(
+                                      backgroundColor: Color.fromRGBO(
+                                        0,
+                                        180,
+                                        80,
+                                        1,
                                       ),
-                                      DropdownMenuItem(
-                                        child: Text('Semi Detail'),
-                                        value: 1,
+                                    )
+                                    : Theme(
+                                      data: controller.theme,
+                                      child: OrientationBuilder(
+                                        builder: (context, o) {
+                                          var w =
+                                              MediaQuery.of(context).size.width;
+                                          return AdvancedDrawer(
+                                            openRatio:
+                                                Get.width < 600
+                                                    ? 0.75
+                                                    : 300 / w,
+                                            rtlOpening:
+                                                Get.locale?.languageCode ==
+                                                "ar",
+                                            controller: controller.drawerCtrl,
+                                            drawer: drawer(),
+                                            backdropColor: controller
+                                                .theme
+                                                .scaffoldBackgroundColor
+                                                .withOpacity(0.95),
+                                            child: Scaffold(
+                                              body:
+                                                  Platform.isWindows
+                                                      ? Row(
+                                                        children: [
+                                                          // navigationRail(),
+                                                          // sideMenu(),
+                                                          Expanded(
+                                                            child: views(),
+                                                          ),
+                                                        ],
+                                                      )
+                                                      : content(),
+                                            ),
+                                          );
+                                        },
                                       ),
-                                      DropdownMenuItem(
-                                        child: Text('Gros'),
-                                        value: 2,
-                                      ),
-                                    ].toList(),
-                              ),
-                            ),
-                            WindowButtons(
-                              homeController: controller,
-                            ), // You can create your own minimize/max/close buttons
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child:
-                        // controller.employee.ids == null
-                        //     ? LoginView()
-                        //     :
-                        Obx(
-                          () =>
-                              !controller.settingsLoaded
-                                  ? const Scaffold(
-                                    backgroundColor: Color.fromRGBO(
-                                      0,
-                                      180,
-                                      80,
-                                      1,
                                     ),
-                                  )
-                                  : Theme(
-                                    data: controller.theme,
-                                    child: OrientationBuilder(
-                                      builder: (context, o) {
-                                        var w =
-                                            MediaQuery.of(context).size.width;
-                                        return AdvancedDrawer(
-                                          openRatio:
-                                              Get.width < 600 ? 0.75 : 300 / w,
-                                          rtlOpening:
-                                              Get.locale?.languageCode == "ar",
-                                          controller: controller.drawerCtrl,
-                                          drawer: drawer(),
-                                          backdropColor: controller
-                                              .theme
-                                              .scaffoldBackgroundColor
-                                              .withOpacity(0.95),
-                                          child: Scaffold(
-                                            body:
-                                                Platform.isWindows
-                                                    ? Row(
-                                                      children: [
-                                                        // navigationRail(),
-                                                        // sideMenu(),
-                                                        Expanded(
-                                                          child: views(),
-                                                        ),
-                                                      ],
-                                                    )
-                                                    : content(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Container sideMenu() {
-    return Container(
-      width: 240,
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(color: const Color.fromARGB(255, 0, 31, 56)),
-      child: ListView(
-        children: [
-          menuTile(0, "Dashboard", icon: Icons.dashboard),
-          menuTile(1, "Sales", img: "sales.png"),
-          menuTile(2, "Purchases", img: "purchase.png"),
-          menuTile(3, "Missions", img: "mission.png"),
-          menuTile(4, "Customer payment", img: "money-in.png"),
-          menuTile(5, "Supplier payment", img: "money-out.png"),
-          menuTile(6, "Customers", img: "customer.png"),
-          menuTile(7, "Suppliers", img: "supplier.png"),
-          menuTile(8, "Employees", img: "supplier.png"),
-          menuTile(9, "Fees", img: "reduction.png"),
-          menuTile(10, "Products", img: "inventory.png"),
-        ],
-      ),
-    );
-  }
-
-  Widget menuTile(int index, String label, {String? img, IconData? icon}) {
-    return Obx(
-      () => Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Material(
-          color: Colors.transparent,
-          child: ListTile(
-            tileColor:
-                controller.index == index
-                    ? const Color.fromARGB(255, 4, 0, 24)
-                    : null,
-            onTap: () {
-              controller.tabCtrl.index = index;
-              controller.index = index;
-              controller.selectedNode.requestFocus();
-            },
-            // dense: true,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 0),
-            minVerticalPadding: 0,
-            leading:
-                icon == null
-                    ? img == null
-                        ? null
-                        : Image.asset("assets/$img", height: 35, width: 35)
-                    : Icon(
-                      Icons.dashboard,
-                      color:
-                          index == controller.index
-                              ? Colors.white
-                              : Colors.white70,
+                      ],
                     ),
-            title: Text(
-              label,
-              style: TextStyle(
-                fontWeight: index == controller.index ? FontWeight.bold : null,
-                color:
-                    index == controller.index ? Colors.white : Colors.white70,
+                  ),
+                ],
               ),
             ),
           ),
@@ -266,37 +175,442 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
+  Widget sideMenu(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: 260,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 20,
+            offset: const Offset(4, 0),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // App Header / Brand Section
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      LucideIcons.box,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'TRACORA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Company name',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 8),
+                      Obx(() => controller.employee.circleAvatar(radius: 20)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            SynchronisationStateView(),
+            const SizedBox(height: 8),
+            const Divider(height: 1, color: Color(0xFF334155)),
+
+            // Navigation List
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 16,
+                ),
+                children: [
+                  _buildSectionHeader('MAIN NAVIGATION'),
+                  _menuTile(
+                    controller,
+                    0,
+                    "Dashboard",
+                    icon: LucideIcons.layoutDashboard,
+                  ),
+                  _menuTile(
+                    controller,
+                    1,
+                    "Sales",
+                    icon: LucideIcons.shoppingBag,
+                    img: "sales.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    2,
+                    "Purchases",
+                    icon: LucideIcons.truck,
+                    img: "purchase.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    3,
+                    "Transfers",
+                    icon: LucideIcons.arrowRightLeft,
+                    img: "mission.png",
+                  ),
+
+                  const SizedBox(height: 16),
+                  _buildSectionHeader('FINANCES'),
+                  _menuTile(
+                    controller,
+                    4,
+                    "Customer Payments",
+                    icon: LucideIcons.arrowDownLeft,
+                    img: "money-in.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    5,
+                    "Supplier Payments",
+                    icon: LucideIcons.arrowUpRight,
+                    img: "money-out.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    6,
+                    "Fees & Expenses",
+                    icon: LucideIcons.receipt,
+                    img: "reduction.png",
+                  ),
+
+                  const SizedBox(height: 16),
+                  _buildSectionHeader('DIRECTORY & INVENTORY'),
+                  _menuTile(
+                    controller,
+                    7,
+                    "Customers",
+                    icon: LucideIcons.users,
+                    img: "customer.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    8,
+                    "Suppliers",
+                    icon: LucideIcons.building2,
+                    img: "supplier.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    9,
+                    "Employees",
+                    icon: LucideIcons.userCheck,
+                    img: "supplier.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    10,
+                    "Products",
+                    icon: LucideIcons.package,
+                    img: "inventory.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    11,
+                    "Warehouses",
+                    icon: LucideIcons.warehouse,
+                    img: "mission.png",
+                  ),
+
+                  const SizedBox(height: 16),
+                  _buildSectionHeader('SYSTEM'),
+                  _menuTile(
+                    controller,
+                    12,
+                    "Synchronization",
+                    icon: LucideIcons.refreshCw,
+                    img: "cloud-sync.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    13,
+                    "Settings",
+                    icon: LucideIcons.settings,
+                    img: "cloud-sync.png",
+                  ),
+                  _menuTile(
+                    controller,
+                    14,
+                    "Roles & Access",
+                    icon: LucideIcons.shieldCheck,
+                    img: "cloud-sync.png",
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(height: 1, color: Color(0xFF334155)),
+
+            // Bottom Auth Section
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Obx(() {
+                final isLoggedIn = controller.token.isNotEmpty;
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      if (isLoggedIn) {
+                        controller.logout();
+                      } else {
+                        controller.login();
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            isLoggedIn
+                                ? const Color(0xFFEF4444).withOpacity(0.1)
+                                : const Color(0xFF6366F1).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color:
+                              isLoggedIn
+                                  ? const Color(0xFFEF4444).withOpacity(0.2)
+                                  : const Color(0xFF6366F1).withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isLoggedIn ? LucideIcons.logOut : LucideIcons.logIn,
+                            size: 18,
+                            color:
+                                isLoggedIn
+                                    ? const Color(0xFFF87171)
+                                    : const Color(0xFF818CF8),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            isLoggedIn ? 'logout'.tr : 'login'.tr,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  isLoggedIn
+                                      ? const Color(0xFFF87171)
+                                      : const Color(0xFF818CF8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 8, top: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF64748B),
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _menuTile(
+    dynamic controller,
+    int index,
+    String label, {
+    String? img,
+    IconData? icon,
+  }) {
+    return Obx(() {
+      final isSelected = controller.index == index;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2.0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              controller.tabCtrl.index = index;
+              controller.index = index;
+              controller.selectedNode.requestFocus();
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color:
+                    isSelected
+                        ? const Color(0xFF6366F1).withOpacity(0.18)
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(14),
+                border:
+                    isSelected
+                        ? Border.all(
+                          color: const Color(0xFF6366F1).withOpacity(0.3),
+                        )
+                        : Border.all(color: Colors.transparent),
+              ),
+              child: Row(
+                children: [
+                  // Visual Leading Indicator / Icon
+                  if (isSelected)
+                    Container(
+                      width: 4,
+                      height: 18,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF818CF8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+
+                  // Icon or Asset Image
+                  if (icon != null)
+                    Icon(
+                      icon,
+                      size: 18,
+                      color:
+                          isSelected
+                              ? const Color(0xFF818CF8)
+                              : const Color(0xFF94A3B8),
+                    )
+                  else if (img != null)
+                    Image.asset(
+                      "assets/$img",
+                      height: 20,
+                      width: 20,
+                      errorBuilder:
+                          (_, __, ___) => const Icon(
+                            LucideIcons.fileText,
+                            size: 18,
+                            color: Color(0xFF94A3B8),
+                          ),
+                    )
+                  else
+                    const Icon(
+                      LucideIcons.circle,
+                      size: 18,
+                      color: Color(0xFF94A3B8),
+                    ),
+
+                  const SizedBox(width: 12),
+
+                  // Label Text
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w500,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
   TabBarView views() {
     return TabBarView(
       physics: NeverScrollableScrollPhysics(),
       controller: controller.tabCtrl,
 
       children: [
-        FocusScope(node: controller.nodes[1], child: StatisticView()),
+        FocusScope(node: controller.nodes[0], child: StatisticView()),
         FocusScope(
           node: controller.nodes[1],
           child: StockTransactionView<Sale>(),
         ),
         FocusScope(
-          node: controller.nodes[1],
+          node: controller.nodes[2],
           child: StockTransactionView<Purchase>(),
         ),
         FocusScope(
-          node: controller.nodes[1],
-          child: StockTransactionView<Mission>(),
+          node: controller.nodes[3],
+          child: StockTransactionView<Transfert>(),
         ),
-        FocusScope(node: controller.nodes[1], child: UserPaymentView<Sale>()),
+        FocusScope(node: controller.nodes[4], child: UserPaymentView<Sale>()),
         FocusScope(
-          node: controller.nodes[1],
+          node: controller.nodes[5],
           child: UserPaymentView<Purchase>(),
         ),
-        FocusScope(node: controller.nodes[1], child: UserView<Customer>()),
-        FocusScope(node: controller.nodes[1], child: UserView<Supplier>()),
-        FocusScope(node: controller.nodes[1], child: UserView<Employee>()),
-        FocusScope(node: controller.nodes[1], child: FeesPaymentView()),
-        FocusScope(node: controller.nodes[1], child: ProductView()),
-        FocusScope(node: controller.nodes[1], child: SynchronisationView()),
-        FocusScope(node: controller.nodes[1], child: SettingView()),
+        FocusScope(node: controller.nodes[6], child: FeesPaymentView()),
+        FocusScope(node: controller.nodes[7], child: UserView<Customer>()),
+        FocusScope(node: controller.nodes[8], child: UserView<Supplier>()),
+        FocusScope(node: controller.nodes[9], child: UserView<Employee>()),
+        FocusScope(node: controller.nodes[10], child: ProductView()),
+        FocusScope(node: controller.nodes[11], child: WarehouseView()),
+        FocusScope(node: controller.nodes[12], child: SynchronisationView()),
+        FocusScope(node: controller.nodes[13], child: SettingView()),
+        FocusScope(node: controller.nodes[14], child: RolePermissionView()),
       ],
     );
   }
@@ -585,9 +899,7 @@ class HomeView extends GetView<HomeController> {
                       ),
             ),
             ListTile(
-              title: Center(
-                child: Text('${FirebaseAuth.instance.currentUser?.email}'),
-              ),
+              title: Center(child: Text('${controller.employee.email}')),
             ),
             Expanded(
               child: SingleChildScrollView(

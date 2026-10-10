@@ -28,6 +28,8 @@ import '../modules/ProductForm/bindings/product_form_binding.dart';
 import '../modules/ProductForm/views/product_form_view.dart';
 import '../modules/Profile/bindings/profile_binding.dart';
 import '../modules/Profile/views/profile_view.dart';
+import '../modules/RolePermission/bindings/role_permission_binding.dart';
+import '../modules/RolePermission/views/role_permission_view.dart';
 import '../modules/Setting/bindings/setting_binding.dart';
 import '../modules/Setting/views/setting_view.dart';
 import '../modules/Statistic/bindings/statistic_binding.dart';
@@ -48,6 +50,12 @@ import '../modules/UserPaymentForm/bindings/user_payment_form_binding.dart';
 import '../modules/UserPaymentForm/views/user_payment_form_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/warehouse/bindings/warehouse_binding.dart';
+import '../modules/warehouse/views/warehouse_view.dart';
+import '../modules/warehouse_details/bindings/warehouse_details_binding.dart';
+import '../modules/warehouse_details/views/warehouse_details_view.dart';
+import '../modules/warehouse_form/bindings/warehouse_form_binding.dart';
+import '../modules/warehouse_form/views/warehouse_form_view.dart';
 
 part 'app_routes.dart';
 
@@ -176,6 +184,26 @@ class AppPages {
       name: _Paths.SYNCHRONISATION,
       page: () => const SynchronisationView(),
       binding: SynchronisationBinding(),
+    ),
+    GetPage(
+      name: _Paths.WAREHOUSE,
+      page: () => const WarehouseView(),
+      binding: WarehouseBinding(),
+    ),
+    GetPage(
+      name: _Paths.WAREHOUSE_FORM,
+      page: () => const WarehouseFormView(),
+      binding: WarehouseFormBinding(),
+    ),
+    GetPage(
+      name: _Paths.WAREHOUSE_DETAILS,
+      page: () => const WarehouseDetailsView(),
+      binding: WarehouseDetailsBinding(),
+    ),
+    GetPage(
+      name: _Paths.ROLE_PERMISSION,
+      page: () => const RolePermissionView(),
+      binding: RolePermissionBinding(),
     ),
   ];
 }

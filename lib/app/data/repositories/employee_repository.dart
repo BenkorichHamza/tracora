@@ -16,7 +16,7 @@ class EmployeeRepository {
     return maps.map((map) => UserModel.fromMap(map)).toList();
   }
 
-  Future<UserModel> getEmployee(int id) async {
+  Future<UserModel> getEmployee(String id) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.query(
       'user',
@@ -69,7 +69,7 @@ class EmployeeRepository {
     );
   }
 
-  Future<int> deleteEmployee(int id) async {
+  Future<int> deleteEmployee(String id) async {
     final db = await _dbHelper.db;
     return await db.update(
       'user',

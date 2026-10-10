@@ -8,6 +8,7 @@ import 'package:tracora/app/modules/FeesPaymentDetails/controllers/fees_payment_
 import 'package:tracora/app/modules/FeesPaymentForm/controllers/fees_payment_form_controller.dart';
 import 'package:tracora/app/modules/ProductDetails/controllers/product_details_controller.dart';
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
+import 'package:tracora/app/modules/RolePermission/controllers/role_permission_controller.dart';
 import 'package:tracora/app/modules/Setting/controllers/setting_controller.dart';
 import 'package:tracora/app/modules/Statistic/controllers/statistic_controller.dart';
 import 'package:tracora/app/modules/Synchronisation/controllers/synchronisation_controller.dart';
@@ -23,6 +24,9 @@ import 'package:tracora/app/modules/Product/controllers/product_controller.dart'
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
 import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/controllers/transaction_form_controller.dart';
+import 'package:tracora/app/modules/warehouse/controllers/warehouse_controller.dart';
+import 'package:tracora/app/modules/warehouse_details/controllers/warehouse_details_controller.dart';
+import 'package:tracora/app/modules/warehouse_form/controllers/warehouse_form_controller.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -39,9 +43,10 @@ class HomeBinding extends Bindings {
       Get.put(StockTransactionController<Purchase>());
       Get.put(StockTransactionDetailsController<Purchase>());
       Get.put(TransactionFormController<Purchase>());
-      Get.put(StockTransactionController<Mission>());
-      Get.put(StockTransactionDetailsController<Mission>());
-      Get.put(TransactionFormController<Mission>());
+
+      Get.put(StockTransactionController<Transfert>());
+      Get.put(StockTransactionDetailsController<Transfert>());
+      Get.put(TransactionFormController<Transfert>());
       Get.put(UserPaymentController<Sale>());
       Get.put(UserPaymentController<Purchase>());
       Get.put(UserPaymentFormController<Sale>());
@@ -65,6 +70,10 @@ class HomeBinding extends Bindings {
       Get.put(ProductFormController());
       Get.put(SettingController());
       Get.put(SynchronisationController());
+      Get.put(WarehouseController());
+      Get.put(WarehouseFormController());
+      Get.put(WarehouseDetailsController());
+      Get.put(RolePermissionController());
     }
   }
 }

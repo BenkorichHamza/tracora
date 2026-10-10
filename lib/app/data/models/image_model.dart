@@ -1,38 +1,54 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 class ImageModel {
   final String sql = """
 CREATE TABLE image (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    data  BLOB,
+    ids   STRING PRIMARY KEY,
     path  STRING,
-    url  STRING
+    url  STRING,
+    createdAt INTEGER,
+    updatedAt INTEGER,
+    deletedAt INTEGER
 )
 """;
-  final int? id;
-  final Uint8List? data;
+  final String? ids;
   final String? path;
   final String? url;
-  ImageModel({this.id, this.data, this.path, this.url});
+  final int? createdAt;
+  final int? updatedAt;
+  final int? deletedAt;
+  ImageModel({
+    this.ids,
+    this.path,
+    this.url,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
 
-  ImageModel copyWith({int? id, Uint8List? data, String? path, String? url}) {
+  ImageModel copyWith({
+    String? ids,
+    String? path,
+    String? url,
+    int? createdAt,
+    int? updatedAt,
+    int? deletedAt,
+  }) {
     return ImageModel(
-      id: id ?? this.id,
-      data: data ?? this.data,
+      ids: ids ?? this.ids,
       path: path ?? this.path,
       url: url ?? this.url,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
-    if (id != null) {
-      result.addAll({'id': id});
-    }
-    if (data != null) {
-      result.addAll({'data': data});
+    if (ids != null) {
+      result.addAll({'ids': ids});
     }
     if (path != null) {
       result.addAll({'path': path});
@@ -40,16 +56,27 @@ CREATE TABLE image (
     if (url != null) {
       result.addAll({'url': url});
     }
+    if (createdAt != null) {
+      result.addAll({'createdAt': createdAt});
+    }
+    if (updatedAt != null) {
+      result.addAll({'updatedAt': updatedAt});
+    }
+    if (deletedAt != null) {
+      result.addAll({'deletedAt': deletedAt});
+    }
 
     return result;
   }
 
   factory ImageModel.fromMap(Map<String, dynamic> map) {
     return ImageModel(
-      id: map['id']?.toInt(),
-      data: map['data'],
+      ids: map['ids'],
       path: map['path'],
       url: map['url'],
+      createdAt: map['createdAt']?.toInt(),
+      updatedAt: map['updatedAt']?.toInt(),
+      deletedAt: map['deletedAt']?.toInt(),
     );
   }
 
@@ -60,7 +87,7 @@ CREATE TABLE image (
 
   @override
   String toString() {
-    return 'ImageModel(id: $id, data: $data, path: $path, url: $url)';
+    return 'ImageModel(ids: $ids, path: $path, url: $url, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -68,14 +95,21 @@ CREATE TABLE image (
     if (identical(this, other)) return true;
 
     return other is ImageModel &&
-        other.id == id &&
-        other.data == data &&
+        other.ids == ids &&
         other.path == path &&
-        other.url == url;
+        other.url == url &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
+        other.deletedAt == deletedAt;
   }
 
   @override
   int get hashCode {
-    return id.hashCode ^ data.hashCode ^ path.hashCode ^ url.hashCode;
+    return ids.hashCode ^
+        path.hashCode ^
+        url.hashCode ^
+        createdAt.hashCode ^
+        updatedAt.hashCode ^
+        deletedAt.hashCode;
   }
 }

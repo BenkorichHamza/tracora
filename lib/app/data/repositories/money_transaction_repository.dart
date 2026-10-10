@@ -1,12 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/repositories/sync_repository.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:uuid/uuid.dart';
 
 class MoneyTransactionRepository {
   final DbHelper _dbHelper = DbHelper();
@@ -21,88 +22,82 @@ class MoneyTransactionRepository {
       SELECT mt.*, u.firstName from
       money_transaction mt
       LEFT JOIN user u
-      ON mt.user_id=u.id OR mt.userIds=u.ids
-      WHERE ${employee.id == null ? '' : '(mt.employee_id = ${employee.id} OR mt.employeeIds = "${employee.ids}") AND'}  mt.deletedAt IS NULL AND mt.type = "$type" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%" or mt.description LIKE "%$search%") ORDER BY mt.dateTime DESC
+      ON mt.userId=u.id
+      WHERE mt.deletedAt IS NULL AND mt.type = "$type" AND (u.firstName LIKE "%$search%" OR u.lastName LIKE "%$search%" or mt.description LIKE "%$search%") ORDER BY mt.dateTime DESC
       LIMIT 50
 ''');
     if (maps.isEmpty) return [];
-    var employeeIds = maps.map((e) => e['employee_id']);
+    var employeeId = maps.map((e) => '"' + (e['employeeId'] ?? '') + '"');
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
       where:
-          employeeIds.isEmpty
+          employeeId.isEmpty
               ? null
-              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+              : 'type = "employee" AND id IN (${employeeId.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
-    var userIds =
+    var userId =
         maps
-            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .map<String>((e) => (e['userId'] ?? ""))
             .toSet()
             .where((e) => e != '""')
             .toList();
-    final users = await UserRepository().getAllUsersFromArray(
-      allIds: userIds,
-      allId: allId,
-    );
+    final users = await UserRepository().getAllUsersFromArray(allId: userId);
 
     return maps
         .map(
           (map) => MoneyTransaction.fromMap(map).copyWith(
             employee: (employees).firstWhereOrNull(
-              (e) => e.id == map['employee_id'],
+              (e) => e.id == map['employeeId'],
             ),
             user: users.firstWhereOrNull(
-              (e) => e.id == map['user_id'] || e.ids == map['userIds'],
+              (e) => e.id == map['userId'] || e.id == map['userId'],
             ),
           ),
         )
         .toList();
   }
 
-  Future<MoneyTransaction?> getMoneyTransactionsById({required int id}) async {
+  Future<MoneyTransaction?> getMoneyTransactionsById({
+    required String id,
+  }) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT mt.*, u.firstName from
       money_transaction mt
       LEFT JOIN user u
-      ON mt.user_id=u.id  OR mt.userIds=u.ids
-      WHERE mt.deletedAt IS NULL AND mt.id = $id
+      ON mt.userId=u.id
+      WHERE mt.deletedAt IS NULL AND mt.id = '$id'
       LIMIT 50
 ''');
-    var employeeIds = maps.map((e) => e['employee_id']);
+    var employeeId = maps.map((e) => '"' + (e['employeeId'] ?? '') + '"');
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
       where:
-          employeeIds.isEmpty
+          employeeId.isEmpty
               ? null
-              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+              : 'type = "employee" AND id IN (${employeeId.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
-    var userIds =
+    var userId =
         maps
-            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .map<String>((e) => '"' + (e['userId'] ?? "") + '"')
             .toSet()
             .where((e) => e != '""')
             .toList();
-    final users = await UserRepository().getAllUsersFromArray(
-      allIds: userIds,
-      allId: allId,
-    );
+    final users = await UserRepository().getAllUsersFromArray(allId: userId);
     if (maps.length != 1) return null;
     var map = maps.first;
     return MoneyTransaction.fromMap(maps[0]).copyWith(
       employee: (employees).firstWhereOrNull(
-        (e) => e.id == maps[0]['employee_id'],
+        (e) => e.id == maps[0]['employeeId'],
       ),
-      user: users.firstWhereOrNull((e) => e.id == maps[0]['user_id']),
+      user: users.firstWhereOrNull((e) => e.id == maps[0]['userId']),
     );
   }
 
   Future<List<MoneyTransaction>> getMoneyTransactionsFor({
-    required String ids,
+    required String id,
     required String type,
   }) async {
     final db = await _dbHelper.db;
@@ -110,38 +105,34 @@ class MoneyTransactionRepository {
       SELECT mt.*, u.firstName from
       money_transaction mt
       LEFT JOIN user u
-      ON mt.user_id=u.id  OR mt.userIds=u.ids
-      WHERE mt.deletedAt IS NULL AND mt.type = "$type" AND (mt.userIds="$ids" or u.ids="$ids") ORDER BY mt.dateTime DESC
+      ON mt.userId=u.id
+      WHERE mt.deletedAt IS NULL AND mt.type = "$type" AND (mt.userId = "$id" AND u.id = "$id") ORDER BY mt.dateTime DESC
       LIMIT 50
 ''');
-    var employeeIds = maps.map((e) => e['employee_id']);
+    var employeeId = maps.map((e) => '"' + (e['employeeId'] ?? '') + '"');
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
       where:
-          employeeIds.isEmpty
+          employeeId.isEmpty
               ? null
-              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+              : 'type = "employee" AND id IN (${employeeId.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
-    var userIds =
+    var userId =
         maps
-            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
+            .map<String>((e) => (e['userId'] ?? ""))
             .toSet()
-            .where((e) => e != '""')
+            .where((e) => e != '')
             .toList();
-    final users = await UserRepository().getAllUsersFromArray(
-      allIds: userIds,
-      allId: allId,
-    );
+    final users = await UserRepository().getAllUsersFromArray(allId: userId);
     return maps
         .map(
           (map) => MoneyTransaction.fromMap(map).copyWith(
             employee: (employees).firstWhereOrNull(
-              (e) => e.id == map['employee_id'],
+              (e) => e.id == map['employeeId'],
             ),
             user: users.firstWhereOrNull(
-              (e) => e.id == map['user_id'] || e.ids == map["userIds"],
+              (e) => e.id == map['userId'] || e.id == map["userId"],
             ),
           ),
         )
@@ -149,7 +140,7 @@ class MoneyTransactionRepository {
   }
 
   Future<List<MoneyTransaction>> getMoneyTransactionsForEmployee({
-    required int id,
+    required String id,
     required String type,
   }) async {
     final db = await _dbHelper.db;
@@ -157,23 +148,23 @@ class MoneyTransactionRepository {
       SELECT mt.*, u.firstName from
       money_transaction mt
       LEFT JOIN user u
-      ON mt.user_id=u.id  OR mt.userIds=u.ids
-      WHERE mt.deletedAt IS NULL AND  mt.employee_id=$id ORDER BY mt.dateTime DESC
+      ON mt.userId=u.id
+      WHERE mt.deletedAt IS NULL AND  mt.employeeId='$id' ORDER BY mt.dateTime DESC
       LIMIT 50
 ''');
-    var employeeIds = maps.map((e) => e['employee_id']);
+    var employeeId = maps.map((e) => '"' + e['employeeId'] + '"');
     final List<Map<String, dynamic>> employeeMaps = await db.query(
       'user',
       where:
-          employeeIds.isEmpty
+          employeeId.isEmpty
               ? null
-              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
+              : 'type = "employee" AND id IN (${employeeId.join(', ')})',
     );
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var userIds = maps.map((e) => '"' + (e['userIds'] ?? "") + '"');
+    var userId = maps.map((e) => '"' + (e['userId'] ?? "") + '"');
     final List<Map<String, dynamic>> userMaps = await db.query(
       'user',
-      where: userIds.isEmpty ? null : 'id IN (${userIds.join(', ')})',
+      where: userId.isEmpty ? null : 'id IN (${userId.join(', ')})',
     );
     var users = userMaps.map(((e) => UserModel.fromMap(e))).toList();
 
@@ -181,103 +172,37 @@ class MoneyTransactionRepository {
         .map(
           (map) => MoneyTransaction.fromMap(map).copyWith(
             employee: (employees).firstWhereOrNull(
-              (e) => e.id == map['employee_id'],
+              (e) => e.id == map['employeeId'],
             ),
             user: users.firstWhereOrNull(
-              (e) => e.id == map['user_id'] || e.ids == map["userIds"],
+              (e) => e.id == map['userId'] || e.id == map["userId"],
             ),
           ),
         )
         .toList();
   }
 
-  Future<List<MoneyTransaction>> getMissionMoneyTransactions({
-    required String ids,
-  }) async {
-    final db = await _dbHelper.db;
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
-      SELECT mt.*, u.firstName from
-      money_transaction mt
-      LEFT JOIN user u
-      ON mt.user_id=u.id OR mt.userIds=u.ids
-      WHERE mt.deletedAt IS NULL AND  mt.missionIds="$ids" ORDER BY mt.dateTime DESC
-      LIMIT 50
-''');
-    var employeeIds = maps.map((e) => e['employee_id']);
-    final List<Map<String, dynamic>> employeeMaps = await db.query(
-      'user',
-      where:
-          employeeIds.isEmpty
-              ? null
-              : 'type = "employee" AND id IN (${employeeIds.join(', ')})',
-    );
-    var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
-    var allId = maps.map<int>((e) => e['user_id'] ?? 0).toSet().toList();
-    var userIds =
-        maps
-            .map<String>((e) => '"' + (e['userIds'] ?? "") + '"')
-            .toSet()
-            .where((e) => e != '""')
-            .toList();
-    final users = await UserRepository().getAllUsersFromArray(
-      allIds: userIds,
-      allId: allId,
-    );
-
-    return maps
-        .map(
-          (map) => MoneyTransaction.fromMap(map).copyWith(
-            employee: (employees).firstWhereOrNull(
-              (e) => e.id == map['employee_id'],
-            ),
-            user: users.firstWhereOrNull(
-              (e) => e.id == map['user_id'] || e.ids == map["userIds"],
-            ),
-          ),
-        )
-        .toList();
-  }
-
-  Future<int> insertMoneyTransaction(
-    MoneyTransaction v, {
-    bool sync = true,
-  }) async {
+  Future<int> insertMoneyTransaction(MoneyTransaction v) async {
     var moneyTransaction = v.copyWith();
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
+    var userId = Get.find<HomeController>().employee?.id ?? "admin";
     var now = DateTime.now().millisecondsSinceEpoch;
-    if (moneyTransaction.ids == null) {
-      var doc =
-          FirebaseFirestore.instance
-              .collection("collections")
-              .doc(Get.find<HomeController>().collection)
-              .collection("moneyTransactions")
-              .doc();
-      moneyTransaction = moneyTransaction.copyWith(ids: doc.id);
-    }
-    var user = moneyTransaction.user;
+    String operation = "UPDATE";
+    if (moneyTransaction.id == null) {
+      operation = "INSERT";
 
-    if (moneyTransaction.type == "purchase") {
-      int id = await UserRepository<Supplier>().insertUser(
-        user ?? UserModel(),
-        sync: false,
-        replace: false,
+      moneyTransaction = moneyTransaction.copyWith(
+        id: Uuid().v4(),
+        employee: Get.find<HomeController>().employee,
       );
-      user = user?.copyWith(id: id <= 0 ? user.id ?? id : id);
-    } else if (moneyTransaction.type == "sale") {
-      int id = await UserRepository<Customer>().insertUser(
-        user ?? UserModel(),
-        sync: false,
-        replace: false,
-      );
-      user = user?.copyWith(id: id <= 0 ? user.id ?? id : id);
     }
-
     moneyTransaction = moneyTransaction.copyWith(
-      user: user,
+      employee:
+          moneyTransaction.employee ?? Get.find<HomeController>().employee,
+
       createdBy:
-          moneyTransaction.id != null ? moneyTransaction.createdBy : userIds,
-      updatedBy: userIds ?? "admin",
+          moneyTransaction.id != null ? moneyTransaction.createdBy : userId,
+      updatedBy: userId,
       dateTime:
           (moneyTransaction.dateTime ?? 0) <= 0
               ? now
@@ -288,7 +213,7 @@ class MoneyTransactionRepository {
               : moneyTransaction.createdAt,
       updatedAt: now,
     );
-    var map = moneyTransaction.toSqfliteMap();
+    var map = moneyTransaction.toMap();
     var id = await db.transaction((txn) async {
       return await txn.insert(
         'money_transaction',
@@ -296,27 +221,27 @@ class MoneyTransactionRepository {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     });
-
-    moneyTransaction = moneyTransaction.copyWith(
-      id: id <= 0 ? moneyTransaction.id ?? id : id,
+    await SyncRepository().addOperation(
+      'money_transaction',
+      moneyTransaction.id ?? "",
+      operation,
+      moneyTransaction.toSyncMap(),
     );
-    if (sync) {
-      FirebaseFirestore.instance
-          .collection("collections")
-          .doc(Get.find<HomeController>().collection)
-          .collection("missions")
-          .doc(moneyTransaction.missionIds ?? '')
-          .collection("moneyTransactions")
-          .doc(moneyTransaction.ids)
-          .set(
-            moneyTransaction
-                .copyWith(id: id < 0 ? moneyTransaction.id : id)
-                .toMap(),
-            SetOptions(merge: sync),
-          );
-    }
 
     return id;
+  }
+
+  Future<int> insertMoneyTransactionUsingTxn(
+    MoneyTransaction v,
+    Transaction txn,
+  ) async {
+    var moneyTransaction = v.copyWith();
+    var map = moneyTransaction.toMap();
+    return await txn.insert(
+      'money_transaction',
+      map,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<int> updateMoneyTransaction(MoneyTransaction moneyTransaction) async {
@@ -334,7 +259,7 @@ class MoneyTransactionRepository {
                     ? moneyTransaction.createdAt
                     : DateTime.now().millisecondsSinceEpoch,
           )
-          .toSqfliteMap(),
+          .toMap(),
       where: 'id = ?',
       whereArgs: [moneyTransaction.id],
     );
@@ -350,16 +275,13 @@ class MoneyTransactionRepository {
       where: 'id = ?',
       whereArgs: [moneyTransaction.id ?? 0],
     );
-    if ((moneyTransaction.ids ?? "").isNotEmpty) {
-      FirebaseFirestore.instance
-          .collection("collections")
-          .doc(Get.find<HomeController>().collection)
-          .collection("missions")
-          .doc(moneyTransaction.missionIds)
-          .collection("moneyTransactions")
-          .doc(moneyTransaction.ids)
-          .set({"deletedAt": now, "deleted": true}, SetOptions(merge: true));
-    }
+
+    await SyncRepository().addOperation(
+      'money_transaction',
+      moneyTransaction.id ?? "",
+      "DELETE",
+      moneyTransaction.toSyncMap(),
+    );
 
     return r;
   }

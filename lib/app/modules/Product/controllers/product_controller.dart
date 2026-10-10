@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -10,6 +9,7 @@ import 'package:tracora/app/core/db_helper.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
@@ -17,6 +17,9 @@ import 'package:tracora/app/modules/ProductDetails/controllers/product_details_c
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart';
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
+import 'package:tracora/app/modules/warehouse/controllers/warehouse_controller.dart';
+import 'package:tracora/app/modules/warehouse/views/warehouse_select_view.dart';
+import 'package:tracora/app/modules/warehouse/views/warehouse_view.dart';
 
 class ProductController extends GetxController {
   final repository = ProductRepository();
@@ -31,6 +34,11 @@ class ProductController extends GetxController {
   final _loading = false.obs;
   bool get loading => this._loading.value;
   set loading(bool value) => this._loading.value = value;
+
+  final _selectedWarehouse = Warehouse().obs;
+  Warehouse get selectedWarehouse => this._selectedWarehouse.value;
+  set selectedWarehouse(Warehouse value) =>
+      this._selectedWarehouse.value = value;
 
   final _showSearch = false.obs;
   bool get showSearch => this._showSearch.value;
@@ -141,7 +149,10 @@ class ProductController extends GetxController {
   getAll() async {
     try {
       loading = true;
-      products = await repository.getAllProducts(search: search.text);
+      products = await repository.getAllProducts(
+        search: search.text,
+        warehouse: selectedWarehouse,
+      );
       selected = products.isEmpty ? Product() : products.first;
       if (selected.id != null) {
         Get.find<ProductDetailsController>().product = selected;
@@ -161,19 +172,19 @@ class ProductController extends GetxController {
     try {
       listener.cancel();
     } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('products')
-        // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()["remoteId"] = element.data()["id"];
-            var model = Product.fromMap(element.data()!);
-            await repository.insertProduct(model, sync: false);
-          });
-          getAll();
-        });
+    // listener = FirebaseFirestore.instance
+    //     .collection('products')
+    //     // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+    //     .snapshots(includeMetadataChanges: true)
+    //     .listen((data) async {
+    //       if (data.metadata.isFromCache) return;
+    //       await Future.forEach(data.docs, (element) async {
+    //         element.data()["remoteId"] = element.data()["id"];
+    //         var model = Product.fromMap(element.data()!);
+    //         await repository.insertProduct(model);
+    //       });
+    //       getAll();
+    //     });
   }
 
   void toDetails(Product product) {
@@ -188,6 +199,7 @@ class ProductController extends GetxController {
     Get.find<ProductDetailsController>().getSuppliers();
     Get.find<ProductDetailsController>().getCustomers();
     Get.find<ProductDetailsController>().getTransactions();
+    Get.find<ProductDetailsController>().warehousesStock();
   }
 
   Future<void> importExcelFile() async {
@@ -214,7 +226,7 @@ class ProductController extends GetxController {
             buyPrice: row[3]?.value?.toDouble()?.round()?.toDouble() ?? 0,
             sellPrice: row[4]?.value?.toDouble()?.round()?.toDouble() ?? 0,
           );
-          await txn.insert("product", product.toSqliteMap());
+          await txn.insert("product", product.toMap());
           // Or store it in your database or state
         }
       });
@@ -272,5 +284,25 @@ class ProductController extends GetxController {
 
   printIntent() {
     print("not implemented ....");
+  }
+
+  void selectWarehouse() async {
+    Get.find<WarehouseController>().getAll();
+
+    var r = await showDialog(
+      routeSettings: RouteSettings(arguments: {"select": true}),
+      context: Get.context!,
+      builder:
+          (c) => Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450),
+              child: WarehouseSelectView(),
+            ),
+          ),
+    );
+    if (r is Warehouse) {
+      selectedWarehouse = r;
+      getAll();
+    }
   }
 }

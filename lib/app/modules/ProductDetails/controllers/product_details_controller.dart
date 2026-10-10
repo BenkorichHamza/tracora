@@ -1,13 +1,19 @@
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/data/repositories/product_repository.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
+import 'package:tracora/app/data/repositories/warehouse_repository.dart';
 import 'package:tracora/app/helper/delete_dialog.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/ProductForm/controllers/product_form_controller.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class ProductDetailsController extends GetxController
     with GetTickerProviderStateMixin {
@@ -17,6 +23,11 @@ class ProductDetailsController extends GetxController
   final _product = Product().obs;
   Product get product => this._product.value;
   set product(Product value) => this._product.value = value;
+
+  final _warehouseStoc = <Map<Warehouse, double>>[].obs;
+  List<Map<Warehouse, double>> get warehouseStock => this._warehouseStoc.value;
+  set warehouseStock(List<Map<Warehouse, double>> value) =>
+      this._warehouseStoc.value = value;
 
   final _customers = <UserModel>[].obs;
   List<UserModel> get customers => this._customers.value;
@@ -53,19 +64,19 @@ class ProductDetailsController extends GetxController
 
   void getSuppliers() async {
     suppliers = await supplierRepository.getAllUsersByProductId(
-      product.id ?? 0,
+      product.id ?? "",
     );
   }
 
   void getCustomers() async {
     customers = await customerRepository.getAllUsersByProductId(
-      product.id ?? 0,
+      product.id ?? "",
     );
   }
 
   void getTransactions() async {
     transactions = await ProductRepository().getProductTransactions(
-      productId: product.id ?? 0,
+      productId: product.id ?? "",
     );
   }
 
@@ -73,7 +84,9 @@ class ProductDetailsController extends GetxController
     if (Get.isDialogOpen == true) return;
     var b = await deleteConfirmation();
     if (b != true) return;
-    await ProductRepository().deleteProduct(product);
+    await ProductRepository().deleteProduct(
+      product.copyWith(deletedBy: Get.find<HomeController>().employee.id),
+    );
     Get.find<ProductController>().getAll();
     Get.find<ProductDetailsController>().product = Product();
 
@@ -83,5 +96,13 @@ class ProductDetailsController extends GetxController
   edit() {
     Get.find<ProductFormController>().init(product);
     Get.find<ProductController>().showForm = true;
+  }
+
+  void warehousesStock() async {
+    try {
+      warehouseStock = await WarehouseRepository().getWarehouseStock(product);
+    } on Exception catch (e) {
+      ErrorHandler.handleError(e);
+    }
   }
 }

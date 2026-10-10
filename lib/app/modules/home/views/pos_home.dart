@@ -1,14 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tracora/app/core/error_handler.dart';
-import 'package:tracora/app/data/models/stock_transaction_model.dart';
-import 'package:tracora/app/data/repositories/product_repository.dart';
-import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
-import 'package:tracora/app/modules/ProductForm/views/scanner.dart';
+
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/modules/home/views/super_admin_menu.dart'
     show SuperAdminMenu;
@@ -37,10 +30,10 @@ class PosHomePage extends GetView<HomeController> {
         child: Center(
           child: Obx(
             () =>
-                controller.mission.id == null
+                controller.transfert.id == null
                     ? TextButton(
                       onPressed: controller.scanMission,
-                      child: Text('scan and start new mission'),
+                      child: Text('scan and start new transfert'),
                     )
                     : content(),
           ),
@@ -205,7 +198,7 @@ class PosHomePage extends GetView<HomeController> {
         "route": "Product",
       },
       {
-        "title": "missions".tr,
+        "title": "transferts".tr,
         "img": "assets/settings.png",
         "route": Routes.MISSION,
       },

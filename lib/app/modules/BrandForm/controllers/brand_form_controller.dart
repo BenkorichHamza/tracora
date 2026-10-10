@@ -15,9 +15,9 @@ class BrandFormController extends GetxController {
   Brand get brand => this._brand.value;
   set brand(Brand value) => this._brand.value = value;
 
-  final _img = ''.obs;
-  String get img => this._img.value;
-  set img(String value) => this._img.value = value;
+  final _image = ''.obs;
+  String get image => this._image.value;
+  set image(String value) => this._image.value = value;
 
   late TextEditingController name;
   late TextEditingController nameAr;
@@ -26,7 +26,7 @@ class BrandFormController extends GetxController {
   void onInit() {
     if (Get.arguments?['brand'] is Brand) {
       brand = Get.arguments?["brand"] ?? brand;
-      img = brand.img ?? img;
+      image = brand.image ?? image;
     }
     name = TextEditingController(text: brand.name ?? '');
     nameAr = TextEditingController(text: brand.nameAr ?? '');
@@ -46,22 +46,21 @@ class BrandFormController extends GetxController {
   pickImage() async {
     var path = await ImagePickerService.pickImage();
     if (path == null) return;
-    img = path;
+    image = path;
   }
 
   void save() async {
     try {
       if (!validate) return;
       // try {
-      //   if (img.isNotEmpty) {
-      //     var path = await ImagePickerService.saveImageToPermanentStorage(img);
-      //     brand = brand.copyWith(img: path);
+      //   if (image.isNotEmpty) {
+      //     var path = await ImagePickerService.saveImageToPermanentStorage(image);
+      //     brand = brand.copyWith(image: path);
       //   }
       // } on Exception catch (_) {}
       brand = brand.copyWith(
         name: name.text,
         nameAr: nameAr.text,
-        data: img.isEmpty ? null : File(img).readAsBytesSync(),
       );
       var r = await repository.insertBrand(brand);
       Get.find<BrandController>().getAll();

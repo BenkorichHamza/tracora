@@ -6,21 +6,21 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 class ProductTransaction {
   final String sql = '''
 CREATE TABLE product_transaction (
-    transaction_id INTEGER REFERENCES stock_transaction (id),
-    product_id     INTEGER REFERENCES product (id),
+    transactionId STRING REFERENCES stock_transaction (id),
+    productId     STRING REFERENCES product (id),
     direction      INTEGER,
     qte            REAL,
     price          REAL,
     tax            REAL
 )
 ''';
-  final StockTransaction? transactionId;
+  final StockTransaction? transaction;
   final Product? product;
   final int? direction;
   final double? price;
   final double? qte;
   ProductTransaction({
-    this.transactionId,
+    this.transaction,
     this.product,
     this.direction,
     this.price,
@@ -28,14 +28,14 @@ CREATE TABLE product_transaction (
   });
 
   ProductTransaction copyWith({
-    StockTransaction? transactionId,
+    StockTransaction? transaction,
     Product? product,
     int? direction,
     double? price,
     double? qte,
   }) {
     return ProductTransaction(
-      transactionId: transactionId ?? this.transactionId,
+      transaction: transaction ?? this.transaction,
       product: product ?? this.product,
       direction: direction ?? this.direction,
       price: price ?? this.price,
@@ -46,11 +46,11 @@ CREATE TABLE product_transaction (
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
-    if (transactionId != null) {
-      result.addAll({'transactionId': transactionId!.toMap()});
+    if (transaction != null) {
+      result.addAll({'transaction': transaction!.toMap()});
     }
     if (product != null) {
-      result.addAll({'product': product!.toFirebaseMap()});
+      result.addAll({'product': product!.toMap()});
     }
     if (direction != null) {
       result.addAll({'direction': direction});
@@ -68,11 +68,11 @@ CREATE TABLE product_transaction (
   Map<String, dynamic> toSqfliteMap() {
     final result = <String, dynamic>{};
 
-    if (transactionId?.id != null) {
-      result.addAll({'transaction_id': transactionId?.id});
+    if (transaction?.id != null) {
+      result.addAll({'transactionIds': transaction?.id});
     }
     if (product?.id != null) {
-      result.addAll({'product_id': product?.id});
+      result.addAll({'productId': product?.id});
     }
     if (direction != null) {
       result.addAll({'direction': direction});
@@ -90,11 +90,25 @@ CREATE TABLE product_transaction (
 
   factory ProductTransaction.fromMap(Map<String, dynamic> map) {
     return ProductTransaction(
-      transactionId:
-          map['transactionId'] != null
-              ? StockTransaction.fromMap(map['transactionId'])
+      transaction:
+          map['transaction'] != null
+              ? StockTransaction.fromMap(map['transaction'])
               : null,
       product: map['product'] != null ? Product.fromMap(map['product']) : null,
+      direction: map['direction']?.toInt(),
+      price: map['price']?.toDouble(),
+      qte: map['qte']?.toDouble(),
+    );
+  }
+
+  factory ProductTransaction.fromApiMap(Map<String, dynamic> map) {
+    return ProductTransaction(
+      transaction:
+          map['transaction_id'] != null
+              ? StockTransaction(id: map['transaction_id'])
+              : null,
+      product:
+          map['product_id'] != null ? Product(id: map['product_id']) : null,
       direction: map['direction']?.toInt(),
       price: map['price']?.toDouble(),
       qte: map['qte']?.toDouble(),
@@ -108,7 +122,7 @@ CREATE TABLE product_transaction (
 
   @override
   String toString() {
-    return 'ProductTransaction(transactionId: $transactionId, product: $product, direction: $direction, price: $price, qte: $qte)';
+    return 'ProductTransaction(transactionId: $transaction, product: $product, direction: $direction, price: $price, qte: $qte)';
   }
 
   @override
@@ -116,7 +130,7 @@ CREATE TABLE product_transaction (
     if (identical(this, other)) return true;
 
     return other is ProductTransaction &&
-        other.transactionId == transactionId &&
+        other.transaction == transaction &&
         other.product == product &&
         other.direction == direction &&
         other.price == price &&
@@ -125,7 +139,7 @@ CREATE TABLE product_transaction (
 
   @override
   int get hashCode {
-    return transactionId.hashCode ^
+    return transaction.hashCode ^
         product.hashCode ^
         direction.hashCode ^
         price.hashCode ^

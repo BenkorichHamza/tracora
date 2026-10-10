@@ -19,7 +19,12 @@ class TransactionFormView<T> extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          Expanded(child: ProductShoppingView<T>()),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ProductShoppingView<T>(),
+            ),
+          ),
           SizedBox(width: 8),
           Container(
             width: 500,

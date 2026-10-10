@@ -14,7 +14,7 @@ class ErrorHandler {
   }
 
   static void handleError(Object error) {
-    print(error.toString);
+    print(error.toString());
     showError(error.toString());
   }
 }

@@ -3,20 +3,18 @@ import 'dart:typed_data';
 
 import 'package:get/get.dart';
 
+import 'package:tracora/app/data/models/image_model.dart';
+
 class CategoryModel {
   final String sql = '''
 CREATE TABLE category (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    ids  STRING UNIQUE,
+    id  STRING PRIMARY KEY,
     createdBy  STRING,
-    data       BLOB,
     updatedBy  STRING,
     deletedBy  STRING,
-    remoteId    INTEGER,
     name       TEXT,
     nameAr       TEXT,
-    img         STRING,
-    image_id    INTEGER REFERENCES image (id),
+    image         STRING,
     [order]     INTEGER,
     createdAt   INTEGER,
     updatedAt   INTEGER,
@@ -24,31 +22,25 @@ CREATE TABLE category (
 );
 
 ''';
-  final int? id;
-  final String? ids;
+  final String? id;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
-  final int? remoteId;
-  final Uint8List? data;
   final String? name;
   final String? nameAr;
-  final String? img;
+  final String? image;
   final int? order;
   final int? createdAt;
   final int? updatedAt;
   final int? deletedAt;
   CategoryModel({
     this.id,
-    this.ids,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
-    this.remoteId,
-    this.data,
     this.name,
     this.nameAr,
-    this.img,
+    this.image,
     this.order,
     this.createdAt,
     this.updatedAt,
@@ -56,16 +48,13 @@ CREATE TABLE category (
   });
 
   CategoryModel copyWith({
-    int? id,
-    String? ids,
+    String? id,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
-    int? remoteId,
-    Uint8List? data,
     String? name,
     String? nameAr,
-    String? img,
+    String? image,
     int? order,
     int? createdAt,
     int? updatedAt,
@@ -73,15 +62,12 @@ CREATE TABLE category (
   }) {
     return CategoryModel(
       id: id ?? this.id,
-      ids: ids ?? this.ids,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
-      remoteId: remoteId ?? this.remoteId,
-      data: data ?? this.data,
       name: name ?? this.name,
       nameAr: nameAr ?? this.nameAr,
-      img: img ?? this.img,
+      image: image ?? this.image,
       order: order ?? this.order,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -95,9 +81,6 @@ CREATE TABLE category (
     if (id != null) {
       result.addAll({'id': id});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
     }
@@ -107,67 +90,14 @@ CREATE TABLE category (
     if (deletedBy != null) {
       result.addAll({'deletedBy': deletedBy});
     }
-    if (remoteId != null) {
-      result.addAll({'remoteId': remoteId});
-    }
-    if (data != null) {
-      result.addAll({'data': data});
-    }
     if (name != null) {
       result.addAll({'name': name});
     }
     if (nameAr != null) {
       result.addAll({'nameAr': nameAr});
     }
-    if (img != null) {
-      result.addAll({'img': img});
-    }
-    if (order != null) {
-      result.addAll({'order': order});
-    }
-    if (createdAt != null) {
-      result.addAll({'createdAt': createdAt});
-    }
-    if (updatedAt != null) {
-      result.addAll({'updatedAt': updatedAt});
-    }
-    if (deletedAt != null) {
-      result.addAll({'deletedAt': deletedAt});
-    }
-
-    return result;
-  }
-
-  Map<String, dynamic> toFirebaseMap() {
-    final result = <String, dynamic>{};
-
-    if (id != null) {
-      result.addAll({'id': id});
-    }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
-    if (createdBy != null) {
-      result.addAll({'createdBy': createdBy});
-    }
-    if (updatedBy != null) {
-      result.addAll({'updatedBy': updatedBy});
-    }
-    if (deletedBy != null) {
-      result.addAll({'deletedBy': deletedBy});
-    }
-    if (remoteId != null) {
-      result.addAll({'remoteId': remoteId});
-    }
-
-    if (name != null) {
-      result.addAll({'name': name});
-    }
-    if (nameAr != null) {
-      result.addAll({'nameAr': nameAr});
-    }
-    if (img != null) {
-      result.addAll({'img': img});
+    if (image != null) {
+      result.addAll({'image': image});
     }
     if (order != null) {
       result.addAll({'order': order});
@@ -187,16 +117,13 @@ CREATE TABLE category (
 
   factory CategoryModel.fromMap(Map<String, dynamic> map) {
     return CategoryModel(
-      id: map['id']?.toInt(),
-      ids: map['ids'],
+      id: map['id'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
-      remoteId: map['remoteId']?.toInt(),
-      data: map['data'],
       name: map['name'],
       nameAr: map['nameAr'],
-      img: map['img'],
+      image: map['image'],
       order: map['order']?.toInt(),
       createdAt: map['createdAt']?.toInt(),
       updatedAt: map['updatedAt']?.toInt(),
@@ -211,7 +138,7 @@ CREATE TABLE category (
 
   @override
   String toString() {
-    return 'CategoryModel(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, remoteId: $remoteId, data: $data, name: $name, nameAr: $nameAr, img: $img, order: $order, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'CategoryModel(id: $id, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, image: $image, order: $order, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -220,15 +147,12 @@ CREATE TABLE category (
 
     return other is CategoryModel &&
         other.id == id &&
-        other.ids == ids &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
-        other.remoteId == remoteId &&
-        other.data == data &&
         other.name == name &&
         other.nameAr == nameAr &&
-        other.img == img &&
+        other.image == image &&
         other.order == order &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
@@ -238,15 +162,12 @@ CREATE TABLE category (
   @override
   int get hashCode {
     return id.hashCode ^
-        ids.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^
-        remoteId.hashCode ^
-        data.hashCode ^
         name.hashCode ^
         nameAr.hashCode ^
-        img.hashCode ^
+        image.hashCode ^
         order.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^

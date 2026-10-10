@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
 import 'package:tracora/app/modules/StockTransaction/controllers/transaction_controller.dart';
@@ -15,6 +16,8 @@ class ProductShoppingView<T> extends GetView<ProductController> {
   const ProductShoppingView({super.key});
   @override
   Widget build(BuildContext context) {
+    var theme = Get.find<HomeController>().theme;
+    var colorScheme = theme.colorScheme;
     StockTransactionController<T> saleFormController =
         Get.find<StockTransactionController<T>>();
     return Obx(
@@ -25,95 +28,217 @@ class ProductShoppingView<T> extends GetView<ProductController> {
         },
         child: Scaffold(
           appBar: AppBar(
-            backgroundColor:
-                Get.find<HomeController>().dark.colorScheme.primaryContainer,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            foregroundColor: Colors.white,
-            title: Theme(
-              data: Get.find<HomeController>().dark,
-              child: Focus(
-                onKeyEvent: (node, event) {
-                  // only intercept key-down, arrow-up
-                  if (event is KeyDownEvent &&
-                      event.logicalKey == LogicalKeyboardKey.arrowUp) {
+            elevation: 0,
+            backgroundColor: colorScheme.surfaceContainer,
+            surfaceTintColor: Colors.transparent,
+            titleSpacing: 12,
+            title: Focus(
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
                     controller.previous();
                     return KeyEventResult.skipRemainingHandlers;
-                  } else if (event is KeyDownEvent &&
-                      event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                     controller.next();
                     return KeyEventResult.skipRemainingHandlers;
+                  } else if (event.logicalKey == LogicalKeyboardKey.enter ||
+                      event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+                    Get.find<StockTransactionController<T>>().setQte(
+                      controller.selected,
+                    );
+                    return KeyEventResult.skipRemainingHandlers;
                   }
-                  // otherwise ignore and let the normal flow resume
-                  return KeyEventResult.ignored;
-                },
+                }
+                return KeyEventResult.ignored;
+              },
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHigh.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withOpacity(0.4),
+                  ),
+                ),
                 child: TextField(
                   controller: controller.search,
-                  autofocus: true,
                   focusNode: controller.searchFn,
-                  style: TextStyle(color: Colors.white), // typed text is white
-                  cursorColor: Colors.white, // cursor is white
+                  autofocus: true,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                  cursorColor: colorScheme.primary,
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                    hintText: "${'search'.tr} CTRL+F",
-                    hintStyle: TextStyle(
-                      color: Colors.white54,
-                    ), // hint is semi-white
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white54),
+                    hintText: "${'search'.tr} (CTRL+F)",
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.6),
                     ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white54),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 18,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.clear, color: Colors.white),
-                      onPressed: () {
-                        controller.search.clear();
-                        controller.getAll();
+                    suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: controller.search,
+                      builder: (context, value, _) {
+                        if (value.text.isEmpty) return const SizedBox.shrink();
+                        return IconButton(
+                          icon: Icon(
+                            Icons.cancel_rounded,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          onPressed: () {
+                            controller.search.clear();
+                            controller.getAll();
+                          },
+                        );
                       },
                     ),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   ),
                   onChanged: (_) => controller.getAll(),
-                  onSubmitted:
-                      (v) => saleFormController.setQte(controller.selected),
+                  onSubmitted: (_) => controller.searchFn.requestFocus(),
                 ),
               ),
             ),
             actions: [
               IconButton(
                 onPressed: () {
-                  controller.showSearch = true;
-                },
-                icon: Icon(Icons.search),
-                color: Colors.white,
-              ),
-              IconButton(
-                onPressed: () {
                   controller.gridView = !controller.gridView;
                 },
-                color: Colors.white,
+                // color: Colors.white,
                 icon: Icon(
                   controller.gridView ? Icons.grid_view_outlined : Icons.list,
                 ),
               ),
+              // Employee Selector Chip
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Obx(() {
+                  final hasSelectedEmployee =
+                      controller.selectedWarehouse.id != null ||
+                      controller.selectedWarehouse.name != null;
+                  final employeeName =
+                      hasSelectedEmployee
+                          ? controller.selectedWarehouse.name!
+                          : "all".tr;
+
+                  return Center(
+                    child: Material(
+                      color:
+                          hasSelectedEmployee
+                              ? colorScheme.primaryContainer
+                              : colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(4),
+                      clipBehavior: Clip.antiAlias,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Filter Selector Pill
+                          InkWell(
+                            onTap: controller.selectWarehouse,
+                            borderRadius: BorderRadius.horizontal(
+                              left: const Radius.circular(20),
+                              right: Radius.circular(
+                                hasSelectedEmployee ? 0 : 20,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (hasSelectedEmployee)
+                                    Icon(Icons.warehouse_rounded)
+                                  else
+                                    Icon(Icons.warehouse_rounded),
+                                  const SizedBox(width: 8),
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 90,
+                                    ),
+                                    child: Text(
+                                      employeeName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.labelMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                hasSelectedEmployee
+                                                    ? colorScheme
+                                                        .onPrimaryContainer
+                                                    : colorScheme.onSurface,
+                                          ),
+                                    ),
+                                  ),
+                                  if (!hasSelectedEmployee) ...[
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 16,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Clear Filter Button
+                          if (hasSelectedEmployee)
+                            InkWell(
+                              onTap: () {
+                                controller.selectedWarehouse = Warehouse();
+                                controller.getAll();
+                              },
+                              borderRadius: const BorderRadius.horizontal(
+                                right: Radius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 4,
+                                  right: 8,
+                                  top: 6,
+                                  bottom: 6,
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 15,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
             ],
           ),
 
-          body: Obx(
-            () => AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return ScaleTransition(scale: animation, child: child);
-              },
-              child:
-                  controller.gridView
-                      ? gridView(saleFormController)
-                      : listView(saleFormController),
+          body: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Obx(
+              () => AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child:
+                    controller.gridView
+                        ? gridView(saleFormController)
+                        : listView(saleFormController),
+              ),
             ),
           ),
         ),
@@ -149,6 +274,7 @@ class ProductShoppingView<T> extends GetView<ProductController> {
               selected: controller.selected.id == product.id,
               onTap: () {
                 saleFormController.setQte(product);
+                Get.find<ProductController>().selected = product;
               },
               subtitle: Text(
                 product
@@ -230,13 +356,9 @@ class ProductShoppingView<T> extends GetView<ProductController> {
             Expanded(
               child: Stack(
                 children: [
-                  product.toDecorationImage() != null
-                      ? SizedBox()
-                      : product.leading(),
+                  product.leading(),
                   Container(
-                    decoration: BoxDecoration(
-                      image: product.toDecorationImage(),
-                    ),
+                    decoration: BoxDecoration(),
                     child: GetBuilder<TransactionFormController<T>>(
                       initState: (_) {},
                       id: 'shop_${product.id}',

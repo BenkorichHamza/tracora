@@ -42,6 +42,12 @@ abstract class Routes {
   static const MISSION_DETAILS = _Paths.MISSION_DETAILS;
   static const POS_HOME = _Paths.POS_HOME;
   static const SYNCHRONISATION = _Paths.SYNCHRONISATION;
+  static const WAREHOUSE = _Paths.WAREHOUSE;
+  static const WAREHOUSE_FORM = _Paths.WAREHOUSE_FORM;
+  static const WAREHOUSE_DETAILS = _Paths.WAREHOUSE_DETAILS;
+  static const MONEY_TRANSACTION = _Paths.MONEY_TRANSACTION;
+  static const MONEY_TRANSACTION_FORM = _Paths.MONEY_TRANSACTION_FORM;
+  static const ROLE_PERMISSION = _Paths.ROLE_PERMISSION;
 }
 
 abstract class _Paths {
@@ -85,4 +91,10 @@ abstract class _Paths {
   static const MISSION_DETAILS = '/mission-details';
   static const POS_HOME = '/pos-home';
   static const SYNCHRONISATION = '/synchronisation';
+  static const WAREHOUSE = '/warehouse';
+  static const WAREHOUSE_FORM = '/warehouse-form';
+  static const WAREHOUSE_DETAILS = '/warehouse-details';
+  static const MONEY_TRANSACTION = '/money-transaction';
+  static const MONEY_TRANSACTION_FORM = '/money-transaction-form';
+  static const ROLE_PERMISSION = '/role-permission';
 }

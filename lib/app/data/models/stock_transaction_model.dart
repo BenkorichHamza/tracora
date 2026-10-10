@@ -4,21 +4,20 @@ import 'package:flutter/foundation.dart';
 
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 
 class StockTransaction {
   final String sql = '''
 CREATE TABLE stock_transaction (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    ids  STRING UNIQUE,
+    id              STRING PRIMARY KEY,
     status INTEGER,
-    missionIds  STRING,
     createdBy  STRING,
     updatedBy  STRING,
     deletedBy  STRING,
-    employeeIds     STRING,
-    employee_id     INTEGER REFERENCES user (id),
-    user_id         INTEGER REFERENCES user (id),
-    userIds         STRING REFERENCES user (ids),
+    employeeId     STRING REFERENCES user (id),
+    userId         STRING REFERENCES user (id),
+    from_warehouse         STRING REFERENCES warehouse (id),
+    to_warehouse         STRING REFERENCES warehouse (id),
     type            TEXT,
     description     TEXT,
     topay           REAL,
@@ -32,18 +31,18 @@ CREATE TABLE stock_transaction (
     deletedAt       INTEGER
 )
 ''';
-  final int? id;
+  final String? id;
   final int? status;
-  final String? ids;
-  final String? userIds;
-  final String? missionIds;
+  final String? userId;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
-  final String? employeeIds;
+  final String? employeeId;
   final UserModel? employee;
   final UserModel? user;
   final String? type;
+  final Warehouse? from_warehouse;
+  final Warehouse? to_warehouse;
   final String? description;
   final double? topay;
   final double? total;
@@ -58,16 +57,16 @@ CREATE TABLE stock_transaction (
   StockTransaction({
     this.id,
     this.status,
-    this.ids,
-    this.userIds,
-    this.missionIds,
+    this.userId,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
-    this.employeeIds,
+    this.employeeId,
     this.employee,
     this.user,
     this.type,
+    this.from_warehouse,
+    this.to_warehouse,
     this.description,
     this.topay,
     this.total,
@@ -82,18 +81,18 @@ CREATE TABLE stock_transaction (
   });
 
   StockTransaction copyWith({
-    int? id,
+    String? id,
     int? status,
-    String? ids,
-    String? userIds,
-    String? missionIds,
+    String? userId,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
-    String? employeeIds,
+    String? employeeId,
     UserModel? employee,
     UserModel? user,
     String? type,
+    Warehouse? from_warehouse,
+    Warehouse? to_warehouse,
     String? description,
     double? topay,
     double? total,
@@ -109,16 +108,16 @@ CREATE TABLE stock_transaction (
     return StockTransaction(
       id: id ?? this.id,
       status: status ?? this.status,
-      ids: ids ?? this.ids,
-      userIds: userIds ?? this.userIds,
-      missionIds: missionIds ?? this.missionIds,
+      userId: userId ?? this.userId,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
-      employeeIds: employeeIds ?? this.employeeIds,
+      employeeId: employeeId ?? this.employeeId,
       employee: employee ?? this.employee,
       user: user ?? this.user,
       type: type ?? this.type,
+      from_warehouse: from_warehouse ?? this.from_warehouse,
+      to_warehouse: to_warehouse ?? this.to_warehouse,
       description: description ?? this.description,
       topay: topay ?? this.topay,
       total: total ?? this.total,
@@ -142,14 +141,8 @@ CREATE TABLE stock_transaction (
     if (status != null) {
       result.addAll({'status': status});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
-    if (userIds != null) {
-      result.addAll({'userIds': userIds});
-    }
-    if (missionIds != null) {
-      result.addAll({'missionIds': missionIds});
+    if (userId != null) {
+      result.addAll({'userId': userId});
     }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
@@ -160,8 +153,8 @@ CREATE TABLE stock_transaction (
     if (deletedBy != null) {
       result.addAll({'deletedBy': deletedBy});
     }
-    if (employeeIds != null) {
-      result.addAll({'employeeIds': employeeIds});
+    if (employeeId != null) {
+      result.addAll({'employeeId': employeeId});
     }
     if (employee != null) {
       result.addAll({'employee': employee!.toMap()});
@@ -171,6 +164,12 @@ CREATE TABLE stock_transaction (
     }
     if (type != null) {
       result.addAll({'type': type});
+    }
+    if (from_warehouse != null) {
+      result.addAll({'fromWarehouse': from_warehouse!.toMap()});
+    }
+    if (to_warehouse != null) {
+      result.addAll({'toWarehouse': to_warehouse!.toMap()});
     }
     if (description != null) {
       result.addAll({'description': description});
@@ -215,27 +214,23 @@ CREATE TABLE stock_transaction (
   Map<String, dynamic> toSqfliteMap() {
     final result = <String, dynamic>{};
 
-    if (id != null) {
-      result.addAll({'id': id});
-    }
     if (status != null) {
       result.addAll({'status': status});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
+    if (id != null) {
+      result.addAll({'id': id});
     }
-    if (missionIds != null) {
-      result.addAll({'missionIds': missionIds});
-    }
-    if (employee?.id != null) {
-      result.addAll({'employee_id': employee?.id});
-    }
+    result.addAll({'employeeId': employee?.id ?? employeeId});
     if (user?.id != null) {
-      result.addAll({'user_id': user!.id});
+      result.addAll({'userId': user!.id});
     }
-    if (user?.ids != null) {
-      result.addAll({'userIds': user!.ids});
+    if (from_warehouse?.id != null) {
+      result.addAll({'from_warehouse': from_warehouse!.id});
     }
+    if (to_warehouse?.id != null) {
+      result.addAll({'to_warehouse': to_warehouse!.id});
+    }
+
     if (type != null) {
       result.addAll({'type': type});
     }
@@ -286,19 +281,25 @@ CREATE TABLE stock_transaction (
 
   factory StockTransaction.fromMap(Map<String, dynamic> map) {
     return StockTransaction(
-      id: map['id']?.toInt(),
+      id: map['id'],
       status: map['status']?.toInt(),
-      ids: map['ids'],
-      userIds: map['userIds'],
-      missionIds: map['missionIds'],
+      userId: map['userId'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
-      employeeIds: map['employeeIds'],
+      employeeId: map['employeeId'],
       employee:
           map['employee'] != null ? UserModel.fromMap(map['employee']) : null,
       user: map['user'] != null ? UserModel.fromMap(map['user']) : null,
       type: map['type'],
+      from_warehouse:
+          map['fromWarehouse'] != null
+              ? Warehouse.fromMap(map['fromWarehouse'])
+              : null,
+      to_warehouse:
+          map['toWarehouse'] != null
+              ? Warehouse.fromMap(map['toWarehouse'])
+              : null,
       description: map['description'],
       topay: map['topay']?.toDouble(),
       total: map['total']?.toDouble(),
@@ -320,14 +321,134 @@ CREATE TABLE stock_transaction (
     );
   }
 
+  factory StockTransaction.fromApiMap(Map<String, dynamic> map) {
+    return StockTransaction(
+      id: map['id'],
+      status: map['status']?.toInt(),
+      userId: map['userId'],
+      user: UserModel.fromMap(map['user'] ?? {}),
+      createdBy: map['createdBy'],
+      updatedBy: map['updatedBy'],
+      deletedBy: map['deletedBy'],
+      employeeId: map['employeeId'],
+      type: map['type'],
+      from_warehouse: Warehouse.fromMap(map['fromWarehouse'] ?? {}),
+      to_warehouse: Warehouse.fromMap(map['toWarehouse'] ?? {}),
+      description: map['description'],
+      topay: map['topay']?.toDouble(),
+      total: map['total']?.toDouble(),
+      payment: map['payment']?.toDouble(),
+      credit: map['credit']?.toDouble(),
+      tax: map['tax']?.toDouble(),
+      productTransactions:
+          map['productTransactions'] != null
+              ? List<ProductTransaction>.from(
+                map['productTransactions']?.map(
+                  (x) => ProductTransaction.fromApiMap(x),
+                ),
+              )
+              : null,
+      dateTime: map['dateTime']?.toInt(),
+      createdAt: map['createdAt']?.toInt(),
+      updatedAt: map['updatedAt']?.toInt(),
+      deletedAt: map['deletedAt']?.toInt(),
+    );
+  }
+
+  Map<String, dynamic> toSyncMap() {
+    return {
+      'id': id,
+
+      /*
+    |--------------------------------------------------------------------------
+    | Basic
+    |--------------------------------------------------------------------------
+    */
+      'status': status,
+
+      'type': type,
+
+      'description': description,
+
+      /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
+      'employeeId': employee?.id ?? employeeId,
+
+      'userId': user?.id ?? userId,
+
+      'from_warehouse': from_warehouse?.id,
+
+      'to_warehouse': to_warehouse?.id,
+
+      /*
+    |--------------------------------------------------------------------------
+    | Financial
+    |--------------------------------------------------------------------------
+    */
+      'topay': topay,
+
+      'total': total,
+
+      'payment': payment,
+
+      'credit': credit,
+
+      'tax': tax,
+
+      /*
+    |--------------------------------------------------------------------------
+    | Dates
+    |--------------------------------------------------------------------------
+    */
+      'datetime': dateTime,
+      'deletedAt': deletedAt,
+
+      /*
+    |--------------------------------------------------------------------------
+    | Products Pivot
+    |--------------------------------------------------------------------------
+    */
+      'products':
+          productTransactions?.map((e) {
+            return {
+              'productId': e.product?.id ?? '',
+
+              'qte': e.qte,
+
+              'price': e.price,
+
+              'tax': 0,
+
+              'direction': e.direction,
+            };
+          }).toList() ??
+          [],
+
+      /*
+    |--------------------------------------------------------------------------
+    | Audit
+    |--------------------------------------------------------------------------
+    */
+      'created_by': createdBy,
+
+      'updated_by': updatedBy,
+
+      'deleted_by': deletedBy,
+    };
+  }
+
   String toJson() => json.encode(toMap());
+  String toSyncJson() => json.encode(toSyncMap());
 
   factory StockTransaction.fromJson(String source) =>
       StockTransaction.fromMap(json.decode(source));
 
   @override
   String toString() {
-    return 'StockTransaction(id: $id, status: $status, ids: $ids, userIds: $userIds, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, employee: $employee, user: $user, type: $type, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'StockTransaction(id: $id, status: $status, userId: $userId, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeId: $employeeId, employee: $employee, user: $user, type: $type, fromWarehouse: $from_warehouse, toWarehouse: $to_warehouse, description: $description, topay: $topay, total: $total, payment: $payment, credit: $credit, tax: $tax, productTransactions: $productTransactions, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -337,16 +458,16 @@ CREATE TABLE stock_transaction (
     return other is StockTransaction &&
         other.id == id &&
         other.status == status &&
-        other.ids == ids &&
-        other.userIds == userIds &&
-        other.missionIds == missionIds &&
+        other.userId == userId &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
-        other.employeeIds == employeeIds &&
+        other.employeeId == employeeId &&
         other.employee == employee &&
         other.user == user &&
         other.type == type &&
+        other.from_warehouse == from_warehouse &&
+        other.to_warehouse == to_warehouse &&
         other.description == description &&
         other.topay == topay &&
         other.total == total &&
@@ -364,16 +485,16 @@ CREATE TABLE stock_transaction (
   int get hashCode {
     return id.hashCode ^
         status.hashCode ^
-        ids.hashCode ^
-        userIds.hashCode ^
-        missionIds.hashCode ^
+        userId.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^
-        employeeIds.hashCode ^
+        employeeId.hashCode ^
         employee.hashCode ^
         user.hashCode ^
         type.hashCode ^
+        from_warehouse.hashCode ^
+        to_warehouse.hashCode ^
         description.hashCode ^
         topay.hashCode ^
         total.hashCode ^
@@ -393,7 +514,5 @@ class Sale {}
 class Purchase {}
 
 class Transfert {}
-
-class Mission {}
 
 class Fees {}

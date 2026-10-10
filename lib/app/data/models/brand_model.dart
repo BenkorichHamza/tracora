@@ -4,31 +4,24 @@ import 'dart:typed_data';
 import 'package:get/get.dart';
 
 class Brand {
-  final int? id;
-  final String? ids;
+  final String? id;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
-  final int? remoteId;
-  final Uint8List? data;
   final String? name;
   final String? nameAr;
-  final String? img;
+  final String? image;
   final int? createdAt;
   final int? updatedAt;
   final int? deletedAt;
   final String sql = '''CREATE TABLE brand (
-    id    INTEGER PRIMARY KEY AUTOINCREMENT,
-    ids  STRING UNIQUE,
+    id  STRING PRIMARY KEY,
     createdBy  STRING,
     updatedBy  STRING,
     deletedBy  STRING,
-    remoteId    INTEGER,
-    data       BLOB,
     name  TEXT,
     nameAr  TEXT,
-    img   STRING,
-    image_id    INTEGER REFERENCES image (id),
+    image   STRING,
     createdAt INTEGER,
     updatedAt INTEGER,
     deletedAt INTEGER
@@ -36,46 +29,37 @@ class Brand {
 
   Brand({
     this.id,
-    this.ids,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
-    this.remoteId,
-    this.data,
     this.name,
     this.nameAr,
-    this.img,
+    this.image,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
   });
 
   Brand copyWith({
-    int? id,
-    String? ids,
+    String? id,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
-    int? remoteId,
-    Uint8List? data,
     String? name,
     String? nameAr,
-    String? img,
+    String? image,
     int? createdAt,
     int? updatedAt,
     int? deletedAt,
   }) {
     return Brand(
       id: id ?? this.id,
-      ids: ids ?? this.ids,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
-      remoteId: remoteId ?? this.remoteId,
-      data: data ?? this.data,
       name: name ?? this.name,
       nameAr: nameAr ?? this.nameAr,
-      img: img ?? this.img,
+      image: image ?? this.image,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -88,9 +72,6 @@ class Brand {
     if (id != null) {
       result.addAll({'id': id});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
     }
@@ -100,66 +81,14 @@ class Brand {
     if (deletedBy != null) {
       result.addAll({'deletedBy': deletedBy});
     }
-    if (remoteId != null) {
-      result.addAll({'remoteId': remoteId});
-    }
-    if (data != null) {
-      result.addAll({'data': data});
-    }
     if (name != null) {
       result.addAll({'name': name});
     }
     if (nameAr != null) {
       result.addAll({'nameAr': nameAr});
     }
-    if (img != null) {
-      result.addAll({'img': img});
-    }
-    if (createdAt != null) {
-      result.addAll({'createdAt': createdAt});
-    }
-    if (updatedAt != null) {
-      result.addAll({'updatedAt': updatedAt});
-    }
-    if (deletedAt != null) {
-      result.addAll({'deletedAt': deletedAt});
-    }
-
-    return result;
-  }
-
-  Map<String, dynamic> toFirebaseMap() {
-    final result = <String, dynamic>{};
-
-    if (id != null) {
-      result.addAll({'id': id});
-    }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
-    if (createdBy != null) {
-      result.addAll({'createdBy': createdBy});
-    }
-    if (updatedBy != null) {
-      result.addAll({'updatedBy': updatedBy});
-    }
-    if (deletedBy != null) {
-      result.addAll({'deletedBy': deletedBy});
-    }
-    if (remoteId != null) {
-      result.addAll({'remoteId': remoteId});
-    }
-    // if (data != null) {
-    //   result.addAll({'data': data});
-    // }
-    if (name != null) {
-      result.addAll({'name': name});
-    }
-    if (nameAr != null) {
-      result.addAll({'nameAr': nameAr});
-    }
-    if (img != null) {
-      result.addAll({'img': img});
+    if (image != null) {
+      result.addAll({'image': image});
     }
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
@@ -176,16 +105,13 @@ class Brand {
 
   factory Brand.fromMap(Map<String, dynamic> map) {
     return Brand(
-      id: map['id']?.toInt(),
-      ids: map['ids'],
+      id: map['id'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
-      remoteId: map['remoteId']?.toInt(),
-      data: map['data'],
       name: map['name'],
       nameAr: map['nameAr'],
-      img: map['img'],
+      image: map['image'],
       createdAt: map['createdAt']?.toInt(),
       updatedAt: map['updatedAt']?.toInt(),
       deletedAt: map['deletedAt']?.toInt(),
@@ -198,7 +124,7 @@ class Brand {
 
   @override
   String toString() {
-    return 'Brand(id: $id, ids: $ids, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, remoteId: $remoteId, data: $data, name: $name, nameAr: $nameAr, img: $img, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Brand(id: $id, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, name: $name, nameAr: $nameAr, image: $image, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -207,15 +133,12 @@ class Brand {
 
     return other is Brand &&
         other.id == id &&
-        other.ids == ids &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
-        other.remoteId == remoteId &&
-        other.data == data &&
         other.name == name &&
         other.nameAr == nameAr &&
-        other.img == img &&
+        other.image == image &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.deletedAt == deletedAt;
@@ -224,15 +147,12 @@ class Brand {
   @override
   int get hashCode {
     return id.hashCode ^
-        ids.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^
-        remoteId.hashCode ^
-        data.hashCode ^
         name.hashCode ^
         nameAr.hashCode ^
-        img.hashCode ^
+        image.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
         deletedAt.hashCode;

@@ -8,7 +8,6 @@ import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/user_repository.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
-import 'package:tracora/app/data/repositories/purchase_repository.dart';
 import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/helper/delete_dialog.dart';
 import 'package:tracora/app/modules/User/controllers/user_controller.dart';
@@ -31,6 +30,7 @@ class UserDetailsController<T> extends GetxController
   MoneyTransactionRepository moneyRepository = MoneyTransactionRepository();
   StockTransactionRepository transactionRepository =
       StockTransactionRepository<T>();
+
   final _user = UserModel().obs;
   UserModel get user => this._user.value;
   set user(UserModel value) => this._user.value = value;
@@ -67,7 +67,7 @@ class UserDetailsController<T> extends GetxController
 
   @override
   void onInit() {
-    tabCtrl = TabController(length: 4, vsync: this);
+    tabCtrl = TabController(length: T == Employee ? 2 : 4, vsync: this);
     user = Get.arguments?["user"] ?? user;
     getProductTransactions();
     getMoneyTransactions();
@@ -90,7 +90,7 @@ class UserDetailsController<T> extends GetxController
   Future getMoneyTransactions() async {
     try {
       moneyTransactions = await moneyRepository.getMoneyTransactionsFor(
-        ids: user.ids ?? "",
+        id: user.id ?? "",
         type: "$transactionType",
       );
     } catch (e) {
@@ -101,7 +101,7 @@ class UserDetailsController<T> extends GetxController
   Future getEmployeeMoneyTransactions() async {
     try {
       employeeMoneyTransactions = await moneyRepository
-          .getMoneyTransactionsForEmployee(id: user.id ?? 0, type: "$userType");
+          .getMoneyTransactionsForEmployee(id: user.id ?? "", type: userType);
     } catch (e) {
       ErrorHandler.handleError(e);
     }
@@ -110,17 +110,18 @@ class UserDetailsController<T> extends GetxController
   Future getStockTransactions() async {
     try {
       stockTransactions = await transactionRepository.getAllTransactionsFor(
-        ids: user.ids ?? "",
+        id: user.id ?? "",
       );
     } catch (e) {
       ErrorHandler.handleError(e);
+      rethrow;
     }
   }
 
   Future getStockTransactionsByEmployee() async {
     try {
       employeeTransaction = await transactionRepository
-          .getAllTransactionsForEmployee(id: user.id ?? 0);
+          .getAllTransactionsForEmployee(id: user.id ?? "");
     } catch (e) {
       ErrorHandler.handleError(e);
     }
@@ -129,7 +130,7 @@ class UserDetailsController<T> extends GetxController
   Future getProductTransactions() async {
     try {
       productTransactions = await transactionRepository
-          .getProductTransactionsFor(user.id ?? 0);
+          .getProductTransactionsFor(user.id ?? "");
     } catch (e) {
       ErrorHandler.handleError(e);
     }
@@ -137,7 +138,7 @@ class UserDetailsController<T> extends GetxController
 
   Future getUser() async {
     try {
-      var r = await UserRepository().getUser(user.id ?? 0);
+      var r = await UserRepository().getUser(user.id ?? "");
       user = r ?? user;
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
@@ -159,5 +160,32 @@ class UserDetailsController<T> extends GetxController
     Get.find<UserController<T>>().showForm = true;
   }
 
-  void print() {}
+  void printTicket() {}
+
+  void createAccessCode() async {
+    var r = await showDialog(
+      context: Get.context!,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Create Access Code"),
+          content: Text(
+            "Are you sure you want to create an access code for this user?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Get.back(result: true),
+              child: Text("Create"),
+            ),
+          ],
+        );
+      },
+    );
+    if (r == true) {
+      print('creating access code');
+    }
+  }
 }

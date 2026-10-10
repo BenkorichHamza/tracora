@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
@@ -95,7 +95,7 @@ class UserController<T> extends GetxController {
 
   searchIntent() {
     showSearch = !showSearch;
-    // searchFn.requestFocus();
+    searchFn.requestFocus();
   }
 
   nextIntent() {
@@ -115,12 +115,57 @@ class UserController<T> extends GetxController {
     if (i >= users.length - 1) return;
 
     toDetails(users[i + 1]);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = selectedKey.currentContext;
+      if (context == null) return;
+      if (!scrollController.hasClients) return;
+
+      // 2. Grab just the inner scroll position
+      final position = scrollController.position;
+      var renderObject = context.findRenderObject()!;
+      // 3. Ask *that* position to ensure your item’s RenderObject is visible
+
+      RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
+      var offsetToRevealBottom = viewport.getOffsetToReveal(renderObject, 1.0);
+      var offsetToRevealTop = viewport.getOffsetToReveal(renderObject, 0.0);
+
+      if (offsetToRevealBottom.offset + 1 > scrollController.position.pixels) {
+        print("aaaaaaaaaaaaaaaaaaa");
+        scrollController.animateTo(
+          offsetToRevealBottom.offset,
+          duration: Duration(milliseconds: 10),
+          curve: Curves.linear,
+        );
+      }
+    });
   }
 
   previous() {
     var i = users.indexWhere((e) => e.id == selected.id);
     if (i == 0) return;
     toDetails(users[i - 1]);
+    final context = selectedKey.currentContext;
+    if (context == null) return;
+    if (!scrollController.hasClients) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final position = scrollController.position;
+      var renderObject = context.findRenderObject()!;
+      // 3. Ask *that* position to ensure your item’s RenderObject is visible
+
+      RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
+      var offsetToRevealBottom = viewport.getOffsetToReveal(renderObject, 1.0);
+      var offsetToRevealTop = viewport.getOffsetToReveal(renderObject, 0.0);
+
+      if (offsetToRevealTop.offset - 30 < scrollController.position.pixels) {
+        print("aaaaaaaaaaaaaaaaaaa");
+        scrollController.animateTo(
+          offsetToRevealTop.offset,
+          duration: Duration(milliseconds: 10),
+          curve: Curves.linear,
+        );
+      }
+    });
   }
 
   final _selected = UserModel().obs;
@@ -158,9 +203,16 @@ class UserController<T> extends GetxController {
   }
 
   late StreamSubscription listener;
+  late GlobalKey selectedKey;
+  late FocusNode searchFn;
+  late ScrollController scrollController;
 
   @override
   void onInit() {
+    selectedKey = GlobalKey();
+    scrollController = ScrollController();
+    searchFn = FocusNode();
+
     super.onInit();
     getAll();
     // listen();
@@ -193,21 +245,21 @@ class UserController<T> extends GetxController {
   }
 
   listen() async {
-    try {
-      listener.cancel();
-    } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('users')
-        .where("type", isEqualTo: "$userType")
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()?["remoteId"] = element.data()?["id"];
-            var model = UserModel.fromMap(element.data()!);
-            await repository.insertUser(model, sync: false);
-          });
-          getAll();
-        });
+    // try {
+    //   listener.cancel();
+    // } catch (e) {}
+    // listener = FirebaseFirestore.instance
+    //     .collection('users')
+    //     .where("type", isEqualTo: "$userType")
+    //     .snapshots(includeMetadataChanges: true)
+    //     .listen((data) async {
+    //       if (data.metadata.isFromCache) return;
+    //       await Future.forEach(data.docs, (element) async {
+    //         element.data()?["remoteId"] = element.data()?["id"];
+    //         var model = UserModel.fromMap(element.data()!);
+    //         await repository.insertUser(model);
+    //       });
+    //       getAll();
+    //     });
   }
 }

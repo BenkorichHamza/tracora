@@ -40,13 +40,13 @@ extension INtegerParsing on int? {
 }
 
 extension NumberParsing on num? {
-  String? formatPrice() {
+  String formatPrice() {
     if (this == null || this == 0) return '0 ${'dzd'.tr}';
     return NumberFormat('#,##0.## ${"dzd".tr}', 'fr_DZ').format(this);
   }
 
-  String? formatNumber() {
-    if (this == null) return null;
+  String formatNumber() {
+    if (this == null) return "0";
     String res = this.toString();
     if (res.endsWith('.0')) {
       res = res.substring(0, res.length - 2);
@@ -56,52 +56,38 @@ extension NumberParsing on num? {
 }
 
 extension ProductImage on Product {
-  DecorationImage? toDecorationImage() {
-    return data?.toDecorationImage();
-  }
-
-  ImageProvider? toImageProvider() {
-    return img?.toImageProvider();
-  }
-
   Widget leading() {
     return AspectRatio(
       aspectRatio: 1,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          image: toDecorationImage(),
           color:
-              toDecorationImage() == null
-                  ? [
-                    Colors.teal[900]!,
-                    Colors.amber,
-                    Colors.blue,
-                    Colors.red,
-                    Colors.green,
-                    Colors.purple,
-                    Colors.orange,
-                    Colors.cyan,
-                    Colors.indigo,
-                    Colors.pink,
-                    Colors.brown,
-                    Colors.deepOrange,
-                    Colors.deepPurple,
-                  ][(remoteId ?? id ?? 0) % 8]
-                  : null,
+              [
+                Colors.teal[900]!,
+                Colors.amber,
+                Colors.blue,
+                Colors.red,
+                Colors.green,
+                Colors.purple,
+                Colors.orange,
+                Colors.cyan,
+                Colors.indigo,
+                Colors.pink,
+                Colors.brown,
+                Colors.deepOrange,
+                Colors.deepPurple,
+              ][(id.hashCode) % 12],
         ),
-        child:
-            toDecorationImage() == null
-                ? FittedBox(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      '${name?.substring(0, 1).toUpperCase()}',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                )
-                : null,
+        child: FittedBox(
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Text(
+              '${name?.substring(0, 1).toUpperCase()}',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -109,64 +95,43 @@ extension ProductImage on Product {
 
 extension BrandImage on Brand {
   DecorationImage? toDecorationImage() {
-    return data.toDecorationImage() ?? img?.toDecorationImage();
+    return image?.toDecorationImage();
   }
 
   ImageProvider? toImageProvider() {
-    return data.toImageProvider() ?? img?.toImageProvider();
+    return image?.toImageProvider();
   }
 }
 
-extension CategoryImage on CategoryModel {
-  DecorationImage? toDecorationImage() {
-    return data?.toDecorationImage() ?? img?.toDecorationImage();
-  }
-
-  ImageProvider? toImageProvider() {
-    return data?.toImageProvider() ?? img?.toImageProvider();
-  }
-}
+extension CategoryImage on CategoryModel {}
 
 extension UserImage on UserModel {
-  DecorationImage? toDecorationImage() {
-    return img?.toDecorationImage();
-  }
-
-  ImageProvider? toImageProvider() {
-    return data?.toImageProvider() ?? img?.toImageProvider();
-  }
-
   Widget circleAvatar({double? radius}) {
     return CircleAvatar(
       radius: radius ?? 27,
-      backgroundImage: toImageProvider(),
+
       backgroundColor:
           id == null
-              ? null
-              : toImageProvider() == null
-              ? toDecorationImage() == null
-                  ? [
-                    Colors.teal[900]!,
-                    Colors.amber,
-                    Colors.blue,
-                    Colors.red,
-                    Colors.green,
-                    Colors.purple,
-                    Colors.orange,
-                    Colors.cyan,
-                    Colors.indigo,
-                    Colors.pink,
-                    Colors.brown,
-                    Colors.deepOrange,
-                    Colors.deepPurple,
-                  ][(remoteId ?? id ?? 0) % 8]
-                  : null
-              : null,
+              ? Colors.transparent
+              : [
+                Colors.teal[900]!,
+                Colors.amber,
+                Colors.blue,
+                Colors.red,
+                Colors.green,
+                Colors.purple,
+                Colors.orange,
+                Colors.cyan,
+                Colors.indigo,
+                Colors.pink,
+                Colors.brown,
+                Colors.deepOrange,
+                Colors.deepPurple,
+              ][(id.hashCode) % 12],
       child:
           id == null
               ? Icon(Icons.person, size: (radius ?? 27))
-              : toImageProvider() == null
-              ? FittedBox(
+              : FittedBox(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -178,8 +143,7 @@ extension UserImage on UserModel {
                     ),
                   ),
                 ),
-              )
-              : null,
+              ),
     );
   }
 }

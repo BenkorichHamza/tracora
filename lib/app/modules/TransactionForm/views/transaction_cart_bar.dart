@@ -39,7 +39,7 @@ class TransactionCartBar<T> extends GetView<TransactionFormController<T>> {
                                   label: Text(e.qte.formatNumber() ?? '0'),
                                   alignment: Alignment.topCenter,
                                   child: Hero(
-                                    tag: "product_${e.product?.id ?? 0}",
+                                    tag: "product_${e.product?.id ?? "0"}",
                                     child: Container(
                                       height: 50,
                                       width: 50,

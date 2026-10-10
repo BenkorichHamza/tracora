@@ -100,9 +100,7 @@ class CategoryView extends GetView<CategoryController> {
                           child: GestureDetector(
                             onTap: () {
                               Get.arguments?["select"] == true
-                                  ? controller.toggleSelected(
-                                    controller.categories[i].id ?? (-1),
-                                  )
+                                  ? controller.toggleSelected(0)
                                   : Get.toNamed(
                                     Routes.CATEGORY_FORM,
                                     arguments: {
@@ -117,10 +115,7 @@ class CategoryView extends GetView<CategoryController> {
                                   child: Obx(
                                     () => Container(
                                       child:
-                                          !controller.selected.contains(
-                                                controller.categories[i].id ??
-                                                    (-1),
-                                              )
+                                          !controller.selected.contains(0)
                                               ? null
                                               : Align(
                                                 alignment: Alignment.topRight,
@@ -132,9 +127,6 @@ class CategoryView extends GetView<CategoryController> {
                                       margin: EdgeInsets.all(8),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
-                                        image:
-                                            controller.categories[i]
-                                                .toDecorationImage(),
                                       ),
                                     ),
                                   ),

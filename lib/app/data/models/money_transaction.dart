@@ -5,37 +5,33 @@ import 'package:tracora/app/data/models/user_model.dart';
 class MoneyTransaction {
   final String sql = '''
 CREATE TABLE money_transaction (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    userIds         INTEGER REFERENCES user (ids),
-    ids  STRING UNIQUE,
-
+    id          STRING PRIMARY KEY,
+    userId         STRING REFERENCES user (id),
     status      INTEGER,
-    missionIds  STRING,
+    missionId  STRING,
     createdBy  STRING,
     updatedBy  STRING,
     deletedBy  STRING,
-    employeeIds STRING,
     credit      DOUBLE,
     amount      DOUBLE,
     type        TEXT,
     description TEXT,
-    employee_id INTEGER REFERENCES user (id),
-    user_id INTEGER REFERENCES user (id),
+    employeeId STRING REFERENCES user (id),
+    user_ids STRING REFERENCES user (id),
     dateTime    INTEGER,
     createdAt   INTEGER,
     updatedAt   INTEGER,
     deletedAt   INTEGER
 );
 ''';
-  final int? id;
+  final String? id;
   final int? status;
-  final String? ids;
-  final String? userIds;
-  final String? missionIds;
+  final String? userId;
+  final String? missionId;
   final String? createdBy;
   final String? updatedBy;
   final String? deletedBy;
-  final String? employeeIds;
+  final String? employeeId;
   final double? credit;
   final double? amount;
   final String? type;
@@ -49,13 +45,12 @@ CREATE TABLE money_transaction (
   MoneyTransaction({
     this.id,
     this.status,
-    this.ids,
-    this.userIds,
-    this.missionIds,
+    this.userId,
+    this.missionId,
     this.createdBy,
     this.updatedBy,
     this.deletedBy,
-    this.employeeIds,
+    this.employeeId,
     this.credit,
     this.amount,
     this.type,
@@ -69,15 +64,14 @@ CREATE TABLE money_transaction (
   });
 
   MoneyTransaction copyWith({
-    int? id,
+    String? id,
     int? status,
-    String? ids,
-    String? userIds,
-    String? missionIds,
+    String? userId,
+    String? missionId,
     String? createdBy,
     String? updatedBy,
     String? deletedBy,
-    String? employeeIds,
+    String? employeeId,
     double? credit,
     double? amount,
     String? type,
@@ -92,13 +86,12 @@ CREATE TABLE money_transaction (
     return MoneyTransaction(
       id: id ?? this.id,
       status: status ?? this.status,
-      ids: ids ?? this.ids,
-      userIds: userIds ?? this.userIds,
-      missionIds: missionIds ?? this.missionIds,
+      userId: userId ?? this.userId,
+      missionId: missionId ?? this.missionId,
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       deletedBy: deletedBy ?? this.deletedBy,
-      employeeIds: employeeIds ?? this.employeeIds,
+      employeeId: employeeId ?? this.employeeId,
       credit: credit ?? this.credit,
       amount: amount ?? this.amount,
       type: type ?? this.type,
@@ -121,14 +114,11 @@ CREATE TABLE money_transaction (
     if (status != null) {
       result.addAll({'status': status});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
-    }
-    if (userIds != null) {
-      result.addAll({'userIds': userIds});
-    }
-    if (missionIds != null) {
-      result.addAll({'missionIds': missionIds});
+
+    result.addAll({'userId': userId ?? user?.id});
+
+    if (missionId != null) {
+      result.addAll({'missionId': missionId});
     }
     if (createdBy != null) {
       result.addAll({'createdBy': createdBy});
@@ -139,9 +129,8 @@ CREATE TABLE money_transaction (
     if (deletedBy != null) {
       result.addAll({'deletedBy': deletedBy});
     }
-    if (employeeIds != null) {
-      result.addAll({'employeeIds': employeeIds});
-    }
+    result.addAll({'employeeId': employeeId ?? employee?.id});
+
     if (credit != null) {
       result.addAll({'credit': credit});
     }
@@ -154,12 +143,12 @@ CREATE TABLE money_transaction (
     if (description != null) {
       result.addAll({'description': description});
     }
-    if (employee != null) {
-      result.addAll({'employee': employee!.toMap()});
-    }
-    if (user != null) {
-      result.addAll({'user': user!.toMap()});
-    }
+    // if (employee != null) {
+    //   result.addAll({'employee': employee!.toMap()});
+    // }
+    // if (user != null) {
+    //   result.addAll({'user': user!.toMap()});
+    // }
     if (dateTime != null) {
       result.addAll({'dateTime': dateTime});
     }
@@ -176,7 +165,7 @@ CREATE TABLE money_transaction (
     return result;
   }
 
-  Map<String, dynamic> toSqfliteMap() {
+  Map<String, dynamic> toSyncMap() {
     final result = <String, dynamic>{};
 
     if (id != null) {
@@ -185,15 +174,23 @@ CREATE TABLE money_transaction (
     if (status != null) {
       result.addAll({'status': status});
     }
-    if (ids != null) {
-      result.addAll({'ids': ids});
+
+    result.addAll({'userId': userId ?? user?.id});
+
+    if (missionId != null) {
+      result.addAll({'missionId': missionId});
     }
-    if (user?.ids != null) {
-      result.addAll({'userIds': user!.ids});
+    if (createdBy != null) {
+      result.addAll({'createdBy': createdBy});
     }
-    if (missionIds != null) {
-      result.addAll({'missionIds': missionIds});
+    if (updatedBy != null) {
+      result.addAll({'updatedBy': updatedBy});
     }
+    if (deletedBy != null) {
+      result.addAll({'deletedBy': deletedBy});
+    }
+    result.addAll({'employeeId': employeeId ?? employee?.id});
+
     if (credit != null) {
       result.addAll({'credit': credit});
     }
@@ -206,26 +203,15 @@ CREATE TABLE money_transaction (
     if (description != null) {
       result.addAll({'description': description});
     }
-    if (employee != null) {
-      result.addAll({'employee_id': employee?.id});
-    }
-    if (user != null) {
-      result.addAll({'user_id': user?.id});
-    }
+    // if (employee != null) {
+    //   result.addAll({'employee': employee!.toMap()});
+    // }
+    // if (user != null) {
+    //   result.addAll({'user': user!.toMap()});
+    // }
     if (dateTime != null) {
-      result.addAll({'dateTime': dateTime});
+      result.addAll({'datetime': dateTime});
     }
-
-    if (createdBy != null) {
-      result.addAll({'createdBy': createdBy});
-    }
-    if (updatedBy != null) {
-      result.addAll({'updatedBy': updatedBy});
-    }
-    if (deletedBy != null) {
-      result.addAll({'deletedBy': deletedBy});
-    }
-
     if (createdAt != null) {
       result.addAll({'createdAt': createdAt});
     }
@@ -241,15 +227,14 @@ CREATE TABLE money_transaction (
 
   factory MoneyTransaction.fromMap(Map<String, dynamic> map) {
     return MoneyTransaction(
-      id: map['id']?.toInt(),
+      id: map['id'],
       status: map['status']?.toInt(),
-      ids: map['ids'],
-      userIds: map['userIds'],
-      missionIds: map['missionIds'],
+      userId: map['userId'],
+      missionId: map['missionId'],
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       deletedBy: map['deletedBy'],
-      employeeIds: map['employeeIds'],
+      employeeId: map['employeeId'],
       credit: map['credit']?.toDouble(),
       amount: map['amount']?.toDouble(),
       type: map['type'],
@@ -271,7 +256,7 @@ CREATE TABLE money_transaction (
 
   @override
   String toString() {
-    return 'MoneyTransaction(id: $id, status: $status, ids: $ids, userIds: $userIds, missionIds: $missionIds, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeIds: $employeeIds, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'MoneyTransaction(id: $id, status: $status, userId: $userId, missionId: $missionId, createdBy: $createdBy, updatedBy: $updatedBy, deletedBy: $deletedBy, employeeId: $employeeId, credit: $credit, amount: $amount, type: $type, description: $description, employee: $employee, user: $user, dateTime: $dateTime, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -281,13 +266,12 @@ CREATE TABLE money_transaction (
     return other is MoneyTransaction &&
         other.id == id &&
         other.status == status &&
-        other.ids == ids &&
-        other.userIds == userIds &&
-        other.missionIds == missionIds &&
+        other.userId == userId &&
+        other.missionId == missionId &&
         other.createdBy == createdBy &&
         other.updatedBy == updatedBy &&
         other.deletedBy == deletedBy &&
-        other.employeeIds == employeeIds &&
+        other.employeeId == employeeId &&
         other.credit == credit &&
         other.amount == amount &&
         other.type == type &&
@@ -304,13 +288,12 @@ CREATE TABLE money_transaction (
   int get hashCode {
     return id.hashCode ^
         status.hashCode ^
-        ids.hashCode ^
-        userIds.hashCode ^
-        missionIds.hashCode ^
+        userId.hashCode ^
+        missionId.hashCode ^
         createdBy.hashCode ^
         updatedBy.hashCode ^
         deletedBy.hashCode ^
-        employeeIds.hashCode ^
+        employeeId.hashCode ^
         credit.hashCode ^
         amount.hashCode ^
         type.hashCode ^

@@ -1,4 +1,8 @@
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:tracora/app/widgets/window_buttons.dart';
 
 class StockTransactionTabs extends StatelessWidget {
   const StockTransactionTabs({
@@ -24,98 +28,136 @@ class StockTransactionTabs extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 52,
       decoration: BoxDecoration(
-        // color: colorScheme.surfaceVariant,
         border: Border(
           bottom: BorderSide(color: colorScheme.outline, width: 1),
         ),
       ),
-      child: Row(
+      child: Stack(
         children: [
-          _toolbarButton(
-            label: title,
-            isActive: !showForm,
-            onTap: onHideForm,
-            icon: Icons.list_alt,
-            colorScheme: colorScheme,
-          ),
-          const SizedBox(width: 8),
-          _toolbarButton(
-            label: formTitle,
-            isActive: showForm,
-            onTap: onFormTap,
-            icon: Icons.edit,
-            colorScheme: colorScheme,
-            trailing:
-                showForm
-                    ? IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        size: 18,
-                        color: colorScheme.onPrimaryContainer,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: onCloseForm,
-                    )
-                    : null,
+          // 1. MoveWindow fills background to allow dragging the window
+          Positioned.fill(child: MoveWindow()),
+
+          // 2. Interactive tab content placed on top of MoveWindow
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Main List Tab
+                        _buildTabChip(
+                          context: context,
+                          label: title,
+                          icon: Icons.list_alt,
+                          isActive: !showForm,
+                          colorScheme: colorScheme,
+                          onTap: onHideForm,
+                        ),
+
+                        // Active Form Tab
+                        _buildTabChip(
+                          context: context,
+                          label: formTitle,
+                          icon: Icons.shopping_bag_outlined,
+                          isActive: showForm,
+                          colorScheme: colorScheme,
+                          onTap: onFormTap,
+                          onClose: showForm ? onCloseForm : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                WindowButtons(homeController: Get.find<HomeController>()),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _toolbarButton({
+  Widget _buildTabChip({
+    required BuildContext context,
     required String label,
     required IconData icon,
     required bool isActive,
-    required VoidCallback onTap,
     required ColorScheme colorScheme,
-    Widget? trailing,
+    required VoidCallback onTap,
+    VoidCallback? onClose,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? colorScheme.primaryContainer : Colors.transparent,
-          border:
-              isActive
-                  ? Border(
-                    top: BorderSide(color: colorScheme.primary, width: 2),
-                    left: BorderSide(color: colorScheme.primary, width: 2),
-                    right: BorderSide(color: colorScheme.primary, width: 2),
-                    bottom: BorderSide(color: Colors.transparent, width: 0),
-                  )
-                  : null,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
               color:
                   isActive
-                      ? colorScheme.onPrimaryContainer
-                      : colorScheme.onSurfaceVariant,
+                      ? colorScheme.primary.withOpacity(0.15)
+                      : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color:
+                    isActive
+                        ? colorScheme.primary
+                        : colorScheme.outline.withOpacity(0.3),
+                width: 1,
+              ),
             ),
-            const SizedBox(width: 6),
-            Text(label, style: themeTextStyle(colorScheme, isActive)),
-            if (trailing != null) ...[const SizedBox(width: 4), trailing],
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 16,
+                  color:
+                      isActive
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    color:
+                        isActive
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (onClose != null) ...[
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: onClose,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Icon(
+                        Icons.close,
+                        size: 14,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
-    );
-  }
-
-  TextStyle themeTextStyle(ColorScheme cs, bool isActive) {
-    return TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: isActive ? cs.onPrimaryContainer : cs.onSurfaceVariant,
     );
   }
 }

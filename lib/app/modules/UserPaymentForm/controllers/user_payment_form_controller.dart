@@ -118,15 +118,18 @@ class UserPaymentFormController<T> extends GetxController {
       if (!validate) return;
       var n = transaction.copyWith(
         user: user,
+        userId: user.id,
         status: 1,
         amount: double.tryParse(payment.text),
         credit: user.toPay,
         dateTime: dateTime,
         type: "$transactionType",
       );
-      var id = await repository.insertMoneyTransaction(n, sync: false);
+      var id = await repository.insertMoneyTransaction(n);
       if (Get.isRegistered<UserPaymentController<T>>()) {
         Get.find<UserPaymentController<T>>().getAll();
+        // Get.find<UserPaymentController<T>>().toDetails(n);
+        // Get.find<UserPaymentDetailsController<T>>().moneyTransaction = n;
       }
 
       if (Get.isRegistered<UserDetailsController<T>>()) {
@@ -134,8 +137,7 @@ class UserPaymentFormController<T> extends GetxController {
         await Get.find<UserDetailsController<T>>().getStockTransactions();
         await Get.find<UserDetailsController<T>>().getUser();
       }
-      n = n.copyWith(id: id <= 0 ? null : id, dateTime: dateTime);
-      transaction = transaction.copyWith(id: id);
+      n = n.copyWith(dateTime: dateTime);
       Get.find<UserPaymentController<T>>().showForm = false;
       Get.find<UserPaymentDetailsController<T>>().getMoneyTransaction();
       init(MoneyTransaction());

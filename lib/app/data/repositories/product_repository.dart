@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
@@ -7,140 +6,109 @@ import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/data/repositories/brand_repository.dart';
 import 'package:tracora/app/data/repositories/category_repository.dart';
+import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
+import 'package:tracora/app/data/repositories/sync_repository.dart';
+import 'package:uuid/uuid.dart';
 
 class ProductRepository {
   final DbHelper _dbHelper = DbHelper();
 
-  Future<List<Product>> getAllProducts({required String search}) async {
+  Future<List<Product>> getAllProducts({
+    required String search,
+    Warehouse? warehouse,
+  }) async {
     final db = await _dbHelper.db;
-
-    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    final List<Map<String, dynamic>> maps;
+    if (warehouse?.id == null) {
+      maps = await db.rawQuery('''
         SELECT
-        p.*,
-        (p.stock + COALESCE(SUM(CASE
-                                  WHEN (st.status = 1 AND st.type <> "mission" AND (st.missionIds IS NULL OR NOT EXISTS (
-                SELECT 1
-                FROM stock_transaction m
-                WHERE m.ids = st.missionIds
-                  AND m.status = 2
-            ))) THEN pt.qte * pt.direction
-                                  ELSE 0
-                                END), 0)) AS rest,
-(COALESCE(SUM(CASE
-                                  WHEN (st.status = 2 AND st.type = "mission") THEN pt.qte
-                                  ELSE 0
-                                END), 0)) AS missionQte,
-(COALESCE(SUM(CASE
-                                  WHEN (st.type <> "mission" AND  EXISTS (
-                SELECT 1
-                FROM stock_transaction m
-                WHERE m.ids = st.missionIds
-                  AND m.status = 2
-            )) THEN -pt.qte*pt.direction
-                                  ELSE 0
-                                END), 0)) AS missionSelledQte
-    FROM product p
-    LEFT JOIN product_transaction pt ON p.id = pt.product_id
-    LEFT JOIN stock_transaction st ON st.id = pt.transaction_id
-    WHERE p.deletedAt IS NULL
-      AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
-    GROUP BY p.id
-    LIMIT 50 OFFSET 0;
+    p.*,
+   COALESCE(
+  
+   SUM(
+            CASE
+                WHEN st.from_warehouse IS NOT NULL AND st.to_warehouse IS NULL AND st.deletedAt IS NULL THEN -pt.qte
+                WHEN st.from_warehouse IS NULL AND st.to_warehouse IS NOT NULL AND st.deletedAt IS NULL THEN pt.qte
+                ELSE 0
+            END
+        )
+        ,0) AS rest
+FROM product p
+LEFT JOIN product_transaction pt 
+    ON p.id = pt.productId 
+LEFT JOIN stock_transaction st 
+    ON st.id = pt.transactionId
+WHERE p.deletedAt IS NULL
+AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
+GROUP BY p.id
+
+ORDER BY p.name COLLATE NOCASE ASC
+LIMIT 50 OFFSET 0;
       ''');
+    } else {
+      maps = await db.rawQuery('''
+        SELECT
+    p.*,
+    COALESCE(
+        
+        COALESCE(SUM(
+            CASE
+                WHEN st.from_warehouse = '${warehouse?.id ?? "0"}' AND st.deletedAt IS NULL THEN -pt.qte
+                WHEN st.to_warehouse = '${warehouse?.id ?? "0"}' AND st.deletedAt IS NULL THEN pt.qte
+                ELSE 0
+            END
+        ),0),0
+    ) AS rest
+FROM product p
+LEFT JOIN product_transaction pt 
+    ON p.id = pt.productId
+LEFT JOIN stock_transaction st 
+    ON st.Id = pt.transactionId
+WHERE p.deletedAt IS NULL
+AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
+GROUP BY p.Id
+ORDER BY p.name COLLATE NOCASE ASC
+LIMIT 50 OFFSET 0;
+      ''');
+    }
+    print(maps.length);
 
-    //     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-    //         SELECT
-    //   p.*,
-    //   -- garage stock: start with p.stock, then add/subtract
-    //   --   • all non‑mission ins (status=1) that are not linked to a completed mission
-    //   --   • all mission ins/outs *only* when mission.status <> 2
-    //   COALESCE(
-    //     p.stock
-    //     + SUM(
-    //         CASE
-    //           -- non-mission transactions: include only status=1 and exclude those linked to missions with status=2
-    //           WHEN st.type <> 'mission'
-    //             AND st.status = 1
-    //             THEN pt.qte * pt.direction
-
-    //           -- mission transactions: only include when status != 2
-    //           WHEN st.type = 'mission'
-    //             THEN CASE
-    //                    WHEN st.status = 2
-    //                      THEN 0
-    //                    ELSE pt.qte
-    //                  END
-
-    //           ELSE 0
-    //         END
-    //       )
-    //   , 0) AS rest_garage,
-
-    //   -- total moved by missions (you can refine status/direction filters here if needed)
-    //   COALESCE(
-    //     SUM(
-    //       CASE
-    //         WHEN st.type = 'mission'
-    //           THEN pt.qte * pt.direction
-    //         ELSE 0
-    //       END
-    //     )
-    //   , 0) AS rest_camion
-
-    // FROM product p
-    // LEFT JOIN product_transaction pt
-    //   ON p.id = pt.product_id
-    // LEFT JOIN stock_transaction st
-    //   ON st.id = pt.transaction_id
-    //  WHERE p.deletedAt IS NULL
-    //       AND (p.name LIKE "%$search%" OR p.nameAr LIKE "%$search%")
-    //     GROUP BY p.id
-    //     LIMIT 50 OFFSET 0;
-
-    //       ''');
-
-    // final List<Map<String, dynamic>> maps = await db.query(
-    //   'product',
-    //   where:
-    //       'deletedAt IS NULL AND (name LIKE "%$search%" OR nameAr LIKE "%$search%")',
-    // );
-    final List<int> brandIds =
-        maps.map((map) => map['brand_id']).whereType<int>().toList();
+    final List<int> brandId =
+        maps.map((map) => map['brandId']).whereType<int>().toList();
     final List<Map<String, dynamic>> brandMaps = await db.query(
       'brand',
-      where: brandIds.isEmpty ? null : 'id IN (${brandIds.join(', ')})',
+      where: brandId.isEmpty ? null : 'id IN (${brandId.join(', ')})',
     );
 
-    final List<int> productIds =
+    final List<int> productId =
         maps.map((m) => m['id'] ?? 0).whereType<int>().toList();
     final List<Map<String, dynamic>> pivotMaps = await db.query(
       'product_category',
       where:
-          productIds.isEmpty
-              ? null
-              : 'product_id IN (${productIds.join(', ')})',
+          productId.isEmpty ? null : 'productId IN (${productId.join(', ')})',
     );
-    final List<int> categoryIds =
-        pivotMaps.map((map) => map['category_id']).whereType<int>().toList();
+    final List<String> categoryId =
+        pivotMaps.map((map) => map['categoryId']).whereType<String>().toList();
     final List<Map<String, dynamic>> categoryMaps = await db.query(
       'category',
-      where: categoryIds.isEmpty ? null : 'id IN (${categoryIds.join(', ')})',
+      where: categoryId.isEmpty ? null : 'id IN (${categoryId.join(', ')})',
     );
     var categories = categoryMaps.map((e) => CategoryModel.fromMap(e)).toList();
     final List<Product> products =
         maps.map((map) {
           final brandMap = brandMaps.firstWhereOrNull(
-            (element) => element['id'] == map['brand_id'],
+            (element) => element['id'] == map['brandId'],
           );
           return Product.fromMap(map).copyWith(
             brand: brandMap == null ? null : Brand.fromMap(brandMap),
             categories:
                 categories.where((cat) {
                   return pivotMaps
-                      .where((pm) => pm['product_id'] == map["id"])
-                      .map((fpm) => fpm["category_id"])
+                      .where((pm) => pm['productId'] == map["id"])
+                      .map((fpm) => fpm["categoryId"])
                       .contains(cat.id);
                 }).toList(),
           );
@@ -150,23 +118,34 @@ class ProductRepository {
   }
 
   Future<List<ProductTransaction>> getProductTransactions({
-    required int productId,
+    required String productId,
   }) async {
     final db = await _dbHelper.db;
 
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-    SELECT pt.* 
+    SELECT pt.*, st.type 
     FROM product_transaction pt
-    INNER JOIN stock_transaction  st on st.id=pt.transaction_id
-    WHERE pt.product_id = $productId AND st.type <> "mission" AND st.status=1
+    INNER JOIN stock_transaction  st on st.Id=pt.transactionId
+    WHERE pt.productId = '$productId' AND st.deletedAt is  NULL AND st.status=1
     ORDER BY st.dateTime DESC 
     LIMIT 100
   ''');
-    // Convert each Map to a ProductTransaction object
-    return maps.map((map) => ProductTransaction.fromMap(map)).toList();
+    maps.forEach((map) => print(map["direction"]));
+    return maps
+        .map(
+          (map) => ProductTransaction.fromMap(map).copyWith(
+            direction:
+                map["type"] == "sale"
+                    ? -1
+                    : map["type"] == "purchase"
+                    ? 1
+                    : 0,
+          ),
+        )
+        .toList();
   }
 
-  Future<Product> getProduct(int id) async {
+  Future<Product> getProduct(String id) async {
     final db = await _dbHelper.db;
     final List<Map<String, dynamic>> maps = await db.query(
       'product',
@@ -176,85 +155,94 @@ class ProductRepository {
     return Product.fromMap(maps[0]);
   }
 
-  Future<int> insertProduct(
-    Product product, {
-    bool sync = true,
-    replace = true,
-  }) async {
+  Future<int> insertProduct(Product product) async {
     final db = await _dbHelper.db;
-    var userIds = FirebaseAuth.instance.currentUser?.uid;
-    if (product.ids == null) {
-      var doc = FirebaseFirestore.instance.collection("products").doc();
-      product = product.copyWith(ids: doc.id);
-    }
-    await Future.forEach(product.categories ?? <CategoryModel>[], (c) async {
-      await CategoryRepository().insertCategory(c, sync: false, replace: false);
-    });
-    if (product.brand?.id is int) {
-      await BrandRepository().insertBrand(
-        product.brand!,
-        sync: false,
-        replace: false,
+    var userId = FirebaseAuth.instance.currentUser?.uid;
+    String operation;
+    var now = DateTime.now().millisecondsSinceEpoch;
+    if (product.id == null) {
+      operation = "INSERT";
+
+      product = product.copyWith(
+        id: Uuid().v4(),
+        createdBy: userId,
+        createdAt: now,
+      );
+    } else {
+      operation = "UPDATE";
+      product = product.copyWith(
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
       );
     }
-    List<Map<String, dynamic>> m = await db.query(
-      "product",
-      columns: ['id'],
-      where: "ids = '${product.ids}'",
-    );
-    if (m.length == 1) {
-      product = product.copyWith(id: m.first['id']?.toInt());
-      if (!replace) return -1;
-    }
-    product = product.copyWith(
-      createdBy: product.id != null ? product.createdBy : userIds,
-      updatedBy: product.id != null ? userIds : product.updatedBy,
-      createdAt:
-          product.id != null
-              ? product.createdAt
-              : DateTime.now().millisecondsSinceEpoch,
-      updatedAt:
-          product.id == null
-              ? product.createdAt
-              : DateTime.now().millisecondsSinceEpoch,
-    );
+
     var id = await db.insert(
       'product',
-      product.toSqliteMap(),
+      product.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+
     // delete all product categories
     await db.delete(
       'product_category',
-      where: 'product_id = ?',
-      whereArgs: [id < 0 ? product.id : id],
+      where: 'productId = ?',
+      whereArgs: [product.id],
     );
 
     // add categories to the pivot
     if ((product.categories ?? []).isNotEmpty) {
       final List<Map<String, dynamic>> categoryMaps =
           product.categories!
-              .map((category) => {'product_id': id, 'category_id': category.id})
+              .map(
+                (category) => {
+                  'productId': product.id,
+                  'categoryId': category.id,
+                },
+              )
               .toList();
-      await db
-        ..rawInsert(
-          'INSERT INTO product_category (product_id, category_id) VALUES ${categoryMaps.map((map) => '(${map['product_id']}, ${map['category_id']})').join(', ')}',
-        );
+      await db.rawInsert(
+        'INSERT INTO product_category (productId, categoryId) VALUES ${categoryMaps.map((map) => '(${map['productId']}, ${map['categoryId']})').join(', ')}',
+      );
     }
 
-    // if (sync) {
-    //   FirebaseFirestore.instance
-    //       .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-    //       .doc("2025")
-    //       .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-    //       .doc("2025")
-    //       .collection("products")
-    //       .doc(product.ids)
-    //       .set(
-    //         product.copyWith(id: id < 0 ? product.id : id).toFirestoreMap(),
-    //         SetOptions(merge: sync),
-    //       );
-    // }
+    await SyncRepository().addOperation(
+      'product',
+      product.id ?? "",
+      operation,
+      product.toMap(),
+    );
+
+    return id;
+  }
+
+  Future<int> insertProductUsingTxn(Product product, Transaction txn) async {
+    var id = await txn.insert(
+      'product',
+      product.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // delete all product categories
+    await txn.delete(
+      'product_category',
+      where: 'productId = ?',
+      whereArgs: [product.id],
+    );
+
+    // add categories to the pivot
+    if ((product.categories ?? []).isNotEmpty) {
+      final List<Map<String, dynamic>> categoryMaps =
+          product.categories!
+              .map(
+                (category) => {
+                  'productId': product.id,
+                  'categoryId': category.id,
+                },
+              )
+              .toList();
+      await txn.rawInsert(
+        'INSERT INTO product_category (productId, categoryId) VALUES ${categoryMaps.map((map) => '(${map['productId']}, ${map['categoryId']})').join(', ')}',
+      );
+    }
 
     return id;
   }
@@ -264,17 +252,8 @@ class ProductRepository {
     return await db.update(
       'product',
       product
-          .copyWith(
-            createdAt:
-                product.id != null
-                    ? product.createdAt
-                    : DateTime.now().millisecondsSinceEpoch,
-            updatedAt:
-                product.id == null
-                    ? product.createdAt
-                    : DateTime.now().millisecondsSinceEpoch,
-          )
-          .toSqliteMap(),
+          .copyWith(updatedAt: DateTime.now().millisecondsSinceEpoch)
+          .toMap(),
       where: 'id = ?',
       whereArgs: [product.id],
     );
@@ -288,24 +267,14 @@ class ProductRepository {
       'product',
       {"deletedAt": now},
       where: 'id = ?',
-      whereArgs: [product.id ?? 0],
+      whereArgs: [product.id],
     );
-    // FirebaseFirestore.instance
-    //     .collection(FirebaseAuth.instance.currentUser?.uid ?? 'default')
-    //     .doc("2025")
-    //     .collection("products")
-    //     .doc(product.ids)
-    //     .set(product.toMap(), SetOptions(merge: true));
+    await SyncRepository().addOperation(
+      'product',
+      product.id ?? "",
+      "DELETE",
+      product.toMap(),
+    );
     return r;
   }
-
-  // Future syncProduct(Product product) async {
-  //   await Future.forEach(product.categories ?? <CategoryModel>[], (c) async {
-  //     await CategoryRepository().insertCategory(c);
-  //   });
-  //   if (product.brand?.id is int) {
-  //     await BrandRepository().sync(product.brand!);
-  //   }
-  //   await insertProduct(product, sync: false, replace: false);
-  // }
 }

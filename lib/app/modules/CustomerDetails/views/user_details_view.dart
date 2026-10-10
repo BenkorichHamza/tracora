@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -45,16 +44,16 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                     SizedBox(width: 8),
                   ],
 
-                  foregroundColor: Colors.white,
+                  // foregroundColor: Colors.white,
                   backgroundColor:
                       Get.find<HomeController>()
-                          .dark
+                          .theme
                           .colorScheme
-                          .primaryContainer,
+                          .surfaceContainer,
                   bottom: TabBar(
-                    labelColor: Colors.white,
-                    indicatorColor: Colors.white,
-                    unselectedLabelColor: Colors.white60,
+                    // labelColor: Colors.white,
+                    // indicatorColor: Colors.white,
+                    // unselectedLabelColor: Colors.white60,
                     controller: controller.tabCtrl,
                     tabs: [
                       Tab(text: "profile", icon: Icon(Icons.person)),
@@ -154,7 +153,7 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                               ),
                               foregroundColor: Colors.white,
                             ),
-                            onPressed: controller.print,
+                            onPressed: controller.printTicket,
                             label: Text('print'.tr),
                           ),
                         ),
@@ -262,19 +261,7 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
                     onValidate: (item) {
                       StockTransactionRepository<T>().insert(
                         item.copyWith(status: 1),
-                        sync: false,
                       );
-                      FirebaseFirestore.instance
-                          .collection("collections")
-                          .doc(Get.find<HomeController>().collection)
-                          .collection("missions")
-                          .doc(item.missionIds ?? "default")
-                          .collection("stockTransactions")
-                          .doc(item.ids ?? "default")
-                          .update({"status": 1})
-                          .catchError((e) {
-                            ErrorHandler.handleError(e);
-                          });
                     },
                     onTap: (t) {
                       showDialog(

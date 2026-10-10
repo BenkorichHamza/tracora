@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/modules/User/controllers/user_controller.dart';
 import 'package:tracora/app/modules/User/views/user_view.dart';
@@ -13,6 +15,8 @@ import 'package:tracora/app/modules/StockTransaction/controllers/transaction_con
 import 'package:tracora/app/modules/StockTransactionDetails/controllers/stock_transaction_details_controller.dart';
 import 'package:tracora/app/modules/TransactionForm/views/bottom_sheet_item_selector.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:tracora/app/modules/warehouse/controllers/warehouse_controller.dart';
+import 'package:tracora/app/modules/warehouse/views/warehouse_view.dart';
 
 class TransactionFormController<T> extends GetxController {
   String get userType =>
@@ -26,7 +30,7 @@ class TransactionFormController<T> extends GetxController {
           ? "sale"
           : T == Purchase || T == Supplier
           ? "purchase"
-          : "mission";
+          : "transfert";
   final StockTransactionRepository<T> repository =
       StockTransactionRepository<T>();
   final _transaction = StockTransaction().obs;
@@ -40,6 +44,14 @@ class TransactionFormController<T> extends GetxController {
   final _user = UserModel().obs;
   UserModel get user => this._user.value;
   set user(UserModel value) => this._user.value = value;
+
+  final _fromWarehouse = Warehouse().obs;
+  Warehouse get fromWarehouse => this._fromWarehouse.value;
+  set fromWarehouse(Warehouse value) => this._fromWarehouse.value = value;
+
+  final _toWarehouse = Warehouse().obs;
+  Warehouse get toWarehouse => this._toWarehouse.value;
+  set toWarehouse(Warehouse value) => this._toWarehouse.value = value;
 
   final _employee = UserModel().obs;
   UserModel get employee => this._employee.value;
@@ -93,7 +105,7 @@ class TransactionFormController<T> extends GetxController {
 
   getProductTransactions() async {
     productTransactions = await repository.getProductTransactions(
-      transaction.id ?? 0,
+      transaction.id ?? "",
     );
     update([
       productTransactions.map((pt) => 'shop_${pt.product?.id}').toList(),
@@ -180,12 +192,14 @@ class TransactionFormController<T> extends GetxController {
   }
 
   void setQte(Product product) async {
+    var pref = await SharedPreferences.getInstance();
+    var package = pref.getBool("package") ?? false;
     var t = transactionOf(product);
     var r = await showModalBottomSheet(
       isScrollControlled: true,
       context: Get.context!,
       builder: (c) {
-        return ItemBottomSheet<T>(productTransaction: t);
+        return ItemBottomSheet<T>(productTransaction: t, package: package);
       },
     );
     if (r is! ProductTransaction) return;
@@ -231,12 +245,16 @@ class TransactionFormController<T> extends GetxController {
 
   save() async {
     try {
+      if (productTransactions.isEmpty) {
+        ErrorHandler.showError("empty_cart".tr);
+        return;
+      }
       if (user.id == null) {
         ErrorHandler.showError("select_user".tr);
         return;
       }
       if (double.tryParse(payment.text) == null &&
-          transactionType != "mission") {
+          transactionType != "transfert") {
         ErrorHandler.showError("make_payment".tr);
         return;
       }
@@ -256,7 +274,7 @@ class TransactionFormController<T> extends GetxController {
         dateTime: dateTime,
         type: transactionType,
       );
-      var id = await repository.insert(n, mission: T == Mission);
+      var id = await repository.insert(n);
       if (Get.isRegistered<StockTransactionController<T>>()) {
         Get.find<StockTransactionController<T>>().getAll();
       }
@@ -266,8 +284,6 @@ class TransactionFormController<T> extends GetxController {
         await Get.find<UserDetailsController<T>>().getStockTransactions();
         await Get.find<UserDetailsController<T>>().getUser();
       }
-      n = n.copyWith(id: id <= 0 ? null : id, dateTime: dateTime);
-      transaction = transaction.copyWith(id: id);
       Get.find<StockTransactionController<T>>().showForm = false;
       Get.find<StockTransactionDetailsController<T>>().stockTransaction = n;
       Get.find<StockTransactionDetailsController<T>>().getStockTransaction();
@@ -279,6 +295,6 @@ class TransactionFormController<T> extends GetxController {
 
   bool get validate =>
       user.id != null &&
-      (int.tryParse(payment.text) != null || transactionType == "mission") &&
+      (int.tryParse(payment.text) != null || transactionType == "transfert") &&
       productTransactions.isNotEmpty;
 }

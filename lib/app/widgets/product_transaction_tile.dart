@@ -17,7 +17,7 @@ class ProductTransactionTile<T> extends StatelessWidget {
         dense: true,
         leading: product?.leading(),
         contentPadding: EdgeInsets.symmetric(horizontal: 0),
-        title: Text(product?.translateName ?? ''),
+        title: Text((product?.translateName ?? '')),
         trailing: SizedBox(
           width: 150,
           child: Row(
@@ -31,6 +31,7 @@ class ProductTransactionTile<T> extends StatelessWidget {
               ),
 
               Expanded(
+                flex: 2,
                 child: Text(
                   (productTransaction.total.formatPrice() ?? '0'),
                   textAlign: TextAlign.end,

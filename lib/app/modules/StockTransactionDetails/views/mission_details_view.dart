@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -18,13 +17,14 @@ import 'package:tracora/app/widgets/empty_widget.dart';
 import 'package:tracora/app/widgets/money_transaction_tile.dart';
 import 'package:tracora/app/widgets/product_transaction_tile.dart';
 import 'package:tracora/app/widgets/qr_code.dart';
-import 'package:tracora/app/widgets/stock_transaction_tile.dart';
+import 'package:tracora/app/widgets/stock_transaction_tile.dart'
+    hide MoneyTransactionTile;
 
 import '../controllers/stock_transaction_details_controller.dart';
 
-class MissionDetailsView
-    extends GetView<StockTransactionDetailsController<Mission>> {
-  const MissionDetailsView({super.key});
+class TransfertDetailsView
+    extends GetView<StockTransactionDetailsController<Transfert>> {
+  const TransfertDetailsView({super.key});
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -56,9 +56,7 @@ class MissionDetailsView
                                       ),
                                     )
                                     : IconButton(
-                                      onPressed: () {
-                                        controller.synchronize();
-                                      },
+                                      onPressed: () {},
                                       icon: Icon(
                                         Icons.sync_sharp,
                                         color: Colors.white,
@@ -84,7 +82,7 @@ class MissionDetailsView
                         Tab(
                           text: "details",
                           icon: Image.asset(
-                            "assets/mission.png",
+                            "assets/transfert.png",
                             height: 25,
                             width: 25,
                           ),
@@ -129,7 +127,7 @@ class MissionDetailsView
   sales() {
     return Obx(
       () =>
-          controller.missionSales.isEmpty
+          controller.transfertSales.isEmpty
               ? EmptyWidget()
               : Obx(
                 () => Column(
@@ -140,7 +138,7 @@ class MissionDetailsView
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors:
-                              controller.missionSales.every(
+                              controller.transfertSales.every(
                                     (sale) => sale.status == 1,
                                   )
                                   ? [
@@ -185,7 +183,7 @@ class MissionDetailsView
                                 ),
                                 Spacer(),
                                 Icon(
-                                  controller.missionPayments.every(
+                                  controller.transfertPayments.every(
                                         (payment) => payment.status == 1,
                                       )
                                       ? Icons.check_circle
@@ -195,7 +193,7 @@ class MissionDetailsView
                                 ),
                                 SizedBox(width: 4),
                                 Text(
-                                  controller.missionSales.every(
+                                  controller.transfertSales.every(
                                         (sale) => sale.status == 1,
                                       )
                                       ? 'Validée'
@@ -294,7 +292,7 @@ class MissionDetailsView
                     Expanded(
                       child: ListView.builder(
                         itemCount:
-                            controller.missionSales
+                            controller.transfertSales
                                 .where((e) => e.type == "sale")
                                 .length,
                         itemBuilder:
@@ -330,7 +328,7 @@ class MissionDetailsView
                                 );
                               },
                               item:
-                                  controller.missionSales
+                                  controller.transfertSales
                                       .where((e) => e.type == "sale")
                                       .toList()[i],
                               highest: false,
@@ -347,7 +345,7 @@ class MissionDetailsView
   payments() {
     return Obx(
       () =>
-          controller.missionPayments.isEmpty
+          controller.transfertPayments.isEmpty
               ? EmptyWidget()
               : Obx(
                 () => Column(
@@ -358,7 +356,7 @@ class MissionDetailsView
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors:
-                              controller.missionPayments.every(
+                              controller.transfertPayments.every(
                                     (sale) => sale.status == 1,
                                   )
                                   ? [
@@ -404,7 +402,7 @@ class MissionDetailsView
                                 ),
                                 Spacer(),
                                 Icon(
-                                  controller.missionPayments.every(
+                                  controller.transfertPayments.every(
                                         (payment) => payment.status == 1,
                                       )
                                       ? Icons.check_circle
@@ -414,7 +412,7 @@ class MissionDetailsView
                                 ),
                                 SizedBox(width: 4),
                                 Text(
-                                  controller.missionSales.every(
+                                  controller.transfertSales.every(
                                         (sale) => sale.status == 1,
                                       )
                                       ? 'Validée'
@@ -486,7 +484,7 @@ class MissionDetailsView
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: controller.missionPayments.length,
+                        itemCount: controller.transfertPayments.length,
                         itemBuilder:
                             (c, i) => MoneyTransactionTile(
                               onValidate: (item) {
@@ -519,7 +517,7 @@ class MissionDetailsView
                                   },
                                 );
                               },
-                              item: controller.missionPayments[i],
+                              item: controller.transfertPayments[i],
                               highest: false,
                               selected: false,
                             ),
@@ -644,18 +642,18 @@ class MissionDetailsView
                       gradient: LinearGradient(
                         colors:
                             Get.find<HomeController>().theme == ThemeMode.light
-                                ? (controller.missionSales.every(
+                                ? (controller.transfertSales.every(
                                           (s) => s.status == 1,
                                         ) &&
-                                        controller.missionPayments.every(
+                                        controller.transfertPayments.every(
                                           (p) => p.status == 1,
                                         ))
                                     ? [Color(0xFF56ab2f), Color(0xFFa8e063)]
                                     : [Color(0xFFd31027), Color(0xFFea384d)]
-                                : (controller.missionSales.every(
+                                : (controller.transfertSales.every(
                                       (s) => s.status == 1,
                                     ) &&
-                                    controller.missionPayments.every(
+                                    controller.transfertPayments.every(
                                       (p) => p.status == 1,
                                     ))
                                 ? [Color(0xFF56ab2f), Color(0xFFa8e063)]
@@ -695,10 +693,10 @@ class MissionDetailsView
                               ),
                               Spacer(),
                               Icon(
-                                (controller.missionSales.every(
+                                (controller.transfertSales.every(
                                           (s) => s.status == 1,
                                         ) &&
-                                        controller.missionPayments.every(
+                                        controller.transfertPayments.every(
                                           (p) => p.status == 1,
                                         ))
                                     ? Icons.check_circle
@@ -708,10 +706,10 @@ class MissionDetailsView
                               ),
                               SizedBox(width: 4),
                               Text(
-                                (controller.missionSales.every(
+                                (controller.transfertSales.every(
                                           (s) => s.status == 1,
                                         ) &&
-                                        controller.missionPayments.every(
+                                        controller.transfertPayments.every(
                                           (p) => p.status == 1,
                                         ))
                                     ? 'Validée'
@@ -781,7 +779,7 @@ class MissionDetailsView
                                 },
                               ),
                               Divider(),
-                              controller.transactionType == "mission"
+                              controller.transactionType == "transfert"
                                   ? SizedBox()
                                   : ListTile(
                                     title: Text('total'),
@@ -792,7 +790,7 @@ class MissionDetailsView
                                       style: TextStyle(fontSize: 16),
                                     ),
                                   ),
-                              controller.transactionType == "mission"
+                              controller.transactionType == "transfert"
                                   ? SizedBox()
                                   : ListTile(
                                     title: Text('old_credit'),
@@ -803,7 +801,7 @@ class MissionDetailsView
                                       style: TextStyle(fontSize: 16),
                                     ),
                                   ),
-                              controller.transactionType == "mission"
+                              controller.transactionType == "transfert"
                                   ? SizedBox()
                                   : ListTile(
                                     title: Text('payment'),
@@ -826,7 +824,7 @@ class MissionDetailsView
                                         opacity: controller.sync ? 1 : 0.2,
                                         child: Center(
                                           child: QrCode(
-                                            'collections/${Get.find<HomeController>().collection}/missions/${controller.stockTransaction.ids ?? '123'}',
+                                            'collections/${Get.find<HomeController>().collection}/transferts/${controller.stockTransaction.id ?? '123'}',
                                             size: 200,
                                           ),
                                         ),
@@ -889,8 +887,7 @@ class MissionDetailsView
                     ),
                     trailing: PopupMenuButton<int>(
                       onSelected: (v) async {
-                        await StockTransactionRepository<Mission>().insert(
-                          mission: true,
+                        await StockTransactionRepository<Transfert>().insert(
                           controller.stockTransaction.copyWith(
                             status: v,
                             productTransactions: controller.productTransactions,

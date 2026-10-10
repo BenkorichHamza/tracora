@@ -1,14 +1,15 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/core/error_handler.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/data/repositories/stock_transaction_repository.dart';
 import 'package:tracora/app/modules/CustomerDetails/controllers/user_details_controller.dart';
 import 'package:tracora/app/modules/Product/controllers/product_controller.dart';
@@ -19,6 +20,8 @@ import 'package:tracora/app/modules/TransactionForm/views/bottom_sheet_item_sele
 import 'package:tracora/app/modules/User/controllers/user_controller.dart';
 import 'package:tracora/app/modules/User/views/user_view.dart';
 import 'package:tracora/app/modules/home/controllers/home_controller.dart';
+import 'package:tracora/app/modules/warehouse/controllers/warehouse_controller.dart';
+import 'package:tracora/app/modules/warehouse/views/warehouse_view.dart';
 
 class StockTransactionController<T> extends GetxController
     with GetTickerProviderStateMixin {
@@ -96,19 +99,19 @@ class StockTransactionController<T> extends GetxController
           ? "sale"
           : T == Purchase || T == Supplier
           ? "purchase"
-          : "mission";
+          : "transfert";
   String get title =>
       transactionType == "sale"
           ? "sales".tr
           : transactionType == "purchase"
           ? "purchases".tr
-          : "missions".tr;
+          : "transferts".tr;
   String get newTitle =>
       transactionType == "sale"
           ? "new_sale".tr
           : transactionType == "purchase"
           ? "new_purchase".tr
-          : "new_mission".tr;
+          : "new_transfert".tr;
   delete() {
     if (selected.id == null) return;
     Get.find<StockTransactionDetailsController<T>>().delete();
@@ -211,13 +214,21 @@ class StockTransactionController<T> extends GetxController
 
   getAll() async {
     try {
+      var w = Get.find<HomeController>().employee;
       loading = true;
       transactions = await repository.getAllTransactions(
         search: search.text,
         employee: employee,
+        // warehouse: w.warehouse,
       );
+
+      if (transactions.isNotEmpty) {
+        selected = transactions.first;
+        toDetails(selected);
+      }
     } catch (e) {
       ErrorHandler.handleError(e);
+      rethrow;
     } finally {
       loading = false;
     }
@@ -227,20 +238,20 @@ class StockTransactionController<T> extends GetxController
     try {
       listener.cancel();
     } catch (e) {}
-    listener = FirebaseFirestore.instance
-        .collection('stockTransactions')
-        .where("transactionType", isEqualTo: transactionType)
-        // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
-        .snapshots(includeMetadataChanges: true)
-        .listen((data) async {
-          if (data.metadata.isFromCache) return;
-          await Future.forEach(data.docs, (element) async {
-            element.data()?["remoteId"] = element.data()?["id"];
-            var model = StockTransaction.fromMap(element.data()!);
-            await repository.insert(model, sync: false);
-          });
-          getAll();
-        });
+    // listener = FirebaseFirestore.instance
+    //     .collection('stockTransactions')
+    //     .where("transactionType", isEqualTo: transactionType)
+    //     // .where("createdBy", isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+    //     .snapshots(includeMetadataChanges: true)
+    //     .listen((data) async {
+    //       if (data.metadata.isFromCache) return;
+    //       await Future.forEach(data.docs, (element) async {
+    //         element.data()?["remoteId"] = element.data()?["id"];
+    //         var model = StockTransaction.fromMap(element.data()!);
+    //         await repository.insert(model);
+    //       });
+    //       getAll();
+    //     });
   }
 
   final _selected = StockTransaction().obs;
@@ -260,18 +271,6 @@ class StockTransactionController<T> extends GetxController
     Get.find<StockTransactionDetailsController<T>>().stockTransaction =
         transaction;
     Get.find<StockTransactionDetailsController<T>>().getProductTransactions();
-    Get.find<StockTransactionDetailsController<T>>()
-        .getMissionStockTransactions();
-
-    Get.find<StockTransactionDetailsController<T>>()
-        .getMissionMoneyTransactions();
-    if (T == Mission) {
-      // Get.find<StockTransactionDetailsController<T>>().listenToSales();
-      // Get.find<StockTransactionDetailsController<T>>().listenToPayments();
-      Get.find<StockTransactionDetailsController<T>>()
-          .getMissionProductTransactions();
-      Get.find<StockTransactionDetailsController<T>>().listenToSync();
-    }
   }
 
   editTime() async {
@@ -295,13 +294,32 @@ class StockTransactionController<T> extends GetxController
 
   save() async {
     try {
-      if (selectedForm.user?.id == null) {
+      if ((selectedForm.productTransactions ?? []).isEmpty) {
+        ErrorHandler.showError("empty_cart".tr);
+        return;
+      }
+      if (selectedForm.user?.id == null && transactionType != "transfert") {
         ErrorHandler.showError("select_user".tr);
         return;
       }
+
+      if (selectedForm.fromWarehouse?.id == null &&
+          transactionType != "purchase") {
+        ErrorHandler.showError("select_from_warehouse".tr);
+        return;
+      }
+      if (selectedForm.toWarehouse?.id == null && transactionType != "sale") {
+        ErrorHandler.showError("select_to_warehouse".tr);
+        return;
+      }
       if (double.tryParse(selectedForm.payment.text) == null &&
-          transactionType != "mission") {
+          transactionType != "transfert") {
         ErrorHandler.showError("make_payment".tr);
+        return;
+      }
+      if (selectedForm.fromWarehouse?.id == selectedForm.toWarehouse?.id &&
+          transactionType == "transfert") {
+        ErrorHandler.showError("transfert_impossible_same_warehouse".tr);
         return;
       }
       if (!validate) return;
@@ -310,9 +328,12 @@ class StockTransactionController<T> extends GetxController
       }
       var n = selectedForm.stockTransaction.copyWith(
         user: selectedForm.user,
+        employee: Get.find<HomeController>().employee,
         topay: selectedForm.total,
         status: 1,
         total: total,
+        from_warehouse: selectedForm.fromWarehouse,
+        to_warehouse: selectedForm.toWarehouse,
         productTransactions: selectedForm.productTransactions ?? [],
         payment: double.tryParse(selectedForm.payment.text),
         credit: selectedForm.user?.toPay ?? 0,
@@ -320,7 +341,7 @@ class StockTransactionController<T> extends GetxController
         dateTime: selectedForm.dateTime,
         type: transactionType,
       );
-      var id = await repository.insert(n, mission: T == Mission);
+      var id = await repository.insert(n);
       if (Get.isRegistered<StockTransactionController<T>>()) {
         Get.find<StockTransactionController<T>>().getAll();
       }
@@ -330,9 +351,9 @@ class StockTransactionController<T> extends GetxController
         await Get.find<UserDetailsController<T>>().getStockTransactions();
         await Get.find<UserDetailsController<T>>().getUser();
       }
-      n = n.copyWith(id: id <= 0 ? null : id, dateTime: selectedForm.dateTime);
+      n = n.copyWith(dateTime: selectedForm.dateTime);
       var f = selectedForm.copyWith(
-        stockTransaction: selectedForm.stockTransaction.copyWith(id: id),
+        stockTransaction: selectedForm.stockTransaction.copyWith(),
       );
       replaceForm(f);
       Get.find<StockTransactionController<T>>().showForm = false;
@@ -346,10 +367,15 @@ class StockTransactionController<T> extends GetxController
   }
 
   bool get validate =>
-      selectedForm.user?.id != null &&
+      (selectedForm.user?.id != null || transactionType == "transfert") &&
       (int.tryParse(selectedForm.payment.text) != null ||
-          transactionType == "mission") &&
-      (selectedForm.productTransactions ?? []).isNotEmpty;
+          transactionType == "transfert") &&
+      (selectedForm.productTransactions ?? []).isNotEmpty &&
+      (transactionType != "transfert" ||
+          (selectedForm.fromWarehouse?.id != null &&
+              selectedForm.toWarehouse?.id != null)) &&
+      (transactionType != "transfert" ||
+          selectedForm.fromWarehouse?.id != selectedForm.toWarehouse?.id);
 
   selectUser() async {
     if (T == Sale || T == Customer) {
@@ -377,6 +403,66 @@ class StockTransactionController<T> extends GetxController
     );
     if (r is UserModel && r.type == "$userType") {
       var f = selectedForm.copyWith(user: r);
+      replaceForm(f);
+    }
+  }
+
+  selectEmployee() async {
+    Get.find<UserController<Employee>>().getAll();
+
+    var r = await showDialog(
+      routeSettings: RouteSettings(arguments: {"select": true}),
+      context: Get.context!,
+      builder:
+          (c) => Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450),
+              child: UserView<Employee>(),
+            ),
+          ),
+    );
+    if (r is UserModel && r.type == "employee") {
+      employee = r;
+      getAll();
+    }
+  }
+
+  selectFromWarehouse() async {
+    Get.find<WarehouseController>().getAll();
+
+    var r = await showDialog(
+      routeSettings: RouteSettings(arguments: {"select": true}),
+      context: Get.context!,
+      builder:
+          (c) => Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450),
+              child: WarehouseView(),
+            ),
+          ),
+    );
+    if (r is Warehouse) {
+      var f = selectedForm.copyWith(fromWarehouse: r);
+      replaceForm(f);
+    }
+  }
+
+  selectToWarehouse() async {
+    Get.find<WarehouseController>().getAll();
+
+    var r = await showDialog(
+      routeSettings: RouteSettings(arguments: {"select": true}),
+      context: Get.context!,
+      builder:
+          (c) => Dialog(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 450),
+              child: WarehouseView(),
+            ),
+          ),
+    );
+    if (r is Warehouse) {
+      var f = selectedForm.copyWith(toWarehouse: r);
       replaceForm(f);
     }
   }
@@ -450,19 +536,22 @@ class StockTransactionController<T> extends GetxController
   }
 
   void setQte(Product product) async {
+    var pref = await SharedPreferences.getInstance();
+    var package = pref.getBool("package") ?? false;
     var t = transactionOf(product);
     var f = selectedForm.copyWith();
     var r = await showModalBottomSheet(
       isScrollControlled: true,
       context: Get.context!,
       builder: (c) {
-        return ItemBottomSheet<T>(productTransaction: t);
+        return ItemBottomSheet<T>(productTransaction: t, package: package);
       },
     );
     if (selectedForm.productTransactions == null) {
       selectedForm.productTransactions = [];
     }
     if (r is! ProductTransaction) return;
+    if ((r.qte ?? 0) == 0) return;
     var i = selectedForm.productTransactions!.indexWhere(
       (e) => e.product?.id == product.id,
     );
@@ -516,13 +605,14 @@ class StockTransactionController<T> extends GetxController
   }
 
   editIntent() {
-    if (selected.id == null) return;
-    if (selectedFormIndex >= 0) return;
-    if (forms.firstWhereOrNull((e) => e.stockTransaction.id == selected.id) !=
-        null) {
-      return;
-    }
-    addNewForm(selected);
+    // if (selected.id == null) return;
+    // if (selectedFormIndex >= 0) return;
+    // if (forms.firstWhereOrNull((e) => e.stockTransaction.id == selected.id) !=
+    //     null) {
+    //   return;
+    // }
+    // addNewForm(selected);
+    Get.find<StockTransactionDetailsController<T>>().edit();
   }
 
   escapeIntent() {

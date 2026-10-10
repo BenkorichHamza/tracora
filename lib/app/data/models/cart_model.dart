@@ -5,31 +5,30 @@ import 'package:tracora/app/data/models/product_model.dart';
 class Cart {
   final String sql = '''
 CREATE TABLE cart (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER REFERENCES product (id) 
-                       UNIQUE ON CONFLICT REPLACE,
+    ids         STRING PRIMARY KEY,
+    product_ids STRING REFERENCES product (ids) ,
     price      REAL,
     total      REAL,
     qte        REAL    DEFAULT (1) 
 )
 ''';
 
-  final int? id;
+  final String? ids;
   final Product? product;
   final double? price;
   final double? total;
   final double? qte;
-  Cart({this.id, this.product, this.price, this.total, this.qte});
+  Cart({this.ids, this.product, this.price, this.total, this.qte});
 
   Cart copyWith({
-    int? id,
+    String? ids,
     Product? product,
     double? price,
     double? total,
     double? qte,
   }) {
     return Cart(
-      id: id ?? this.id,
+      ids: ids ?? this.ids,
       product: product ?? this.product,
       price: price ?? this.price,
       total: total ?? this.total,
@@ -40,8 +39,8 @@ CREATE TABLE cart (
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
-    if (id != null) {
-      result.addAll({'id': id});
+    if (ids != null) {
+      result.addAll({'ids': ids});
     }
     if (product != null) {
       result.addAll({'product': product!.toMap()});
@@ -61,7 +60,7 @@ CREATE TABLE cart (
 
   factory Cart.fromMap(Map<String, dynamic> map) {
     return Cart(
-      id: map['id']?.toInt(),
+      ids: map['ids'],
       product: map['product'] != null ? Product.fromMap(map['product']) : null,
       price: map['price']?.toDouble(),
       total: map['total']?.toDouble(),
@@ -75,7 +74,7 @@ CREATE TABLE cart (
 
   @override
   String toString() {
-    return 'Cart(id: $id, product: $product, price: $price, total: $total, qte: $qte)';
+    return 'Cart(ids: $ids, product: $product, price: $price, total: $total, qte: $qte)';
   }
 
   @override
@@ -83,7 +82,7 @@ CREATE TABLE cart (
     if (identical(this, other)) return true;
 
     return other is Cart &&
-        other.id == id &&
+        other.ids == ids &&
         other.product == product &&
         other.price == price &&
         other.total == total &&
@@ -92,7 +91,7 @@ CREATE TABLE cart (
 
   @override
   int get hashCode {
-    return id.hashCode ^
+    return ids.hashCode ^
         product.hashCode ^
         price.hashCode ^
         total.hashCode ^

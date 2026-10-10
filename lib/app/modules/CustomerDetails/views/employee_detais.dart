@@ -54,31 +54,39 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                     controller: controller.tabCtrl,
                     tabs: [
                       Tab(text: "profile", icon: Icon(Icons.person)),
-                      Tab(
-                        text: "missions",
-                        icon: Image.asset(
-                          "assets/mission.png",
-                          height: 25,
-                          width: 25,
-                        ),
-                      ),
-                      Tab(
-                        text: "sales",
-                        icon: Image.asset(
-                          "assets/sales.png",
-                          height: 25,
-                          width: 25,
-                        ),
-                      ),
-
-                      Tab(
-                        text: "payments",
-                        icon: Image.asset(
-                          "assets/money-in.png",
-                          height: 25,
-                          width: 25,
-                        ),
-                      ),
+                      Tab(text: "permissions", icon: Icon(Icons.key)),
+                      // Tab(
+                      //   text: "purchases",
+                      //   icon: Image.asset(
+                      //     "assets/purchase.png",
+                      //     height: 25,
+                      //     width: 25,
+                      //   ),
+                      // ),
+                      // Tab(
+                      //   text: "customer payment",
+                      //   icon: Image.asset(
+                      //     "assets/money-in.png",
+                      //     height: 25,
+                      //     width: 25,
+                      //   ),
+                      // ),
+                      // Tab(
+                      //   text: "supplier payment",
+                      //   icon: Image.asset(
+                      //     "assets/money-out.png",
+                      //     height: 25,
+                      //     width: 25,
+                      //   ),
+                      // ),
+                      // Tab(
+                      //   text: "fees",
+                      //   icon: Image.asset(
+                      //     "assets/reduction.png",
+                      //     height: 25,
+                      //     width: 25,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -89,10 +97,29 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                         controller: controller.tabCtrl,
                         children: [
                           profile(),
-                          missions(),
-                          employeeStockTransactions(),
-                          moneyTransactions(),
+                          Container(
+                            child: Column(
+                              children: [
+                                ...controller.user.roles?.map(
+                                      (e) => Text(e.name ?? ''),
+                                    ) ??
+                                    [],
+                              ],
+                            ),
+                          ),
+                          // moneyTransactions(),
+                          // moneyTransactions(),
                         ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          controller.createAccessCode();
+                        },
+                        icon: Icon(Icons.key),
+                        label: Text('create_access_code'.tr),
                       ),
                     ),
                     Row(
@@ -112,7 +139,7 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
                               ),
                               foregroundColor: Colors.white,
                             ),
-                            onPressed: controller.print,
+                            onPressed: controller.printTicket,
                             label: Text('print_invoice'.tr),
                           ),
                         ),
@@ -207,51 +234,6 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
     );
   }
 
-  Widget missions() {
-    return Obx(
-      () =>
-          controller.stockTransactions.isEmpty
-              ? EmptyWidget()
-              : ListView.builder(
-                itemCount: controller.stockTransactions.length,
-
-                itemBuilder: (c, i) {
-                  var transaction = controller.stockTransactions[i];
-                  return StockTransactionTile(
-                    onValidate: (item) {
-                      print(item.status);
-                    },
-                    onTap: (t) {
-                      showDialog(
-                        context: Get.context!,
-
-                        builder: (c) {
-                          Get.find<StockTransactionController<Mission>>()
-                              .toDetails(transaction);
-                          return Center(
-                            child: Dialog(
-                              backgroundColor: Colors.transparent,
-                              clipBehavior: Clip.antiAlias,
-                              elevation: 10,
-                              child: Container(
-                                constraints: BoxConstraints(maxWidth: 450),
-
-                                child: Center(child: MissionDetailsView()),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    item: transaction,
-                    highest: i.isEven,
-                    selected: false,
-                  );
-                },
-              ),
-    );
-  }
-
   Widget employeeStockTransactions() {
     return Obx(
       () =>
@@ -300,123 +282,497 @@ class EmployeeDetailsView extends GetView<UserDetailsController<Employee>> {
   }
 
   Widget profile() {
-    return Obx(
-      () => ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Column(
-            children: [
-              controller.user.circleAvatar(radius: 60),
-              SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '${controller.user.firstName ?? ''} | ${controller.user.companyName ?? ''}',
-                  style: TextStyle(fontSize: 24),
-                ),
-              ),
-              Center(
-                child: Text(
-                  '${'credit'.tr} | ${controller.user.toPay.formatPrice()}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        controller.user.toPay <= 0
-                            ? Colors.green
-                            : Colors.deepOrange,
+    final user = controller.user;
+    final context = Get.context!;
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      children: [
+        // --- HERO SUBSCRIPTION / CREDIT CARD ---
+        _buildUserHeroCard(context, user),
+
+        const SizedBox(height: 20),
+
+        // --- BALANCE CARD ---
+        Card(
+          elevation: 0,
+          color:
+              user.toPay <= 0
+                  ? Colors.green.withOpacity(0.08)
+                  : Colors.deepOrange.withOpacity(0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color:
+                  user.toPay <= 0
+                      ? Colors.green.withOpacity(0.3)
+                      : Colors.deepOrange.withOpacity(0.3),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'credit'.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                Text(
+                  user.toPay.formatPrice(),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color:
+                        user.toPay <= 0
+                            ? Colors.green.shade700
+                            : Colors.deepOrange.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // --- CONTACT INFORMATION ---
+        _buildSectionTitle(context, 'Contact Information'),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildContactTile(
+                context,
+                icon: Icons.phone_outlined,
+                title: (user.phone ?? '').isNotEmpty ? user.phone! : 'phone'.tr,
+                isValid: (user.phone ?? '').isPhoneNumber,
+                onPressed:
+                    () => launchUrl(Uri(scheme: 'tel', path: user.phone!)),
+              ),
+              Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+              _buildContactTile(
+                context,
+                icon: Icons.email_outlined,
+                title: (user.email ?? '').isNotEmpty ? user.email! : 'email'.tr,
+                isValid: (user.email ?? '').isEmail,
+                onPressed:
+                    () => launchUrl(Uri(scheme: 'mailto', path: user.email!)),
               ),
             ],
           ),
-          ListTile(
-            leading: Icon(Icons.phone),
-            title: Text(
-              (controller.user.phone ?? '').isNotEmpty
-                  ? controller.user.phone!
-                  : 'phone'.tr,
-            ),
-            trailing: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    Get.find<HomeController>()
-                        .dark
-                        .colorScheme
-                        .primaryContainer,
-              ),
-              onPressed:
-                  !(controller.user.phone ?? '').isPhoneNumber
-                      ? null
-                      : () {
-                        launchUrl(
-                          Uri(scheme: 'tel', path: controller.user.phone!),
-                        );
-                      },
-              icon: Icon(
-                Icons.call,
-                color:
-                    (controller.user.phone ?? '').isPhoneNumber
-                        ? Colors.white
-                        : null,
-              ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // --- IDENTIFICATION DETAILS ---
+        _buildSectionTitle(context, 'Identification'),
+        const SizedBox(height: 8),
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.email),
-            title: Text(
-              (controller.user.email ?? '').isNotEmpty
-                  ? controller.user.email!
-                  : 'email'.tr,
-            ),
-            trailing: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    Get.find<HomeController>()
-                        .dark
-                        .colorScheme
-                        .primaryContainer,
+          child: Column(
+            children: [
+              _buildIdTile(context, label: 'NIN', value: user.nin),
+              Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
-              onPressed:
-                  !(controller.user.email ?? '').isEmail
-                      ? null
-                      : () {
-                        launchUrl(
-                          Uri(scheme: 'mailto', path: controller.user.email!),
-                        );
-                      },
-              icon: Icon(
-                Icons.mail,
-                color:
-                    (controller.user.email ?? '').isEmail ? Colors.white : null,
+              _buildIdTile(context, label: 'NIS', value: user.nis),
+              Divider(
+                height: 1,
+                indent: 16,
+                endIndent: 16,
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
-            ),
+              _buildIdTile(context, label: 'NIF', value: user.nif),
+            ],
           ),
-          ListTile(
-            title: Text(
-              (controller.user.nin ?? '').isEmpty
-                  ? 'nin'
-                  : (controller.user.nin ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIN')),
+        ),
+      ],
+    );
+  }
+
+  // --- NEW SUBSCRIPTION / CREDIT CARD COMPONENT ---
+  Widget _buildUserHeroCard(BuildContext context, UserModel user) {
+    // 1. Palette list matching your circleAvatar extension
+    final avatarColors = [
+      Colors.teal[900]!,
+      Colors.amber,
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.purple,
+      Colors.orange,
+      Colors.cyan,
+      Colors.indigo,
+      Colors.pink,
+      Colors.brown,
+      Colors.deepOrange,
+      Colors.deepPurple,
+    ];
+
+    // 2. Extract the exact color selected by circleAvatar
+    final baseAvatarColor = const Color.fromARGB(255, 0, 153, 5);
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        // Glassmorphic / Alpha Gradient based on avatar color
+        gradient: LinearGradient(
+          colors: [
+            baseAvatarColor.withOpacity(isDark ? 0.35 : 0.20),
+            baseAvatarColor.withOpacity(isDark ? 0.15 : 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        // Smooth dynamic border with alpha
+        border: Border.all(
+          color: baseAvatarColor.withOpacity(0.35),
+          width: 1.5,
+        ),
+        // Glowing shadow matching avatar color
+        boxShadow: [
+          BoxShadow(
+            color: baseAvatarColor.withOpacity(0.12),
+            blurRadius: 20,
+            spreadRadius: 2,
+            offset: const Offset(0, 8),
           ),
-          ListTile(
-            title: Text(
-              (controller.user.nis ?? '').isEmpty
-                  ? 'nis'
-                  : (controller.user.nis ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIS')),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Card Branding Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: baseAvatarColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'MEMBER PROFILE',
+                    style: TextStyle(
+                      color: baseAvatarColor.withOpacity(0.9),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(
+                Icons.contactless_rounded,
+                color: baseAvatarColor.withOpacity(0.7),
+                size: 22,
+              ),
+            ],
           ),
-          ListTile(
-            title: Text(
-              (controller.user.nif ?? '').isEmpty
-                  ? 'nif'
-                  : (controller.user.nif ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIF')),
+
+          const SizedBox(height: 16),
+
+          // Main Details Row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Avatar Container with a soft dynamic glow ring
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: baseAvatarColor.withOpacity(0.5),
+                    width: 2,
+                  ),
+                ),
+                child: user.circleAvatar(radius: 28),
+              ),
+
+              const SizedBox(width: 12),
+
+              // User Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.firstName ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.storefront_outlined,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            user.warehouse?.name ?? 'no_warehouse'.tr,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Roles with matching color tint
+                    Wrap(
+                      spacing: 6.0,
+                      runSpacing: 6.0,
+                      children:
+                          user.roles
+                              ?.where(
+                                (r) => r.name != null && r.name!.isNotEmpty,
+                              )
+                              .map(
+                                (role) => _buildCardRoleBadge(
+                                  context,
+                                  role.name!,
+                                  baseAvatarColor,
+                                ),
+                              )
+                              .toList() ??
+                          [],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  // Role Badge adaptively colored with the user avatar tint
+  Widget _buildCardRoleBadge(
+    BuildContext context,
+    String roleName,
+    Color themeColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: themeColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: themeColor.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_getRoleIcon(roleName), size: 13, color: themeColor),
+          const SizedBox(width: 5),
+          Text(
+            roleName.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+              color: themeColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  } // --- OVERLAY BADGE FOR THE CARD ---
+
+  // Helper: Dynamic Role Icons
+  IconData _getRoleIcon(String role) {
+    final lower = role.toLowerCase();
+    if (lower.contains('admin')) return Icons.admin_panel_settings_rounded;
+    if (lower.contains('manager')) return Icons.manage_accounts_rounded;
+    if (lower.contains('driver')) return Icons.local_shipping_rounded;
+    if (lower.contains('user') || lower.contains('client'))
+      return Icons.person_rounded;
+    return Icons.verified_user_rounded;
+  }
+
+  // --- HELPER COMPONENTS ---
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required bool isValid,
+    required VoidCallback onPressed,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color:
+              isValid
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.outline,
+        ),
+      ),
+      trailing: IconButton.filledTonal(
+        onPressed: isValid ? onPressed : null,
+        icon: const Icon(Icons.arrow_outward, size: 18),
+      ),
+    );
+  }
+
+  Widget _buildIdTile(
+    BuildContext context, {
+    required String label,
+    String? value,
+  }) {
+    final displayValue = (value ?? '').isEmpty ? '—' : value!;
+    return ListTile(
+      dense: true,
+      leading: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      title: Text(
+        displayValue,
+        style: TextStyle(
+          fontWeight: displayValue == '—' ? FontWeight.normal : FontWeight.w600,
+          color:
+              displayValue == '—'
+                  ? Theme.of(context).colorScheme.outline
+                  : Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+
+  // --- NEW PROMINENT ROLE BADGE COMPONENT ---
+  Widget _buildLargeRoleBadge(BuildContext context, String roleName) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            primaryColor.withOpacity(0.15),
+            primaryColor.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: primaryColor.withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_getRoleIcon(roleName), size: 18, color: primaryColor),
+          const SizedBox(width: 8),
+          Text(
+            roleName.toUpperCase(),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: primaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper: Assign contextual icons based on role keywords
 }
+
+// Helper: Section Headers
+Widget _buildSectionTitle(BuildContext context, String title) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 4),
+    child: Text(
+      title,
+      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    ),
+  );
+}
+
+// Helper: Actionable Contact Tiles

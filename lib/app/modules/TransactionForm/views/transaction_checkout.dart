@@ -25,77 +25,209 @@ class TransactionCheckoutPage<T>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color:
-                          Get.find<HomeController>()
-                              .dark
-                              .colorScheme
-                              .primaryContainer,
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: controller.selectUser,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          leading: (controller.selectedForm.user ?? UserModel())
-                              .circleAvatar(radius: 28),
+                  T == Transfert
+                      ? SizedBox()
+                      : DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color:
+                              Get.find<HomeController>()
+                                  .theme
+                                  .colorScheme
+                                  .surfaceContainer,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: controller.selectUser,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ListTile(
+                              leading: (controller.selectedForm.user ??
+                                      UserModel())
+                                  .circleAvatar(radius: 28),
 
-                          title:
-                              controller.selectedForm.user?.id == null
-                                  ? Text(
-                                    'select_user'.tr,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  )
-                                  : Text(
-                                    '${controller.selectedForm.user?.firstName ?? ''} | ${controller.selectedForm.user?.companyName ?? ''}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                              title:
+                                  controller.selectedForm.user?.id == null
+                                      ? Text(
+                                        'select_user'.tr,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                      : Text(
+                                        '${controller.selectedForm.user?.firstName ?? ''} | ${controller.selectedForm.user?.companyName ?? ''}',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          // color: Colors.white,
+                                        ),
+                                      ),
 
-                          subtitle:
-                              controller.transactionType == "mission" ||
-                                      controller.selectedForm.user?.id == null
-                                  ? null
-                                  : Text(
-                                    '${'credit'.tr} | ${controller.selectedForm.user?.toPay.formatPrice()}',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          (controller
-                                                          .selectedForm
-                                                          .user
-                                                          ?.toPay ??
-                                                      0) <=
-                                                  0
-                                              ? const Color.fromARGB(
-                                                255,
-                                                212,
-                                                255,
-                                                213,
-                                              )
-                                              : Colors.deepOrange,
-                                    ),
-                                  ),
+                              subtitle:
+                                  controller.transactionType == "transfert" ||
+                                          controller.selectedForm.user?.id ==
+                                              null
+                                      ? null
+                                      : Text(
+                                        '${'credit'.tr} | ${controller.selectedForm.user?.toPay.formatPrice()}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              (controller
+                                                              .selectedForm
+                                                              .user
+                                                              ?.toPay ??
+                                                          0) <=
+                                                      0
+                                                  ? const Color.fromARGB(
+                                                    255,
+                                                    212,
+                                                    255,
+                                                    213,
+                                                  )
+                                                  : Colors.deepOrange,
+                                        ),
+                                      ),
 
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 18,
-                            color: Colors.white70,
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 18,
+                                color: Colors.white70,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                  T == Purchase ? SizedBox() : SizedBox(height: 8),
+                  T == Purchase
+                      ? SizedBox()
+                      : DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color:
+                              Get.find<HomeController>()
+                                  .theme
+                                  .colorScheme
+                                  .surfaceContainer,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: controller.selectFromWarehouse,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ListTile(
+                              leading: Icon(Icons.warehouse_outlined),
+
+                              title:
+                                  controller.selectedForm.fromWarehouse?.id ==
+                                          null
+                                      ? Text(
+                                        'select_from_warehouse'.tr,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                      : Text(
+                                        controller
+                                                .selectedForm
+                                                .fromWarehouse
+                                                ?.name ??
+                                            '',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          // color: Colors.white,
+                                        ),
+                                      ),
+
+                              subtitle:
+                                  controller.selectedForm.fromWarehouse?.id ==
+                                          null
+                                      ? null
+                                      : Text(
+                                        controller
+                                                .selectedForm
+                                                .fromWarehouse
+                                                ?.description ??
+                                            '',
+                                      ),
+
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 18,
+                                // color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  T == Sale ? SizedBox() : SizedBox(height: 8),
+                  T == Sale
+                      ? SizedBox()
+                      : DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color:
+                              Get.find<HomeController>()
+                                  .theme
+                                  .colorScheme
+                                  .surfaceContainer,
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: controller.selectToWarehouse,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: ListTile(
+                              leading: Icon(Icons.warehouse_outlined),
+
+                              title:
+                                  controller.selectedForm.toWarehouse?.id ==
+                                          null
+                                      ? Text(
+                                        'select_to_warehouse'.tr,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      )
+                                      : Text(
+                                        controller
+                                                .selectedForm
+                                                .toWarehouse
+                                                ?.name ??
+                                            '',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          // color: Colors.white,
+                                        ),
+                                      ),
+
+                              subtitle:
+                                  controller.selectedForm.toWarehouse?.id ==
+                                          null
+                                      ? null
+                                      : Text(
+                                        controller
+                                                .selectedForm
+                                                .toWarehouse
+                                                ?.description ??
+                                            '',
+                                      ),
+
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 18,
+                                // color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
 
                   ...List.generate(
                     (controller.selectedForm.productTransactions ?? []).length,
@@ -107,7 +239,7 @@ class TransactionCheckoutPage<T>
                     },
                   ),
                   Divider(),
-                  controller.transactionType == "mission"
+                  controller.transactionType == "transfert"
                       ? SizedBox()
                       : ListTile(
                         title: Text('total'),
@@ -116,17 +248,21 @@ class TransactionCheckoutPage<T>
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
-                  controller.transactionType == "mission"
+                  controller.transactionType == "transfert"
                       ? SizedBox()
                       : ListTile(
                         title: Text('old_credit'),
                         trailing: Text(
-                          controller.selectedForm.user?.toPay.formatPrice() ??
-                              0.formatPrice()!,
+                          controller.selectedForm.stockTransaction.id == null
+                              ? (controller.selectedForm.user?.toPay ?? 0)
+                                  .formatPrice()
+                              : controller.selectedForm.stockTransaction?.credit
+                                      .formatPrice() ??
+                                  0.formatPrice()!,
                           style: TextStyle(fontSize: 16, color: Colors.orange),
                         ),
                       ),
-                  controller.transactionType == "mission"
+                  controller.transactionType == "transfert"
                       ? SizedBox()
                       : ListTile(
                         title: Text('topay'.tr),
@@ -164,7 +300,7 @@ class TransactionCheckoutPage<T>
                 ),
               ),
             ),
-            controller.transactionType == "mission"
+            controller.transactionType == "transfert"
                 ? SizedBox()
                 : GetBuilder<StockTransactionController<T>>(
                   id: 'checkout',

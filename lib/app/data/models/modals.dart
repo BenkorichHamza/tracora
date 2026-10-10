@@ -2,12 +2,15 @@ import 'package:tracora/app/data/models/brand_model.dart';
 import 'package:tracora/app/data/models/cart_model.dart';
 import 'package:tracora/app/data/models/category_model.dart';
 import 'package:tracora/app/data/models/image_model.dart';
-import 'package:tracora/app/data/models/mission_model.dart';
 import 'package:tracora/app/data/models/money_transaction.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
+import 'package:tracora/app/data/models/role.dart';
 import 'package:tracora/app/data/models/stock_transaction_model.dart';
+import 'package:tracora/app/data/models/sync_operation.dart';
+import 'package:tracora/app/data/models/sync_state.dart';
 import 'package:tracora/app/data/models/user_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 
 class DbModels {
   static final List<dynamic> models = [
@@ -20,5 +23,12 @@ class DbModels {
     ProductTransaction(),
     StockTransaction(),
     UserModel(),
+    Warehouse(),
+    SyncOperation(),
+    SyncState(),
+    Role(),
+    Permission(),
+    RoleUser(),
+    PermissionRole(),
   ];
 }

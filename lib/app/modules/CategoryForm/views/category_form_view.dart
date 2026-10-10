@@ -45,12 +45,6 @@ class CategoryFormView extends GetView<CategoryFormController> {
                             ],
                           )
                           : Icon(Icons.image_outlined, size: 100),
-                  decoration: BoxDecoration(
-                    image:
-                        controller.img.isEmpty
-                            ? controller.category.toDecorationImage()
-                            : controller.img.toDecorationImage(),
-                  ),
                 ),
               ),
             ),

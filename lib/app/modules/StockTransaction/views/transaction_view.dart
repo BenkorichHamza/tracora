@@ -29,28 +29,7 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
     return Obx(
       () => Column(
         children: [
-          // StockTransactionTabs(
-          //   title: controller.title,
-          //   formTitle:
-          //       Get.find<TransactionFormController<T>>().transaction.id == null
-          //           ? (controller.newTitle)
-          //           : (Get.find<TransactionFormController<T>>()
-          //                   .transaction
-          //                   .user
-          //                   ?.firstName ??
-          //               Get.find<TransactionFormController<T>>()
-          //                   .user
-          //                   .firstName ??
-          //               'form'.tr),
-          //   onCloseForm: () {
-          //     Get.find<TransactionFormController<T>>().init(StockTransaction());
-          //     controller.showForm = false;
-          //   },
-          //   onFormTap: () => controller.showForm = true,
-          //   onHideForm: () => controller.showForm = false,
-          //   showForm: controller.showForm,
-          // ),
-          TransactionTabs<T>(),
+          Row(children: [Expanded(child: TransactionTabs<T>())]),
           Expanded(
             child:
                 controller.selectedFormIndex >= 0
@@ -72,10 +51,17 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
             margin: EdgeInsets.all(4),
             // padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
               border: Border.all(
-                width: 0.1,
-                color: Get.find<HomeController>().theme.colorScheme.onSurface,
+                width: 0.5,
+                color:
+                    Get.find<HomeController>()
+                        .theme
+                        .colorScheme
+                        .surfaceContainerHigh,
               ),
             ),
             child: list(),
@@ -93,120 +79,239 @@ class StockTransactionView<T> extends GetView<StockTransactionController<T>> {
             //   color: Get.find<HomeController>().theme.colorScheme.onSurface,
             // ),
           ),
-          child:
-              T == Mission
-                  ? MissionDetailsView()
-                  : StockTransactionDetailsView<T>(),
+          child: StockTransactionDetailsView<T>(),
         ),
       ],
     );
   }
 
   Scaffold list() {
+    var theme = Get.find<HomeController>().theme;
+    var colorScheme = Get.find<HomeController>().theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        // Make all icons and text white by default:
-        foregroundColor: Colors.white,
-        backgroundColor:
-            Get.find<HomeController>().dark.colorScheme.primaryContainer,
-
-        // Always show the TextField as the title
+        elevation: 0,
+        backgroundColor: colorScheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 12,
         title: Focus(
           onKeyEvent: (node, event) {
-            // only intercept key-down, arrow-up
-            if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.arrowUp) {
-              controller.previous();
-              return KeyEventResult.skipRemainingHandlers;
-            } else if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.arrowDown) {
-              controller.next();
-              return KeyEventResult.skipRemainingHandlers;
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                controller.previous();
+                return KeyEventResult.skipRemainingHandlers;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                controller.next();
+                return KeyEventResult.skipRemainingHandlers;
+              }
             }
-            // otherwise ignore and let the normal flow resume
             return KeyEventResult.ignored;
           },
-          child: TextField(
-            controller: controller.search,
-            autofocus: true,
-            focusNode: controller.searchFn,
-            style: TextStyle(color: Colors.white), // typed text is white
-            cursorColor: Colors.white, // cursor is white
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 8),
-              hintText: "${'search'.tr} CTRL+F",
-              hintStyle: TextStyle(color: Colors.white54), // hint is semi-white
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear, color: Colors.white),
-                onPressed: () {
-                  controller.search.clear();
-                  controller.getAll();
-                },
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.4),
               ),
             ),
-            onChanged: (_) => controller.getAll(),
-            onSubmitted: (_) => controller.searchFn.requestFocus(),
+            child: TextField(
+              controller: controller.search,
+              focusNode: controller.searchFn,
+              autofocus: true,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: "${'search'.tr} (CTRL+F)",
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  size: 18,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller.search,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) return const SizedBox.shrink();
+                    return IconButton(
+                      icon: Icon(
+                        Icons.cancel_rounded,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      onPressed: () {
+                        controller.search.clear();
+                        controller.getAll();
+                      },
+                    );
+                  },
+                ),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (_) => controller.getAll(),
+              onSubmitted: (_) => controller.searchFn.requestFocus(),
+            ),
           ),
         ),
-
         actions: [
-          // Example additional action, all icons are white by default
-          // IconButton(
-          //   icon: Icon(Icons.import_export),
-          //   onPressed: controller.importExcelFile,
-          //   tooltip: 'excel_import'.tr,
-          // ),
-          // IconButton(
-          //   icon: Icon(Icons.refresh),
-          //   onPressed: controller.getAll,
-          //   tooltip: 'refresh',
-          // ),
+          // Employee Selector Chip
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Obx(() {
+              final hasSelectedEmployee =
+                  controller.employee.id != null ||
+                  controller.employee.firstName != null;
+              final employeeName =
+                  hasSelectedEmployee
+                      ? controller.employee.firstName!
+                      : "all".tr;
+
+              return Center(
+                child: Material(
+                  color:
+                      hasSelectedEmployee
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(20),
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Filter Selector Pill
+                      InkWell(
+                        onTap: controller.selectEmployee,
+                        borderRadius: BorderRadius.horizontal(
+                          left: const Radius.circular(20),
+                          right: Radius.circular(hasSelectedEmployee ? 0 : 20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hasSelectedEmployee)
+                                controller.employee.circleAvatar(radius: 11)
+                              else
+                                CircleAvatar(
+                                  radius: 11,
+                                  backgroundColor: colorScheme.primary
+                                      .withOpacity(0.12),
+                                  child: Icon(
+                                    Icons.people_alt_rounded,
+                                    size: 13,
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 90),
+                                child: Text(
+                                  employeeName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        hasSelectedEmployee
+                                            ? colorScheme.onPrimaryContainer
+                                            : colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              if (!hasSelectedEmployee) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Clear Filter Button
+                      if (hasSelectedEmployee)
+                        InkWell(
+                          onTap: () {
+                            controller.employee = UserModel();
+                            controller.getAll();
+                          },
+                          borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: 4,
+                              right: 8,
+                              top: 6,
+                              bottom: 6,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 15,
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ],
       ),
 
-      body: Obx(
-        () =>
-            controller.transactions.isEmpty && !controller.loading
-                ? EmptyWidget()
-                : Obx(() {
-                  return ListView.builder(
-                    controller: controller.scrollController,
-                    itemCount: controller.transactions.length,
-                    itemBuilder: (c, i) {
-                      var item = controller.transactions[i];
-                      return GetBuilder<StockTransactionController<T>>(
-                        id: 'item_${item.id}',
-                        init: controller,
-                        initState: (_) {},
-                        builder: (c) {
-                          return StockTransactionTile(
-                            key:
-                                item.id == controller.selected.id
-                                    ? controller.selectedKey
-                                    : null,
-                            onValidate: (item) {
-                              print(item.status);
-                            },
-                            selected: controller.selected.id == item.id,
-                            highest: i.isEven,
-                            onTap: controller.toDetails,
-                            item: item,
-                          );
-                        },
-                      );
-                    },
-                  );
-                }),
+      body: Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: Obx(
+          () =>
+              controller.transactions.isEmpty && !controller.loading
+                  ? EmptyWidget()
+                  : Obx(() {
+                    return ListView.builder(
+                      controller: controller.scrollController,
+                      itemCount: controller.transactions.length,
+                      itemBuilder: (c, i) {
+                        var item = controller.transactions[i];
+                        return GetBuilder<StockTransactionController<T>>(
+                          id: 'item_${item.id}',
+                          init: controller,
+                          initState: (_) {},
+                          builder: (c) {
+                            return StockTransactionTile(
+                              key:
+                                  item.id == controller.selected.id
+                                      ? controller.selectedKey
+                                      : null,
+                              onValidate: (item) {
+                                print(item.status);
+                              },
+                              selected: controller.selected.id == item.id,
+                              highest: i.isEven,
+                              onTap: controller.toDetails,
+                              item: item,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }),
+        ),
       ),
     );
   }

@@ -9,27 +9,27 @@ class StatisticsRepository {
     var db = await _dbHelper.db;
     var maps = await db.rawQuery('''
 SELECT 
-  (SELECT SUM(amount) FROM money_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to)  AS totalCustomerPayment,
-  (SELECT SUM(amount) FROM money_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to)  AS totalSupplierPayment,
-  (SELECT SUM(amount) FROM money_transaction WHERE type = 'fees' AND dateTime BETWEEN $from AND $to) AS totalFeesPayment,
-  (SELECT SUM(payment) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) AS totalPurchasePayment,
-  (SELECT SUM(payment) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalSalePayment,
-  (SELECT SUM(toPay) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) AS totalPurchase,
-  (SELECT SUM(toPay) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalSale,
+  (SELECT SUM(amount) FROM money_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to)  AS totalCustomerPayment,
+  (SELECT SUM(amount) FROM money_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to)  AS totalSupplierPayment,
+  (SELECT SUM(amount) FROM money_transaction WHERE deletedAt IS NULL AND type = 'fees' AND dateTime BETWEEN $from AND $to) AS totalFeesPayment,
+  (SELECT SUM(payment) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to) AS totalPurchasePayment,
+  (SELECT SUM(payment) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalSalePayment,
+  (SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to) AS totalPurchase,
+  (SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalSale,
 
-  (SELECT SUM(toPay) - COALESCE(SUM(payment), 0)-(SELECT SUM(amount) FROM money_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalCustomerCredit,
-  (SELECT SUM(toPay) - COALESCE(SUM(payment), 0) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to)-(SELECT SUM(amount) FROM money_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) AS totalSupplierCredit,
+  (SELECT SUM(toPay) - COALESCE(SUM(payment), 0)-(SELECT SUM(amount) FROM money_transaction WHERE type = 'sale' AND deletedAt IS NULL AND dateTime BETWEEN $from AND $to) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalCustomerCredit,
+  (SELECT SUM(toPay) - COALESCE(SUM(payment), 0) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to)-(SELECT SUM(amount) FROM money_transaction WHERE type = 'purchase' AND deletedAt IS NULL AND dateTime BETWEEN $from AND $to) AS totalSupplierCredit,
 
-  ((SELECT SUM(toPay) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) 
-    - (SELECT SUM(toPay) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) 
-    - (SELECT SUM(amount) FROM money_transaction WHERE type = 'fees' AND dateTime BETWEEN $from AND $to)) AS totalBenefit,
+  ((SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to) 
+    - (SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to) 
+    - (SELECT SUM(amount) FROM money_transaction WHERE deletedAt IS NULL AND type = 'fees' AND dateTime BETWEEN $from AND $to)) AS totalBenefit,
 
-  (SELECT SUM(toPay) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) - 
-  (SELECT SUM(toPay) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalStockValue,
+  (SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to) - 
+  (SELECT SUM(toPay) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to) AS totalStockValue,
 
-  (SELECT COUNT(*) FROM stock_transaction WHERE type = 'purchase' AND dateTime BETWEEN $from AND $to) AS purchaseCount,
-  (SELECT COUNT(*) FROM stock_transaction WHERE type = 'sale' AND dateTime BETWEEN $from AND $to) AS saleCount,
-  (SELECT COUNT(*) FROM product) AS productCount,
+  (SELECT COUNT(*) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'purchase' AND dateTime BETWEEN $from AND $to) AS purchaseCount,
+  (SELECT COUNT(*) FROM stock_transaction WHERE deletedAt IS NULL AND type = 'sale' AND dateTime BETWEEN $from AND $to) AS saleCount,
+  (SELECT COUNT(*) FROM product WHERE deletedAt IS NULL) AS productCount,
   (SELECT COUNT(*) FROM user WHERE type = 'customer') AS customerCount,
   (SELECT COUNT(*) FROM user WHERE type = 'supplier') AS supplierCount;
 

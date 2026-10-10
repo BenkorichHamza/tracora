@@ -32,13 +32,13 @@ class BrandFormView extends GetView<BrandFormController> {
                 onTap: controller.pickImage,
                 child: Container(
                   child:
-                      controller.img.isNotEmpty
+                      controller.image.isNotEmpty
                           ? Column(
                             children: [
                               Align(
                                 alignment: Alignment.topRight,
                                 child: IconButton.filled(
-                                  onPressed: () => controller.img = '',
+                                  onPressed: () => controller.image = '',
                                   icon: Icon(Icons.clear),
                                 ),
                               ),
@@ -53,11 +53,11 @@ class BrandFormView extends GetView<BrandFormController> {
                             .colorScheme
                             .surfaceContainerHighest,
                     image:
-                        controller.img.isEmpty
+                        controller.image.isEmpty
                             ? controller.brand.toDecorationImage()
                             : DecorationImage(
                               image: MemoryImage(
-                                File(controller.img).readAsBytesSync(),
+                                File(controller.image).readAsBytesSync(),
                               ),
                             ),
                   ),

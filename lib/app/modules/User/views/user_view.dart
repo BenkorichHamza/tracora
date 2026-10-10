@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
 import 'package:tracora/app/data/models/user_model.dart';
@@ -89,36 +90,114 @@ class UserView<T> extends GetView<UserController<T>> {
   }
 
   Scaffold list() {
+    var theme = Get.find<HomeController>().theme;
+    var colorScheme = theme.colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor:
-            Get.find<HomeController>().dark.colorScheme.primaryContainer,
-
-        title: TextField(
-          controller: controller.search,
-          autofocus: true,
-          autocorrect: true,
-          decoration: InputDecoration(
-            border: UnderlineInputBorder(),
-            hintText: "search".tr,
-          ),
-          onChanged: (v) {
-            controller.getAll();
+      appBar:
+      // AppBar(
+      //   foregroundColor: Colors.white,
+      //   backgroundColor:
+      //       Get.find<HomeController>().dark.colorScheme.primaryContainer,
+      //   title: TextField(
+      //     controller: controller.search,
+      //     autofocus: true,
+      //     autocorrect: true,
+      //     decoration: InputDecoration(
+      //       border: UnderlineInputBorder(),
+      //       hintText: "search".tr,
+      //     ),
+      //     onChanged: (v) {
+      //       controller.getAll();
+      //     },
+      //   ),
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () {
+      //         controller.showSearch = !controller.showSearch;
+      //       },
+      //       color: Colors.white,
+      //       icon: Icon(controller.showSearch ? Icons.close : Icons.search),
+      //     ),
+      //     SyncView(),
+      //   ],
+      // ),
+      AppBar(
+        elevation: 0,
+        backgroundColor: colorScheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 12,
+        title: Focus(
+          onKeyEvent: (node, event) {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                controller.previous();
+                return KeyEventResult.skipRemainingHandlers;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                controller.next();
+                return KeyEventResult.skipRemainingHandlers;
+              }
+            }
+            return KeyEventResult.ignored;
           },
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.4),
+              ),
+            ),
+            child: TextField(
+              controller: controller.search,
+              focusNode: controller.searchFn,
+              autofocus: true,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: "${'search'.tr} (CTRL+F)",
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  size: 18,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller.search,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) return const SizedBox.shrink();
+                    return IconButton(
+                      icon: Icon(
+                        Icons.cancel_rounded,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      onPressed: () {
+                        controller.search.clear();
+                        controller.getAll();
+                      },
+                    );
+                  },
+                ),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (_) => controller.getAll(),
+              onSubmitted: (_) => controller.searchFn.requestFocus(),
+            ),
+          ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              controller.showSearch = !controller.showSearch;
-            },
-            color: Colors.white,
-            icon: Icon(controller.showSearch ? Icons.close : Icons.search),
-          ),
-          SyncView(),
+          // Employee Selector Chip
         ],
       ),
-
       body: Obx(
         () =>
             controller.users.isEmpty && !controller.loading
@@ -126,6 +205,7 @@ class UserView<T> extends GetView<UserController<T>> {
                 : Obx(() {
                   return ListView.builder(
                     itemCount: controller.users.length,
+                    controller: controller.scrollController,
                     itemBuilder: (c, i) {
                       var item = controller.users[i];
                       return GetBuilder<UserController<T>>(
@@ -134,10 +214,14 @@ class UserView<T> extends GetView<UserController<T>> {
                         initState: (_) {},
                         builder: (c) {
                           return UserTile(
+                            key:
+                                item.id == controller.selected.id
+                                    ? controller.selectedKey
+                                    : null,
                             selected: controller.selected.id == item.id,
                             highest: i.isEven,
                             onTap: controller.toDetails,
-                            item: item,
+                            user: item,
                           );
                         },
                       );

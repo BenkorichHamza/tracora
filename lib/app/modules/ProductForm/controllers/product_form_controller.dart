@@ -130,18 +130,14 @@ class ProductFormController extends GetxController {
         unity: unity.text.isEmpty ? 'u'.tr : unity.text,
         brand: brand,
         categories: categories,
-        data: img.isNotEmpty ? await File(img).readAsBytes() : null,
       );
       var r = await repository.insertProduct(product);
       if (Get.isRegistered<ProductDetailsController>()) {
-        Get.find<ProductDetailsController>().product = product.copyWith(
-          id: r <= 0 ? null : r,
-        );
+        Get.find<ProductDetailsController>().product = product.copyWith();
       }
       if (Get.isRegistered<ProductController>()) {
         Get.find<ProductController>().getAll();
       }
-      product = product.copyWith(id: r <= 0 ? null : r);
       onSuccess();
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
@@ -164,8 +160,8 @@ class ProductFormController extends GetxController {
   }
 
   void toggle(CategoryModel category) {
-    var ids = categories.map((e) => e.id).toList();
-    if (ids.contains(category.id)) {
+    var id = categories.map((e) => e.id).toList();
+    if (id.contains(category.id)) {
       categories.remove(category);
     } else {
       categories.add(category);

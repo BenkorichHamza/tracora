@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,42 +35,50 @@ class DbHelper {
       // final dbPath = join(path, 'db6.db');
       var pref = await SharedPreferences.getInstance();
       var collection = await pref.getString("collection");
-      collection ??=
-          FirebaseFirestore.instance.collection("collections").doc().id;
+      // collection ??=
+      //     FirebaseFirestore.instance.collection("collections").doc().id;
 
       // final exePath = Platform.resolvedExecutable; // Path to .exe
       // final exeDir = dirname(exePath); // Directory of the .exe
 
       // final dbPath = join(exeDir, 'db1.db');
       final docsDir = await getApplicationSupportDirectory();
-      final dbPath = join(docsDir.path, 'app_data.db');
+      final dbPath = join(docsDir.path, 'app_data35.db');
       print(dbPath);
-      await pref.setString("collection", collection);
+      await pref.setString("collection", collection ?? 'default');
 
       return await databaseFactoryFfi.openDatabase(
         dbPath,
-        options: OpenDatabaseOptions(version: 1, onCreate: _onCreate),
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: _onCreate,
+          // onUpgrade: (db, oldVersion, newVersion) async {
+          //   if (oldVersion < 3 && newVersion >= 3)
+          //     await db.execute(
+          //       "ALTER TABLE user ADD COLUMN warehouse_id STRING REFERENCES warehouse (id)",
+          //     );
+          // },
+        ),
       );
     }
     final path = await getDatabasesPath();
     final dbPath = join(
       path,
-      '${Get.find<HomeController>().employee.id ?? 'db'}.db',
+      '${Get.find<HomeController>().employee.id ?? 'db'}+"3.db"',
     );
     print(dbPath);
 
     return await openDatabase(
       dbPath,
-      version: 1,
+      version: 3,
       onCreate: _onCreate,
-      // onUpgrade: (db, o, n) async {
-      //   if (o == 2 && n == 3) {
-      //     // Add the 'credit' column to the 'money_transaction' table
-      //     await db.execute(
-      //       "ALTER TABLE money_transaction ADD COLUMN credit REAL DEFAULT 0",
-      //     );
-      //   }
-      // },
+      onUpgrade: (db, o, n) async {
+        if (o < 2 && n >= 2) {
+          await db.execute(
+            "ALTER TABLE user ADD COLUMN warehouse_id STRING REFERENCES warehouse (id)",
+          );
+        }
+      },
     );
   }
 
@@ -82,8 +89,8 @@ class DbHelper {
     await db.execute('''
 CREATE TABLE product_category (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id  INTEGER REFERENCES product (id),
-    category_id INTEGER REFERENCES category (id)
+    productId  INTEGER REFERENCES product (id),
+    categoryId INTEGER REFERENCES category (id)
 )
 ''');
     await db.execute('PRAGMA foreign_keys = ON;');

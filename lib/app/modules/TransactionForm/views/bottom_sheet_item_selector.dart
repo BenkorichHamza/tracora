@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tracora/app/data/models/product_model.dart';
 import 'package:tracora/app/data/models/product_transaction_model.dart';
 import 'package:tracora/app/helper/extensions.dart';
@@ -10,7 +11,12 @@ import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 
 class ItemBottomSheet<T> extends StatefulWidget {
   final ProductTransaction productTransaction;
-  const ItemBottomSheet({super.key, required this.productTransaction});
+  final bool package;
+  const ItemBottomSheet({
+    super.key,
+    required this.productTransaction,
+    required this.package,
+  });
 
   @override
   State<ItemBottomSheet> createState() => _ItemBottomSheetState<T>();
@@ -24,15 +30,18 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
   late FocusNode qteFn;
   late FocusNode priceFn;
   final _formKey = GlobalKey<FormState>();
+  bool package = false;
 
   @override
   void initState() {
     super.initState();
+    package = widget.package;
     product = widget.productTransaction.product ?? Product();
-    qte = widget.productTransaction.qte ?? 0;
-    qteCtrl = TextEditingController(
-      text: widget.productTransaction.qte.formatNumber(),
-    );
+    qte =
+        package
+            ? ((widget.productTransaction.qte ?? 0) / (product.packaging ?? 1))
+            : widget.productTransaction.qte ?? 0;
+    qteCtrl = TextEditingController(text: qte.formatNumber());
     priceCtrl = TextEditingController(
       text: widget.productTransaction.price.formatNumber(),
     );
@@ -90,7 +99,7 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
-                            width: 120,
+                            width: 100,
                             child: product.leading(),
                           ),
                         ),
@@ -108,7 +117,7 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                                 maxLines: 3,
                               ),
                               subtitle: Text(
-                                '${product.getPrice<T>(Get.find<HomeController>().sellMode)}/${product.unity?.toUpperCase() ?? 'U'}',
+                                '${product.getPrice<T>(0)}/${product.unity?.toUpperCase() ?? 'U'}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -128,13 +137,24 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                               ),
                             ),
 
-                            Text(
-                              '${((double.tryParse(qteCtrl.text) ?? 0) * (double.tryParse(priceCtrl.text) ?? 0)).toPrecision(3).formatNumber()} ${"DA".tr}',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
+                            CheckboxListTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
                               ),
+                              value: package,
+                              onChanged: (v) async {
+                                setState(() {
+                                  package = v ?? package;
+                                });
+                                var a = double.tryParse(qteCtrl.text) ?? 0;
+                                var p = product.packaging ?? 1;
+                                var newQte = (package ? a / p : a * p).floor();
+                                qteCtrl.text = newQte.formatNumber();
+                                var pref =
+                                    await SharedPreferences.getInstance();
+                                pref.setBool("package", v ?? package);
+                              },
+                              title: Text('select by package'),
                             ),
                           ],
                         ),
@@ -235,7 +255,9 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
                                       contentPadding: EdgeInsets.all(0),
                                       border: OutlineInputBorder(),
                                       suffix: Text(
-                                        (product.unity ?? 'u') + ' ',
+                                        package
+                                            ? '*${product.packaging?.round().toString() ?? '1'}'
+                                            : (product.unity ?? 'u') + ' ',
                                         style: TextStyle(fontSize: 16),
                                       ),
                                     ),
@@ -342,7 +364,9 @@ class _ItemBottomSheetState<T> extends State<ItemBottomSheet> {
       Get.back(
         result: ProductTransaction(
           price: double.tryParse(priceCtrl.text),
-          qte: double.tryParse(qteCtrl.text),
+          qte:
+              (double.tryParse(qteCtrl.text) ?? 0) *
+              (package ? product.packaging ?? 1 : 1),
           product: product,
         ),
       );

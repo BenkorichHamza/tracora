@@ -7,14 +7,17 @@ import 'package:tracora/app/data/models/user_model.dart';
 import 'package:tracora/app/data/repositories/money_transaction_repository.dart';
 import 'package:tracora/app/modules/FeesPayment/controllers/fees_payment_controller.dart';
 import 'package:tracora/app/modules/FeesPaymentDetails/controllers/fees_payment_details_controller.dart';
+import 'package:tracora/app/modules/home/controllers/home_controller.dart';
 import 'package:tracora/app/routes/app_pages.dart';
 
 class FeesPaymentFormController extends GetxController {
   final MoneyTransactionRepository repository = MoneyTransactionRepository();
   final _moneyTransaction = MoneyTransaction().obs;
   MoneyTransaction get moneyTransaction => this._moneyTransaction.value;
-  set moneyTransaction(MoneyTransaction value) =>
-      this._moneyTransaction.value = value;
+  set moneyTransaction(MoneyTransaction value) {
+    print("update moneyTransaction: ${value.id}");
+    this._moneyTransaction.value = value;
+  }
 
   final _dateTime = DateTime.now().millisecondsSinceEpoch.obs;
   int get dateTime => this._dateTime.value;
@@ -63,12 +66,15 @@ class FeesPaymentFormController extends GetxController {
   }
 
   editTime() async {
+    print(moneyTransaction.id);
     var r = await showDatePicker(
       context: Get.context!,
       firstDate: DateTime.now().subtract(Duration(days: 365)),
       lastDate: DateTime.now(),
       initialDate: DateTime.now(),
     );
+
+    print(moneyTransaction.id);
     dateTime = r?.millisecondsSinceEpoch ?? dateTime;
   }
 
@@ -84,12 +90,13 @@ class FeesPaymentFormController extends GetxController {
       }
       if (!validate) return;
       var n = moneyTransaction.copyWith(
+        employee: Get.find<HomeController>().employee,
         amount: double.tryParse(payment.text),
         description: description.text,
         dateTime: dateTime,
         type: "fees",
       );
-      var id = await repository.insertMoneyTransaction(n, sync: false);
+      var id = await repository.insertMoneyTransaction(n);
       if (Get.isRegistered<FeesPaymentController>()) {
         Get.find<FeesPaymentController>().getAll();
       }
@@ -97,8 +104,6 @@ class FeesPaymentFormController extends GetxController {
       if (Get.isRegistered<FeesPaymentDetailsController>()) {
         // await Get.find<FeesPaymentDetailsController>();
       }
-      n = n.copyWith(id: id <= 0 ? null : id, dateTime: dateTime);
-      moneyTransaction = moneyTransaction.copyWith(id: id);
       Get.find<FeesPaymentController>().showForm = false;
       Get.find<FeesPaymentController>().getAll();
       Get.find<FeesPaymentDetailsController>().moneyTransaction = n;
@@ -115,12 +120,12 @@ class FeesPaymentFormController extends GetxController {
       int.tryParse(payment.text) != null && description.text.length >= 3;
 
   void init(MoneyTransaction? transaction) {
-    transaction = transaction ?? MoneyTransaction();
+    moneyTransaction = transaction ?? MoneyTransaction();
 
-    dateTime = transaction.dateTime ?? 0;
-    description = TextEditingController(text: transaction.description);
+    dateTime = moneyTransaction.dateTime ?? 0;
+    description = TextEditingController(text: moneyTransaction.description);
     payment = TextEditingController(
-      text: transaction.amount?.floor().toString(),
+      text: moneyTransaction.amount?.floor().toString(),
     );
     paymentFn =
         FocusNode()..addListener(() {
@@ -129,6 +134,7 @@ class FeesPaymentFormController extends GetxController {
             extentOffset: payment.text.length,
           );
         });
-    dateTime = transaction.dateTime ?? transaction.createdAt ?? dateTime;
+    dateTime =
+        moneyTransaction.dateTime ?? moneyTransaction.createdAt ?? dateTime;
   }
 }

@@ -180,6 +180,7 @@ class ProductFormView extends GetView<ProductFormController> {
                           ),
                         ),
                         SizedBox(height: 32),
+
                         // Save button
                         Center(
                           child: Row(

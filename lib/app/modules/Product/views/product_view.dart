@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tracora/app/core/intents.dart';
 import 'package:tracora/app/data/models/product_model.dart';
+import 'package:tracora/app/data/models/warehouse.dart';
 import 'package:tracora/app/helper/extensions.dart';
 import 'package:tracora/app/modules/Product/views/pos_product_view.dart';
 import 'package:tracora/app/modules/ProductDetails/views/product_details_view.dart';
@@ -92,77 +93,268 @@ class ProductView extends GetView<ProductController> {
   }
 
   Scaffold list() {
+    var theme = Get.find<HomeController>().theme;
+    var colorScheme = theme.colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        // Make all icons and text white by default:
-        foregroundColor: Colors.white,
-        backgroundColor:
-            Get.find<HomeController>().dark.colorScheme.primaryContainer,
-
-        // Always show the TextField as the title
+      appBar:
+      // AppBar(
+      //   // Make all icons and text white by default:
+      //   foregroundColor: Colors.white,
+      //   backgroundColor:
+      //       Get.find<HomeController>().dark.colorScheme.primaryContainer,
+      //   // Always show the TextField as the title
+      //   title: Focus(
+      //     onKeyEvent: (node, event) {
+      //       // only intercept key-down, arrow-up
+      //       if (event is KeyDownEvent &&
+      //           event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      //         controller.previous();
+      //         return KeyEventResult.skipRemainingHandlers;
+      //       } else if (event is KeyDownEvent &&
+      //           event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      //         controller.next();
+      //         return KeyEventResult.skipRemainingHandlers;
+      //       }
+      //       // otherwise ignore and let the normal flow resume
+      //       return KeyEventResult.ignored;
+      //     },
+      //     child: TextField(
+      //       controller: controller.search,
+      //       autofocus: true,
+      //       focusNode: controller.searchFn,
+      //       style: TextStyle(color: Colors.white), // typed text is white
+      //       cursorColor: Colors.white, // cursor is white
+      //       decoration: InputDecoration(
+      //         isDense: true,
+      //         contentPadding: EdgeInsets.symmetric(vertical: 8),
+      //         hintText: "${'search'.tr} CTRL+F",
+      //         hintStyle: TextStyle(color: Colors.white54), // hint is semi-white
+      //         border: UnderlineInputBorder(
+      //           borderSide: BorderSide(color: Colors.white54),
+      //         ),
+      //         enabledBorder: UnderlineInputBorder(
+      //           borderSide: BorderSide(color: Colors.white54),
+      //         ),
+      //         focusedBorder: UnderlineInputBorder(
+      //           borderSide: BorderSide(color: Colors.white),
+      //         ),
+      //         suffixIcon: IconButton(
+      //           icon: Icon(Icons.clear, color: Colors.white),
+      //           onPressed: () {
+      //             controller.search.clear();
+      //             controller.getAll();
+      //           },
+      //         ),
+      //       ),
+      //       onChanged: (_) => controller.getAll(),
+      //       onSubmitted: (_) => controller.searchFn.requestFocus(),
+      //     ),
+      //   ),
+      //   actions: [
+      //     // Example additional action, all icons are white by default
+      //     // IconButton(
+      //     //   icon: Icon(Icons.import_export),
+      //     //   onPressed: controller.importExcelFile,
+      //     //   tooltip: 'excel_import'.tr,
+      //     // ),
+      //     // IconButton(
+      //     //   icon: Icon(Icons.refresh),
+      //     //   onPressed: controller.getAll,
+      //     //   tooltip: 'refresh',
+      //     // ),
+      //     Padding(
+      //       padding: const EdgeInsets.all(8.0),
+      //       child: Obx(
+      //         () => ElevatedButton.icon(
+      //           icon: Icon(Icons.warehouse),
+      //           onPressed: () {
+      //             controller.selectWarehouse();
+      //           },
+      //           label: Text(
+      //             controller.selectedWarehouse.name ?? 'select_warehouse',
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
+      AppBar(
+        elevation: 0,
+        backgroundColor: colorScheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 12,
         title: Focus(
           onKeyEvent: (node, event) {
-            // only intercept key-down, arrow-up
-            if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.arrowUp) {
-              controller.previous();
-              return KeyEventResult.skipRemainingHandlers;
-            } else if (event is KeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.arrowDown) {
-              controller.next();
-              return KeyEventResult.skipRemainingHandlers;
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                controller.previous();
+                return KeyEventResult.skipRemainingHandlers;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                controller.next();
+                return KeyEventResult.skipRemainingHandlers;
+              }
             }
-            // otherwise ignore and let the normal flow resume
             return KeyEventResult.ignored;
           },
-          child: TextField(
-            controller: controller.search,
-            autofocus: true,
-            focusNode: controller.searchFn,
-            style: TextStyle(color: Colors.white), // typed text is white
-            cursorColor: Colors.white, // cursor is white
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: 8),
-              hintText: "${'search'.tr} CTRL+F",
-              hintStyle: TextStyle(color: Colors.white54), // hint is semi-white
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear, color: Colors.white),
-                onPressed: () {
-                  controller.search.clear();
-                  controller.getAll();
-                },
+          child: Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.4),
               ),
             ),
-            onChanged: (_) => controller.getAll(),
-            onSubmitted: (_) => controller.searchFn.requestFocus(),
+            child: TextField(
+              controller: controller.search,
+              focusNode: controller.searchFn,
+              autofocus: true,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: "${'search'.tr} (CTRL+F)",
+                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  size: 18,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: controller.search,
+                  builder: (context, value, _) {
+                    if (value.text.isEmpty) return const SizedBox.shrink();
+                    return IconButton(
+                      icon: Icon(
+                        Icons.cancel_rounded,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      onPressed: () {
+                        controller.search.clear();
+                        controller.getAll();
+                      },
+                    );
+                  },
+                ),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (_) => controller.getAll(),
+              // onSubmitted: (_) => controller.searchFn.requestFocus(),
+            ),
           ),
         ),
-
         actions: [
-          // Example additional action, all icons are white by default
-          // IconButton(
-          //   icon: Icon(Icons.import_export),
-          //   onPressed: controller.importExcelFile,
-          //   tooltip: 'excel_import'.tr,
-          // ),
-          // IconButton(
-          //   icon: Icon(Icons.refresh),
-          //   onPressed: controller.getAll,
-          //   tooltip: 'refresh',
-          // ),
+          // Employee Selector Chip
+          Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: Obx(() {
+              final hasSelectedEmployee =
+                  controller.selectedWarehouse.id != null ||
+                  controller.selectedWarehouse.name != null;
+              final employeeName =
+                  hasSelectedEmployee
+                      ? controller.selectedWarehouse.name!
+                      : "all".tr;
+
+              return Center(
+                child: Material(
+                  color:
+                      hasSelectedEmployee
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(20),
+                  clipBehavior: Clip.antiAlias,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Filter Selector Pill
+                      InkWell(
+                        onTap: controller.selectWarehouse,
+                        borderRadius: BorderRadius.horizontal(
+                          left: const Radius.circular(20),
+                          right: Radius.circular(hasSelectedEmployee ? 0 : 20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hasSelectedEmployee)
+                                Icon(Icons.warehouse_rounded)
+                              else
+                                Icon(Icons.warehouse_rounded),
+                              const SizedBox(width: 8),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 90),
+                                child: Text(
+                                  employeeName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        hasSelectedEmployee
+                                            ? colorScheme.onPrimaryContainer
+                                            : colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                              if (!hasSelectedEmployee) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Clear Filter Button
+                      if (hasSelectedEmployee)
+                        InkWell(
+                          onTap: () {
+                            controller.selectedWarehouse = Warehouse();
+                            controller.getAll();
+                          },
+                          borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(20),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: 4,
+                              right: 8,
+                              top: 6,
+                              bottom: 6,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 15,
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ],
       ),
-
       body: Obx(
         () =>
             controller.products.isEmpty && !controller.loading
@@ -279,13 +471,8 @@ class ProductView extends GetView<ProductController> {
                       : Colors.grey.withAlpha(100),
             ),
           ),
-          tileColor:
-              Get.find<HomeController>().isDark
-                  ? Get.find<HomeController>()
-                      .theme
-                      .colorScheme
-                      .surfaceContainerHigh
-                  : Colors.white,
+          selectedTileColor:
+              Get.find<HomeController>().theme.colorScheme.surfaceContainer,
           contentPadding: EdgeInsets.only(right: 8, top: 0, bottom: 0, left: 8),
           leading: product.leading(),
           title: Text(product.translateName ?? 'product'.tr),
@@ -295,11 +482,11 @@ class ProductView extends GetView<ProductController> {
               // Garage stock chip
               Chip(
                 label: Text(
-                  'G: ${((product.rest ?? 0) - (product.missionQte ?? 0)).formatNumber()}',
+                  'stock: ${((product.rest ?? 0)).formatNumber()}',
                   style: TextStyle(color: Colors.white),
                 ),
                 backgroundColor: () {
-                  final rest = (product.rest ?? 0) - (product.missionQte ?? 0);
+                  final rest = (product.rest ?? 0);
                   final alert = product.alert ?? 10;
                   if (rest <= 0) return Colors.redAccent;
                   if (rest < alert) return Colors.orange;
@@ -310,33 +497,6 @@ class ProductView extends GetView<ProductController> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-
-              // only show camion chip when there's a missionQte
-              if ((product.missionQte ?? 0) > 0) ...[
-                const SizedBox(width: 6),
-                Chip(
-                  avatar: Icon(
-                    Icons.local_shipping,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                  label: Text(
-                    'M: ${product.missionQte?.formatNumber()} | S: ${product.missionSelledQte?.formatNumber()}',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -376,7 +536,8 @@ class ProductView extends GetView<ProductController> {
       ),
       child: GestureDetector(
         onTap: () {
-          Get.toNamed(Routes.PRODUCT_FORM, arguments: {"product": product});
+          // Get.toNamed(Routes.PRODUCT_FORM, arguments: {"product": product});
+          controller.toDetails(product);
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
