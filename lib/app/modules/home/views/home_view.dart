@@ -41,136 +41,146 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return FocusScope(
       child: Obx(
-        () => Actions(
-          actions: <Type, Action<Intent>>{
-            NewIntent: CallbackAction<NewIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.newIntent();
-              },
-            ),
-            EditIntent: CallbackAction<EditIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.editIntent();
-              },
-            ),
-            EscapeIntent: CallbackAction<EscapeIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.escapeIntent();
-              },
-            ),
-            SaveIntent: CallbackAction<SaveIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.saveIntent();
-              },
-            ),
-            SaveAndNewIntent: CallbackAction<SaveAndNewIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.saveAndNewIntent();
-              },
-            ),
+        () =>
+            controller.employee.id == null
+                ? Container(height: 500, width: 500, child: LoginView())
+                : Actions(
+                  actions: <Type, Action<Intent>>{
+                    NewIntent: CallbackAction<NewIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.newIntent();
+                      },
+                    ),
+                    EditIntent: CallbackAction<EditIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.editIntent();
+                      },
+                    ),
+                    EscapeIntent: CallbackAction<EscapeIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.escapeIntent();
+                      },
+                    ),
+                    SaveIntent: CallbackAction<SaveIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.saveIntent();
+                      },
+                    ),
+                    SaveAndNewIntent: CallbackAction<SaveAndNewIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first
+                            .saveAndNewIntent();
+                      },
+                    ),
 
-            DeleteIntent: CallbackAction<DeleteIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.deleteIntent();
-              },
-            ),
-            SearchIntent: CallbackAction<SearchIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.searchIntent();
-              },
-            ),
-            NextIntent: CallbackAction<NextIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.nextIntent();
-              },
-            ),
-            PreviousIntent: CallbackAction<PreviousIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.previousIntent();
-              },
-            ),
-            PrintIntent: CallbackAction<PrintIntent>(
-              onInvoke: (intent) {
-                controller.aciveController?.keys.first.printIntent();
-              },
-            ),
-          },
+                    DeleteIntent: CallbackAction<DeleteIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.deleteIntent();
+                      },
+                    ),
+                    SearchIntent: CallbackAction<SearchIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.searchIntent();
+                      },
+                    ),
+                    NextIntent: CallbackAction<NextIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.nextIntent();
+                      },
+                    ),
+                    PreviousIntent: CallbackAction<PreviousIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.previousIntent();
+                      },
+                    ),
+                    PrintIntent: CallbackAction<PrintIntent>(
+                      onInvoke: (intent) {
+                        controller.aciveController?.keys.first.printIntent();
+                      },
+                    ),
+                  },
 
-          child: Material(
-            color: controller.theme.scaffoldBackgroundColor,
-            child: Container(
-              child: Row(
-                children: [
-                  controller.settingsLoaded
-                      ? sideMenu(Get.context!)
-                      : SizedBox(),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child:
-                          // controller.employee.ids == null
-                          //     ? LoginView()
-                          //     :
-                          Obx(
-                            () =>
-                                !controller.settingsLoaded
-                                    ? const Scaffold(
-                                      backgroundColor: Color.fromRGBO(
-                                        0,
-                                        180,
-                                        80,
-                                        1,
-                                      ),
-                                    )
-                                    : Theme(
-                                      data: controller.theme,
-                                      child: OrientationBuilder(
-                                        builder: (context, o) {
-                                          var w =
-                                              MediaQuery.of(context).size.width;
-                                          return AdvancedDrawer(
-                                            openRatio:
-                                                Get.width < 600
-                                                    ? 0.75
-                                                    : 300 / w,
-                                            rtlOpening:
-                                                Get.locale?.languageCode ==
-                                                "ar",
-                                            controller: controller.drawerCtrl,
-                                            drawer: drawer(),
-                                            backdropColor: controller
-                                                .theme
-                                                .scaffoldBackgroundColor
-                                                .withOpacity(0.95),
-                                            child: Scaffold(
-                                              body:
-                                                  Platform.isWindows
-                                                      ? Row(
-                                                        children: [
-                                                          // navigationRail(),
-                                                          // sideMenu(),
-                                                          Expanded(
-                                                            child: views(),
-                                                          ),
-                                                        ],
-                                                      )
-                                                      : content(),
+                  child: Material(
+                    color: controller.theme.scaffoldBackgroundColor,
+                    child: Container(
+                      child: Row(
+                        children: [
+                          controller.settingsLoaded
+                              ? sideMenu(Get.context!)
+                              : SizedBox(),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child:
+                                  // controller.employee.ids == null
+                                  //     ? LoginView()
+                                  //     :
+                                  Obx(
+                                    () =>
+                                        !controller.settingsLoaded
+                                            ? const Scaffold(
+                                              backgroundColor: Color.fromRGBO(
+                                                0,
+                                                180,
+                                                80,
+                                                1,
+                                              ),
+                                            )
+                                            : Theme(
+                                              data: controller.theme,
+                                              child: OrientationBuilder(
+                                                builder: (context, o) {
+                                                  var w =
+                                                      MediaQuery.of(
+                                                        context,
+                                                      ).size.width;
+                                                  return AdvancedDrawer(
+                                                    openRatio:
+                                                        Get.width < 600
+                                                            ? 0.75
+                                                            : 300 / w,
+                                                    rtlOpening:
+                                                        Get
+                                                            .locale
+                                                            ?.languageCode ==
+                                                        "ar",
+                                                    controller:
+                                                        controller.drawerCtrl,
+                                                    drawer: drawer(),
+                                                    backdropColor: controller
+                                                        .theme
+                                                        .scaffoldBackgroundColor
+                                                        .withOpacity(0.95),
+                                                    child: Scaffold(
+                                                      body:
+                                                          Platform.isWindows
+                                                              ? Row(
+                                                                children: [
+                                                                  // navigationRail(),
+                                                                  // sideMenu(),
+                                                                  Expanded(
+                                                                    child:
+                                                                        views(),
+                                                                  ),
+                                                                ],
+                                                              )
+                                                              : content(),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
+                ),
       ),
     );
   }

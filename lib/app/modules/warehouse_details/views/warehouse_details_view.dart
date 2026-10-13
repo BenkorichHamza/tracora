@@ -16,142 +16,163 @@ class WarehouseDetailsView extends GetView<WarehouseDetailsController> {
   const WarehouseDetailsView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Obx(
-          () => Text(controller.warehouse.name ?? 'Warehouse Details'),
-        ),
-        centerTitle: true,
+    return Obx(
+      () =>
+          controller.warehouse.id == null
+              ? const Scaffold()
+              : Scaffold(
+                appBar: AppBar(
+                  backgroundColor:
+                      Get.find<HomeController>()
+                          .theme
+                          .colorScheme
+                          .surfaceContainer,
+                  title: Obx(
+                    () =>
+                        Text(controller.warehouse.name ?? 'Warehouse Details'),
+                  ),
+                  centerTitle: true,
 
-        bottom: TabBar(
-          controller: controller.tabCtrl,
-          tabs: const [
-            Tab(text: 'Details'),
-            Tab(text: 'Products'),
-            Tab(text: 'Transactions'),
-            Tab(text: 'History'),
-          ],
-        ),
-      ),
+                  bottom: TabBar(
+                    controller: controller.tabCtrl,
+                    tabs: const [
+                      Tab(text: 'Details'),
+                      Tab(text: 'Products'),
+                      Tab(text: 'Transactions'),
+                      Tab(text: 'History'),
+                    ],
+                  ),
+                ),
 
-      body: Column(
-        children: [
-          Expanded(
-            child: Obx(
-              () => TabBarView(
-                controller: controller.tabCtrl,
-                children: [
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header Card
-                        _buildHeaderCard(Get.find<HomeController>().theme),
-                        const SizedBox(height: 16),
-
-                        // Overview Section
-                        _buildSectionTitle('Overview'),
-                        const SizedBox(height: 8),
-                        Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: [
-                                _buildDetailRow(
-                                  icon: Icons.title,
-                                  label: 'Name',
-                                  value: controller.warehouse.name,
-                                ),
-                                const Divider(),
-                                _buildDetailRow(
-                                  icon: Icons.category_outlined,
-                                  label: 'Type',
-                                  value: controller.warehouse.type,
-                                ),
-                                const Divider(),
-                                _buildDetailRow(
-                                  icon: Icons.location_on_outlined,
-                                  label: 'Location',
-                                  value: controller.warehouse.location,
-                                ),
-                                if (controller.warehouse.description != null &&
-                                    controller
-                                        .warehouse
-                                        .description!
-                                        .isNotEmpty) ...[
-                                  const Divider(),
-                                  _buildDetailRow(
-                                    icon: Icons.description_outlined,
-                                    label: 'Description',
-                                    value: controller.warehouse.description,
+                body: Column(
+                  children: [
+                    Expanded(
+                      child: Obx(
+                        () => TabBarView(
+                          controller: controller.tabCtrl,
+                          children: [
+                            SingleChildScrollView(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Header Card
+                                  _buildHeaderCard(
+                                    Get.find<HomeController>().theme,
                                   ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                                  const SizedBox(height: 16),
 
-                        // System Metadata Section
-                        _buildSectionTitle('Audit Information'),
-                        const SizedBox(height: 8),
-                        Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: [
-                                _buildDetailRow(
-                                  icon: Icons.access_time,
-                                  label: 'Created At',
-                                  value: _formatTimestamp(
-                                    controller.warehouse.createdAt,
+                                  // Overview Section
+                                  _buildSectionTitle('Overview'),
+                                  const SizedBox(height: 8),
+                                  Card(
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        children: [
+                                          _buildDetailRow(
+                                            icon: Icons.title,
+                                            label: 'Name',
+                                            value: controller.warehouse.name,
+                                          ),
+                                          const Divider(),
+                                          _buildDetailRow(
+                                            icon: Icons.category_outlined,
+                                            label: 'Type',
+                                            value: controller.warehouse.type,
+                                          ),
+                                          const Divider(),
+                                          _buildDetailRow(
+                                            icon: Icons.location_on_outlined,
+                                            label: 'Location',
+                                            value:
+                                                controller.warehouse.location,
+                                          ),
+                                          if (controller
+                                                      .warehouse
+                                                      .description !=
+                                                  null &&
+                                              controller
+                                                  .warehouse
+                                                  .description!
+                                                  .isNotEmpty) ...[
+                                            const Divider(),
+                                            _buildDetailRow(
+                                              icon: Icons.description_outlined,
+                                              label: 'Description',
+                                              value:
+                                                  controller
+                                                      .warehouse
+                                                      .description,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 16),
 
-                                const Divider(),
-                                _buildDetailRow(
-                                  icon: Icons.update,
-                                  label: 'Updated At',
-                                  value: _formatTimestamp(
-                                    controller.warehouse.updatedAt,
-                                  ),
-                                ),
-                                if (controller.warehouse.deletedAt != null) ...[
-                                  const Divider(),
-                                  _buildDetailRow(
-                                    icon: Icons.auto_delete_outlined,
-                                    label: 'Deleted At',
-                                    value: _formatTimestamp(
-                                      controller.warehouse.deletedAt,
+                                  // System Metadata Section
+                                  _buildSectionTitle('Audit Information'),
+                                  const SizedBox(height: 8),
+                                  Card(
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        children: [
+                                          _buildDetailRow(
+                                            icon: Icons.access_time,
+                                            label: 'Created At',
+                                            value: _formatTimestamp(
+                                              controller.warehouse.createdAt,
+                                            ),
+                                          ),
+
+                                          const Divider(),
+                                          _buildDetailRow(
+                                            icon: Icons.update,
+                                            label: 'Updated At',
+                                            value: _formatTimestamp(
+                                              controller.warehouse.updatedAt,
+                                            ),
+                                          ),
+                                          if (controller.warehouse.deletedAt !=
+                                              null) ...[
+                                            const Divider(),
+                                            _buildDetailRow(
+                                              icon: Icons.auto_delete_outlined,
+                                              label: 'Deleted At',
+                                              value: _formatTimestamp(
+                                                controller.warehouse.deletedAt,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
-                              ],
+                              ),
                             ),
-                          ),
+                            warehouseProducts(),
+                            warehouseTrqasactions(),
+                            Center(child: Text('History')),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  warehouseProducts(),
-                  warehouseTrqasactions(),
-                  Center(child: Text('History')),
-                ],
+                    _buildBottomActionBar(context),
+                  ],
+                ),
               ),
-            ),
-          ),
-          _buildBottomActionBar(context),
-        ],
-      ),
     );
   }
 
@@ -378,9 +399,9 @@ class WarehouseDetailsView extends GetView<WarehouseDetailsController> {
     final theme = Theme.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      // padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        // color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -393,34 +414,56 @@ class WarehouseDetailsView extends GetView<WarehouseDetailsController> {
         top: false,
         child: Row(
           children: [
-            Expanded(child: SizedBox()),
-
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.amber.withAlpha(50),
-                foregroundColor: Colors.amber,
-                padding: const EdgeInsets.all(14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.print_outlined),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor:
+                      Get.find<HomeController>()
+                          .dark
+                          .colorScheme
+                          .primaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
+                onPressed: controller.print,
+                label: Text('print'.tr),
               ),
-              onPressed: controller.edit,
-              icon: const Icon(Icons.edit_outlined, size: 20),
-              tooltip: 'edit'.tr,
             ),
-            const SizedBox(width: 8),
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: theme.colorScheme.errorContainer,
-                foregroundColor: theme.colorScheme.onErrorContainer,
-                padding: const EdgeInsets.all(14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(width: 4),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.edit),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
+                onPressed: controller.edit,
+                label: Text('edit'.tr),
               ),
-              onPressed: controller.delete,
-              icon: const Icon(Icons.delete_outline, size: 20),
-              tooltip: 'delete_sale'.tr,
+            ),
+            SizedBox(width: 4),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.delete_outline),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: controller.delete,
+                label: Text('delete'.tr),
+              ),
             ),
           ],
         ),

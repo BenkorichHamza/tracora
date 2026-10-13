@@ -68,6 +68,18 @@ class UserPaymentDetailsController<T> extends GetxController {
         id: moneyTransaction.id ?? "",
       );
       moneyTransaction = r ?? moneyTransaction;
+      var index = Get.find<UserPaymentController<T>>().transactions.indexWhere(
+        (e) => e.id == moneyTransaction.id,
+      );
+      if (index >= 0) {
+        Get.find<UserPaymentController<T>>().transactions.replaceRange(
+          index,
+          index + 1,
+          [moneyTransaction],
+        );
+        Get.find<UserPaymentController<T>>().transactions =
+            Get.find<UserPaymentController<T>>().transactions.sublist(0);
+      }
     } on Exception catch (e) {
       ErrorHandler.handleError(e);
     }

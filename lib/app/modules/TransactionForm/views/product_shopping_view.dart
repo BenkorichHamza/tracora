@@ -291,13 +291,11 @@ class ProductShoppingView<T> extends GetView<ProductController> {
                           : Colors.grey.withAlpha(100),
                 ),
               ),
-              tileColor:
-                  Get.find<HomeController>().isDark
-                      ? Get.find<HomeController>()
-                          .theme
-                          .colorScheme
-                          .surfaceContainerHigh
-                      : Colors.white,
+              selectedTileColor:
+                  Get.find<HomeController>()
+                      .theme
+                      .colorScheme
+                      .surfaceContainerHigh,
               contentPadding: EdgeInsets.only(
                 right: 8,
                 top: 0,

@@ -22,412 +22,451 @@ class StatisticView extends GetView<StatisticController> {
       backgroundColor:
           isDark ? const Color(0xFF030712) : const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 45,
-                child: MoveWindow(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      WindowButtons(homeController: Get.find<HomeController>()),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Header Bar & Dynamic Segmented Switcher
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 45,
+              child: MoveWindow(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'statistics'.tr,
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -1.2,
-                                color:
-                                    isDark
-                                        ? Colors.white
-                                        : const Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Live Business Insights',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        isDark
-                                            ? const Color(0xFF94A3B8)
-                                            : const Color(0xFF64748B),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            _AnimatedPressScale(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                controller.loadStatistics();
-                              },
-                              child: _HeaderIconButton(
-                                icon: LucideIcons.refreshCw,
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Obx(
-                              () => _AnimatedPressScale(
-                                onTap: () async {
-                                  HapticFeedback.lightImpact();
-                                  final primaryColor =
-                                      Theme.of(context).primaryColor;
-                                  final isDark =
-                                      Theme.of(context).brightness ==
-                                      Brightness.dark;
-
-                                  final DateTimeRange?
-                                  picked = await showDateRangePicker(
-                                    context: context,
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime.now().add(
-                                      const Duration(days: 1),
-                                    ),
-                                    initialDateRange:
-                                        controller.from == 0
-                                            ? null
-                                            : DateTimeRange(
-                                              start:
-                                                  controller.from.toDatetime()!,
-                                              end: controller.to
-                                                  .toDatetime()!
-                                                  .subtract(
-                                                    const Duration(days: 1),
-                                                  ),
-                                            ),
-                                    builder: (context, child) {
-                                      return Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme:
-                                              isDark
-                                                  ? ColorScheme.dark(
-                                                    primary: primaryColor,
-                                                    onPrimary: Colors.white,
-                                                    surface: const Color(
-                                                      0xFF1E293B,
-                                                    ), // Modern slate-800
-                                                    onSurface: const Color(
-                                                      0xFFF8FAFC,
-                                                    ),
-                                                    surfaceContainerHigh:
-                                                        const Color(0xFF334155),
-                                                  )
-                                                  : ColorScheme.light(
-                                                    primary: primaryColor,
-                                                    onPrimary: Colors.white,
-                                                    surface: Colors.white,
-                                                    onSurface: const Color(
-                                                      0xFF0F172A,
-                                                    ), // Modern slate-900
-                                                    surfaceContainerHigh:
-                                                        const Color(0xFFF1F5F9),
-                                                  ),
-                                          datePickerTheme: DatePickerThemeData(
-                                            headerBackgroundColor: primaryColor,
-                                            headerForegroundColor: Colors.white,
-                                            backgroundColor:
-                                                isDark
-                                                    ? const Color(0xFF0F172A)
-                                                    : Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(24),
-                                            ),
-                                            rangePickerShape:
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(24),
-                                                ),
-                                            dayStyle: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            rangeSelectionBackgroundColor:
-                                                primaryColor.withOpacity(0.15),
-                                            rangeSelectionOverlayColor:
-                                                WidgetStateProperty.all(
-                                                  primaryColor.withOpacity(0.1),
-                                                ),
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: ConstrainedBox(
-                                            constraints: const BoxConstraints(
-                                              maxWidth: 520,
-                                              maxHeight: 680,
-                                            ),
-                                            child: child!,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                  if (picked != null) {
-                                    controller.from =
-                                        picked.start.millisecondsSinceEpoch;
-                                    controller.to =
-                                        picked.end
-                                            .add(const Duration(days: 1))
-                                            .millisecondsSinceEpoch;
-                                    controller.loadStatistics();
-                                  }
-                                },
-                                child: _DateRangeFilterChip(
-                                  from: controller.from,
-                                  to: controller.to,
-                                  isDark: isDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Custom Glassmorphic Segmented Switcher
-                    Obx(
-                      () => Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color:
-                              isDark
-                                  ? const Color(0xFF111827)
-                                  : const Color(0xFFE2E8F0),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          children: [
-                            _TabButton(
-                              title: 'Financial Metrics',
-                              icon: LucideIcons.lineChart,
-                              isSelected: selectedTab.value == 0,
-                              isDark: isDark,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                selectedTab.value = 0;
-                              },
-                            ),
-                            _TabButton(
-                              title: 'Entity Analytics',
-                              icon: LucideIcons.layoutGrid,
-                              isSelected: selectedTab.value == 1,
-                              isDark: isDark,
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                selectedTab.value = 1;
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    WindowButtons(homeController: Get.find<HomeController>()),
                   ],
                 ),
               ),
             ),
+            Expanded(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Header Bar & Dynamic Segmented Switcher
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'statistics'.tr,
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -1.2,
+                                      color:
+                                          isDark
+                                              ? Colors.white
+                                              : const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF10B981),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Live Business Insights',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                              isDark
+                                                  ? const Color(0xFF94A3B8)
+                                                  : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  _AnimatedPressScale(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      controller.loadStatistics();
+                                    },
+                                    child: _HeaderIconButton(
+                                      icon: LucideIcons.refreshCw,
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Obx(
+                                    () => _AnimatedPressScale(
+                                      onTap: () async {
+                                        HapticFeedback.lightImpact();
+                                        final primaryColor =
+                                            Theme.of(context).primaryColor;
+                                        final isDark =
+                                            Theme.of(context).brightness ==
+                                            Brightness.dark;
 
-            // Dashboard Main Body
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              sliver: SliverToBoxAdapter(
-                child: Obx(() {
-                  final stats = controller.statistics;
+                                        final DateTimeRange?
+                                        picked = await showDateRangePicker(
+                                          context: context,
+                                          firstDate: DateTime(2000),
+                                          lastDate: DateTime.now().add(
+                                            const Duration(days: 1),
+                                          ),
+                                          initialDateRange:
+                                              controller.from == 0
+                                                  ? null
+                                                  : DateTimeRange(
+                                                    start:
+                                                        controller.from
+                                                            .toDatetime()!,
+                                                    end: controller.to
+                                                        .toDatetime()!
+                                                        .subtract(
+                                                          const Duration(
+                                                            days: 1,
+                                                          ),
+                                                        ),
+                                                  ),
+                                          builder: (context, child) {
+                                            return Theme(
+                                              data: Theme.of(context).copyWith(
+                                                colorScheme:
+                                                    isDark
+                                                        ? ColorScheme.dark(
+                                                          primary: primaryColor,
+                                                          onPrimary:
+                                                              Colors.white,
+                                                          surface: const Color(
+                                                            0xFF1E293B,
+                                                          ), // Modern slate-800
+                                                          onSurface:
+                                                              const Color(
+                                                                0xFFF8FAFC,
+                                                              ),
+                                                          surfaceContainerHigh:
+                                                              const Color(
+                                                                0xFF334155,
+                                                              ),
+                                                        )
+                                                        : ColorScheme.light(
+                                                          primary: primaryColor,
+                                                          onPrimary:
+                                                              Colors.white,
+                                                          surface: Colors.white,
+                                                          onSurface: const Color(
+                                                            0xFF0F172A,
+                                                          ), // Modern slate-900
+                                                          surfaceContainerHigh:
+                                                              const Color(
+                                                                0xFFF1F5F9,
+                                                              ),
+                                                        ),
+                                                datePickerTheme: DatePickerThemeData(
+                                                  headerBackgroundColor:
+                                                      primaryColor,
+                                                  headerForegroundColor:
+                                                      Colors.white,
+                                                  backgroundColor:
+                                                      isDark
+                                                          ? const Color(
+                                                            0xFF0F172A,
+                                                          )
+                                                          : Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          24,
+                                                        ),
+                                                  ),
+                                                  rangePickerShape:
+                                                      RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              24,
+                                                            ),
+                                                      ),
+                                                  dayStyle: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  rangeSelectionBackgroundColor:
+                                                      primaryColor.withOpacity(
+                                                        0.15,
+                                                      ),
+                                                  rangeSelectionOverlayColor:
+                                                      WidgetStateProperty.all(
+                                                        primaryColor
+                                                            .withOpacity(0.1),
+                                                      ),
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: ConstrainedBox(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                        maxWidth: 520,
+                                                        maxHeight: 680,
+                                                      ),
+                                                  child: child!,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                        if (picked != null) {
+                                          controller.from =
+                                              picked
+                                                  .start
+                                                  .millisecondsSinceEpoch;
+                                          controller.to =
+                                              picked.end
+                                                  .add(const Duration(days: 1))
+                                                  .millisecondsSinceEpoch;
+                                          controller.loadStatistics();
+                                        }
+                                      },
+                                      child: _DateRangeFilterChip(
+                                        from: controller.from,
+                                        to: controller.to,
+                                        isDark: isDark,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
 
-                  if (selectedTab.value == 0) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 6),
-                        // Hero Revenue Banner
-                        _MasterExecutiveCard(
-                          totalSale: stats.totalSale.formatNumber(),
-                          totalPurchase: stats.totalPurchase.formatPrice(),
-                          totalFees: stats.totalFeesPayment.formatPrice(),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 24),
+                          // Custom Glassmorphic Segmented Switcher
+                          Obx(
+                            () => Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color:
+                                    isDark
+                                        ? const Color(0xFF111827)
+                                        : const Color(0xFFE2E8F0),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  _TabButton(
+                                    title: 'Financial Metrics',
+                                    icon: LucideIcons.lineChart,
+                                    isSelected: selectedTab.value == 0,
+                                    isDark: isDark,
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      selectedTab.value = 0;
+                                    },
+                                  ),
+                                  _TabButton(
+                                    title: 'Entity Analytics',
+                                    icon: LucideIcons.layoutGrid,
+                                    isSelected: selectedTab.value == 1,
+                                    isDark: isDark,
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      selectedTab.value = 1;
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
-                        // Section 1: Inflow vs Outflow
-                        _SectionHeader(
-                          title: 'CASHFLOW INSIGHTS',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _AuraStatCard(
-                                title: 'Customer Payments',
-                                value:
-                                    stats.totalCustomerPayment?.formatPrice(),
-                                subtitle: 'Inflow',
-                                icon: LucideIcons.arrowDownLeft,
-                                glowColor: const Color(0xFF10B981),
-                                isDark: isDark,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _AuraStatCard(
-                                title: 'Supplier Payments',
-                                value: stats.totalSupplierPayment.formatPrice(),
-                                subtitle: 'Outflow',
-                                icon: LucideIcons.arrowUpRight,
-                                glowColor: const Color(0xFFF59E0B),
-                                isDark: isDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
+                  // Dashboard Main Body
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    sliver: SliverToBoxAdapter(
+                      child: Obx(() {
+                        final stats = controller.statistics;
 
-                        // Section 2: Receivables & Payables
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _AuraStatCard(
-                                title: 'Customer Credit',
-                                value: stats.totalCustomerCredit.formatPrice(),
-                                subtitle: 'Receivable',
-                                icon: LucideIcons.userCheck,
-                                glowColor: const Color(0xFF6366F1),
+                        if (selectedTab.value == 0) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 6),
+                              // Hero Revenue Banner
+                              _MasterExecutiveCard(
+                                totalSale: stats.totalSale.formatNumber(),
+                                totalPurchase:
+                                    stats.totalPurchase.formatPrice(),
+                                totalFees: stats.totalFeesPayment.formatPrice(),
                                 isDark: isDark,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _AuraStatCard(
-                                title: 'Supplier Credit',
-                                value: stats.totalSupplierCredit.formatPrice(),
-                                subtitle: 'Payable',
-                                icon: LucideIcons.userX,
-                                glowColor: const Color(0xFFEF4444),
-                                isDark: isDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+                              const SizedBox(height: 24),
 
-                        // Section 3: Ratio Indicator Card
-                        _VolumeBreakdownCard(
-                          salesPayment:
-                              stats.totalSalePayment?.formatPrice() ?? '0',
-                          purchasePayment:
-                              stats.totalPurchasePayment.formatPrice(),
-                          saleCount: stats.saleCount?.formatNumber() ?? '0',
-                          purchaseCount:
-                              stats.purchaseCount?.formatNumber() ?? '0',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-                    );
-                  } else {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 6),
-                        _SectionHeader(
-                          title: 'TRANSACTION ACTIVITY',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _MetricSquareTile(
-                                label: 'Sales Orders',
-                                count: stats.saleCount?.formatNumber(),
-                                icon: LucideIcons.shoppingBag,
-                                color: const Color(0xFF10B981),
+                              // Section 1: Inflow vs Outflow
+                              _SectionHeader(
+                                title: 'CASHFLOW INSIGHTS',
                                 isDark: isDark,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _MetricSquareTile(
-                                label: 'Purchases',
-                                count: stats.purchaseCount?.formatNumber(),
-                                icon: LucideIcons.truck,
-                                color: const Color(0xFFF59E0B),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _AuraStatCard(
+                                      title: 'Customer Payments',
+                                      value:
+                                          stats.totalCustomerPayment
+                                              ?.formatPrice(),
+                                      subtitle: 'Inflow',
+                                      icon: LucideIcons.arrowDownLeft,
+                                      glowColor: const Color(0xFF10B981),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _AuraStatCard(
+                                      title: 'Supplier Payments',
+                                      value:
+                                          stats.totalSupplierPayment
+                                              .formatPrice(),
+                                      subtitle: 'Outflow',
+                                      icon: LucideIcons.arrowUpRight,
+                                      glowColor: const Color(0xFFF59E0B),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Section 2: Receivables & Payables
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _AuraStatCard(
+                                      title: 'Customer Credit',
+                                      value:
+                                          stats.totalCustomerCredit
+                                              .formatPrice(),
+                                      subtitle: 'Receivable',
+                                      icon: LucideIcons.userCheck,
+                                      glowColor: const Color(0xFF6366F1),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _AuraStatCard(
+                                      title: 'Supplier Credit',
+                                      value:
+                                          stats.totalSupplierCredit
+                                              .formatPrice(),
+                                      subtitle: 'Payable',
+                                      icon: LucideIcons.userX,
+                                      glowColor: const Color(0xFFEF4444),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Section 3: Ratio Indicator Card
+                              _VolumeBreakdownCard(
+                                salesPayment:
+                                    stats.totalSalePayment?.formatPrice() ??
+                                    '0',
+                                purchasePayment:
+                                    stats.totalPurchasePayment.formatPrice(),
+                                saleCount:
+                                    stats.saleCount?.formatNumber() ?? '0',
+                                purchaseCount:
+                                    stats.purchaseCount?.formatNumber() ?? '0',
                                 isDark: isDark,
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        _SectionHeader(
-                          title: 'SYSTEM DIRECTORY',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
-                        _DirectoryRowItem(
-                          title: 'Products Stocked',
-                          value: stats.productCount?.formatNumber(),
-                          icon: LucideIcons.package,
-                          accentColor: const Color(0xFF0EA5E9),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 10),
-                        _DirectoryRowItem(
-                          title: 'Active Customers',
-                          value: stats.customerCount?.formatNumber(),
-                          icon: LucideIcons.users,
-                          accentColor: const Color(0xFF8B5CF6),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 10),
-                        _DirectoryRowItem(
-                          title: 'Registered Suppliers',
-                          value: stats.supplierCount?.formatNumber(),
-                          icon: LucideIcons.building2,
-                          accentColor: const Color(0xFFEC4899),
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-                    );
-                  }
-                }),
+                              const SizedBox(height: 32),
+                            ],
+                          );
+                        } else {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 6),
+                              _SectionHeader(
+                                title: 'TRANSACTION ACTIVITY',
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _MetricSquareTile(
+                                      label: 'Sales Orders',
+                                      count: stats.saleCount?.formatNumber(),
+                                      icon: LucideIcons.shoppingBag,
+                                      color: const Color(0xFF10B981),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _MetricSquareTile(
+                                      label: 'Purchases',
+                                      count:
+                                          stats.purchaseCount?.formatNumber(),
+                                      icon: LucideIcons.truck,
+                                      color: const Color(0xFFF59E0B),
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              _SectionHeader(
+                                title: 'SYSTEM DIRECTORY',
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 12),
+                              _DirectoryRowItem(
+                                title: 'Products Stocked',
+                                value: stats.productCount?.formatNumber(),
+                                icon: LucideIcons.package,
+                                accentColor: const Color(0xFF0EA5E9),
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 10),
+                              _DirectoryRowItem(
+                                title: 'Active Customers',
+                                value: stats.customerCount?.formatNumber(),
+                                icon: LucideIcons.users,
+                                accentColor: const Color(0xFF8B5CF6),
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 10),
+                              _DirectoryRowItem(
+                                title: 'Registered Suppliers',
+                                value: stats.supplierCount?.formatNumber(),
+                                icon: LucideIcons.building2,
+                                accentColor: const Color(0xFFEC4899),
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 32),
+                            ],
+                          );
+                        }
+                      }),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

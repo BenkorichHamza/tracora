@@ -56,7 +56,11 @@ class TransactionCheckoutPage<T>
                                         ),
                                       )
                                       : Text(
-                                        '${controller.selectedForm.user?.firstName ?? ''} | ${controller.selectedForm.user?.companyName ?? ''}',
+                                        controller
+                                                .selectedForm
+                                                .user
+                                                ?.firstName ??
+                                            '',
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -64,13 +68,20 @@ class TransactionCheckoutPage<T>
                                         ),
                                       ),
 
-                              subtitle:
-                                  controller.transactionType == "transfert" ||
+                              trailing:
+                                  controller.selectedForm.user?.id == null
+                                      ? const Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: 18,
+                                        color: Colors.white70,
+                                      )
+                                      : controller.transactionType ==
+                                              "transfert" ||
                                           controller.selectedForm.user?.id ==
                                               null
                                       ? null
                                       : Text(
-                                        '${'credit'.tr} | ${controller.selectedForm.user?.toPay.formatPrice()}',
+                                        '${'credit'.tr} ${controller.selectedForm.user?.toPay.formatPrice()}',
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -81,21 +92,10 @@ class TransactionCheckoutPage<T>
                                                               ?.toPay ??
                                                           0) <=
                                                       0
-                                                  ? const Color.fromARGB(
-                                                    255,
-                                                    212,
-                                                    255,
-                                                    213,
-                                                  )
+                                                  ? null
                                                   : Colors.deepOrange,
                                         ),
                                       ),
-
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
                             ),
                           ),
                         ),

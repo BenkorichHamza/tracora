@@ -333,120 +333,345 @@ class UserDetailsView<T> extends GetView<UserDetailsController<T>> {
   }
 
   Widget profile() {
-    return Obx(
-      () => ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Column(
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
+        final primaryColor =
+            Get.find<HomeController>().dark.colorScheme.primaryContainer;
+        final cardBg = isDark ? theme.cardColor : Colors.white;
+        final borderClr =
+            isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
+        final textPrimary = isDark ? Colors.white : const Color(0xFF0F172A);
+        final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
+
+        return Obx(() {
+          final user = controller.user;
+
+          final hasValidPhone = (user.phone ?? '').isPhoneNumber;
+          final hasValidEmail = (user.email ?? '').isEmail;
+          final isCreditPaid = user.toPay <= 0;
+          final creditColor =
+              isCreditPaid ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              controller.user.circleAvatar(radius: 60),
-              SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '${controller.user.firstName ?? ''} | ${controller.user.companyName ?? ''}',
-                  style: TextStyle(fontSize: 24),
+              // HERO USER CARD
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: borderClr),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    user.circleAvatar(radius: 50),
+                    const SizedBox(height: 12),
+                    Text(
+                      user.firstName?.isNotEmpty == true
+                          ? user.firstName!
+                          : 'user'.tr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: textPrimary,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    if ((user.companyName ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        user.companyName!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+
+                    // CREDIT BADGE
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: creditColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: creditColor.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isCreditPaid
+                                ? Icons.check_circle_outline_rounded
+                                : Icons.error_outline_rounded,
+                            size: 16,
+                            color: creditColor,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${'credit'.tr}: ${user.toPay.formatPrice()}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: creditColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Center(
-                child: Text(
-                  '${'credit'.tr} | ${controller.user.toPay.formatPrice()}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        controller.user.toPay <= 0
-                            ? Colors.green
-                            : Colors.deepOrange,
-                  ),
+
+              const SizedBox(height: 16),
+
+              // CONTACT INFORMATION SECTION
+              Text(
+                'contact_info'.tr,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: textPrimary,
                 ),
+              ),
+              const SizedBox(height: 8),
+
+              // PHONE TILE
+              _buildContactTile(
+                icon: Icons.phone_outlined,
+                title: (user.phone ?? '').isNotEmpty ? user.phone! : 'phone'.tr,
+                subtitle: 'phone'.tr,
+                actionIcon: Icons.call_rounded,
+                isEnabled: hasValidPhone,
+                onPressed:
+                    !hasValidPhone
+                        ? null
+                        : () {
+                          launchUrl(Uri(scheme: 'tel', path: user.phone!));
+                        },
+                primaryColor: primaryColor,
+                cardBg: cardBg,
+                borderClr: borderClr,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
+
+              const SizedBox(height: 8),
+
+              // EMAIL TILE
+              _buildContactTile(
+                icon: Icons.email_outlined,
+                title: (user.email ?? '').isNotEmpty ? user.email! : 'email'.tr,
+                subtitle: 'email'.tr,
+                actionIcon: Icons.mail_rounded,
+                isEnabled: hasValidEmail,
+                onPressed:
+                    !hasValidEmail
+                        ? null
+                        : () {
+                          launchUrl(Uri(scheme: 'mailto', path: user.email!));
+                        },
+                primaryColor: primaryColor,
+                cardBg: cardBg,
+                borderClr: borderClr,
+                textPrimary: textPrimary,
+                textSecondary: textSecondary,
+              ),
+
+              const SizedBox(height: 16),
+
+              // TAX & LEGAL IDS SECTION
+              Text(
+                'legal_identifiers'.tr,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildLegalBadge(
+                      label: 'NIN',
+                      value: user.nin,
+                      cardBg: cardBg,
+                      borderClr: borderClr,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildLegalBadge(
+                      label: 'NIS',
+                      value: user.nis,
+                      cardBg: cardBg,
+                      borderClr: borderClr,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildLegalBadge(
+                      label: 'NIF',
+                      value: user.nif,
+                      cardBg: cardBg,
+                      borderClr: borderClr,
+                      textPrimary: textPrimary,
+                      textSecondary: textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ],
-          ),
-          ListTile(
-            leading: Icon(Icons.phone),
-            title: Text(
-              (controller.user.phone ?? '').isNotEmpty
-                  ? controller.user.phone!
-                  : 'phone'.tr,
+          );
+        });
+      },
+    );
+  }
+
+  Widget _buildContactTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required IconData actionIcon,
+    required bool isEnabled,
+    required VoidCallback? onPressed,
+    required Color primaryColor,
+    required Color cardBg,
+    required Color borderClr,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderClr),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
-            trailing: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    Get.find<HomeController>()
-                        .dark
-                        .colorScheme
-                        .primaryContainer,
+            child: Icon(icon, size: 20, color: primaryColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          IconButton.filledTonal(
+            style: IconButton.styleFrom(
+              backgroundColor:
+                  isEnabled ? primaryColor : primaryColor.withOpacity(0.08),
+              foregroundColor:
+                  isEnabled ? Colors.white : textSecondary.withOpacity(0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              onPressed:
-                  !(controller.user.phone ?? '').isPhoneNumber
-                      ? null
-                      : () {
-                        launchUrl(
-                          Uri(scheme: 'tel', path: controller.user.phone!),
-                        );
-                      },
-              icon: Icon(
-                Icons.call,
-                color:
-                    (controller.user.phone ?? '').isPhoneNumber
-                        ? Colors.white
-                        : null,
+            ),
+            onPressed: onPressed,
+            icon: Icon(actionIcon, size: 18),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegalBadge({
+    required String label,
+    required String? value,
+    required Color cardBg,
+    required Color borderClr,
+    required Color textPrimary,
+    required Color textSecondary,
+  }) {
+    final displayValue = (value ?? '').isNotEmpty ? value! : '--';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderClr),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2563EB).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF2563EB),
               ),
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.email),
-            title: Text(
-              (controller.user.email ?? '').isNotEmpty
-                  ? controller.user.email!
-                  : 'email'.tr,
+          const SizedBox(height: 8),
+          Text(
+            displayValue,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
             ),
-            trailing: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    Get.find<HomeController>()
-                        .dark
-                        .colorScheme
-                        .primaryContainer,
-              ),
-              onPressed:
-                  !(controller.user.email ?? '').isEmail
-                      ? null
-                      : () {
-                        launchUrl(
-                          Uri(scheme: 'mailto', path: controller.user.email!),
-                        );
-                      },
-              icon: Icon(
-                Icons.mail,
-                color:
-                    (controller.user.email ?? '').isEmail ? Colors.white : null,
-              ),
-            ),
-          ),
-          ListTile(
-            title: Text(
-              (controller.user.nin ?? '').isEmpty
-                  ? 'nin'
-                  : (controller.user.nin ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIN')),
-          ),
-          ListTile(
-            title: Text(
-              (controller.user.nis ?? '').isEmpty
-                  ? 'nis'
-                  : (controller.user.nis ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIS')),
-          ),
-          ListTile(
-            title: Text(
-              (controller.user.nif ?? '').isEmpty
-                  ? 'nif'
-                  : (controller.user.nif ?? ''),
-            ),
-            leading: CircleAvatar(child: Text('NIF')),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

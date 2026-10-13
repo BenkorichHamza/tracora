@@ -55,7 +55,7 @@ import 'package:tracora/app/widgets/toast_managet.dart';
 class HomeController extends GetxController with GetTickerProviderStateMixin {
   //TODO: Implement HomeController
 
-  final _isDark = Get.isDarkMode.obs;
+  final _isDark = true.obs;
   bool get isDark => this._isDark.value;
   set isDark(bool value) => this._isDark.value = value;
 
@@ -320,6 +320,11 @@ class HomeController extends GetxController with GetTickerProviderStateMixin {
     token = '';
     var pref = await SharedPreferences.getInstance();
     pref.remove('token');
+    employee = UserModel();
+    pref.remove('user');
+    pref.remove('employee');
+    pref.remove('contact');
+    pref.remove("token");
   }
 
   login() async {

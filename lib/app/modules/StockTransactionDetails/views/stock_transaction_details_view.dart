@@ -22,9 +22,7 @@ class StockTransactionDetailsView<T>
         final tx = controller.stockTransaction;
 
         if (tx.id == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: SizedBox());
         }
 
         final isApproved = tx.status == 1;
@@ -395,50 +393,105 @@ class StockTransactionDetailsView<T>
       ),
       child: SafeArea(
         top: false,
-        child: Row(
+        child:
+        // Row(
+        //   children: [
+        //     Expanded(child: SizedBox()),
+        //     IconButton.filledTonal(
+        //       style: IconButton.styleFrom(
+        //         backgroundColor: Colors.green.withAlpha(50),
+        //         foregroundColor: Colors.green,
+        //         padding: const EdgeInsets.all(14),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(10),
+        //         ),
+        //       ),
+        //       onPressed: controller.printTicket,
+        //       icon: const Icon(Icons.print_outlined, size: 20),
+        //       tooltip: 'print_ticket'.tr,
+        //     ),
+        //     const SizedBox(width: 8),
+        //     IconButton.filledTonal(
+        //       style: IconButton.styleFrom(
+        //         backgroundColor: Colors.amber.withAlpha(50),
+        //         foregroundColor: Colors.amber,
+        //         padding: const EdgeInsets.all(14),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(10),
+        //         ),
+        //       ),
+        //       onPressed: controller.edit,
+        //       icon: const Icon(Icons.edit_outlined, size: 20),
+        //       tooltip: 'edit'.tr,
+        //     ),
+        //     const SizedBox(width: 8),
+        //     IconButton.filledTonal(
+        //       style: IconButton.styleFrom(
+        //         backgroundColor: theme.colorScheme.errorContainer,
+        //         foregroundColor: theme.colorScheme.onErrorContainer,
+        //         padding: const EdgeInsets.all(14),
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(10),
+        //         ),
+        //       ),
+        //       onPressed: controller.delete,
+        //       icon: const Icon(Icons.delete_outline, size: 20),
+        //       tooltip: 'delete_sale'.tr,
+        //     ),
+        //   ],
+        // ),
+        Row(
           children: [
-            Expanded(child: SizedBox()),
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.green.withAlpha(50),
-                foregroundColor: Colors.green,
-                padding: const EdgeInsets.all(14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.print_outlined),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor:
+                      Get.find<HomeController>()
+                          .dark
+                          .colorScheme
+                          .primaryContainer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
+                onPressed: controller.printTicket,
+                label: Text('print'.tr),
               ),
-              onPressed: controller.printTicket,
-              icon: const Icon(Icons.print_outlined, size: 20),
-              tooltip: 'print_ticket'.tr,
             ),
-            const SizedBox(width: 8),
-
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.amber.withAlpha(50),
-                foregroundColor: Colors.amber,
-                padding: const EdgeInsets.all(14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(width: 4),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.edit),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.orange,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
+                onPressed: controller.edit,
+                label: Text('edit'.tr),
               ),
-              onPressed: controller.edit,
-              icon: const Icon(Icons.edit_outlined, size: 20),
-              tooltip: 'edit'.tr,
             ),
-            const SizedBox(width: 8),
-            IconButton.filledTonal(
-              style: IconButton.styleFrom(
-                backgroundColor: theme.colorScheme.errorContainer,
-                foregroundColor: theme.colorScheme.onErrorContainer,
-                padding: const EdgeInsets.all(14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(width: 4),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.delete_outline),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
+                onPressed: controller.delete,
+                label: Text('delete'.tr),
               ),
-              onPressed: controller.delete,
-              icon: const Icon(Icons.delete_outline, size: 20),
-              tooltip: 'delete_sale'.tr,
             ),
           ],
         ),

@@ -390,6 +390,8 @@ class StockTransactionController<T> extends GetxController
       context: Get.context!,
       builder:
           (c) => Dialog(
+            clipBehavior: Clip.antiAlias,
+            insetPadding: EdgeInsets.all(0),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 450),
               child:
@@ -415,6 +417,8 @@ class StockTransactionController<T> extends GetxController
       context: Get.context!,
       builder:
           (c) => Dialog(
+            clipBehavior: Clip.antiAlias,
+
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 450),
               child: UserView<Employee>(),
@@ -435,6 +439,7 @@ class StockTransactionController<T> extends GetxController
       context: Get.context!,
       builder:
           (c) => Dialog(
+            clipBehavior: Clip.antiAlias,
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 450),
               child: WarehouseView(),
@@ -455,6 +460,8 @@ class StockTransactionController<T> extends GetxController
       context: Get.context!,
       builder:
           (c) => Dialog(
+            clipBehavior: Clip.antiAlias,
+
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 450),
               child: WarehouseView(),

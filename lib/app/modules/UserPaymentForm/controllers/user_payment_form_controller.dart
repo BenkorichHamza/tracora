@@ -127,7 +127,8 @@ class UserPaymentFormController<T> extends GetxController {
       );
       var id = await repository.insertMoneyTransaction(n);
       if (Get.isRegistered<UserPaymentController<T>>()) {
-        Get.find<UserPaymentController<T>>().getAll();
+        // Get.find<UserPaymentController<T>>().getAll();
+        Get.find<UserPaymentDetailsController<T>>().getMoneyTransaction();
         // Get.find<UserPaymentController<T>>().toDetails(n);
         // Get.find<UserPaymentDetailsController<T>>().moneyTransaction = n;
       }

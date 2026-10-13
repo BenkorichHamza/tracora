@@ -247,7 +247,7 @@ class FeesPaymentDetailsView extends GetView<FeesPaymentDetailsController> {
     Color borderClr,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: cardBg,
         border: Border(top: BorderSide(color: borderClr)),
@@ -263,55 +263,55 @@ class FeesPaymentDetailsView extends GetView<FeesPaymentDetailsController> {
         child: Row(
           children: [
             Expanded(
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.print_outlined, size: 18),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  foregroundColor: primaryColor,
-                  side: BorderSide(color: primaryColor.withOpacity(0.5)),
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.print_outlined),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor:
+                      Get.find<HomeController>()
+                          .dark
+                          .colorScheme
+                          .primaryContainer,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  foregroundColor: Colors.white,
                 ),
                 onPressed: controller.print,
-                label: Text(
-                  'print_ticket'.tr,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
+                label: Text('print'.tr),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 4),
             Expanded(
               child: ElevatedButton.icon(
-                icon: const Icon(Icons.edit_outlined, size: 18),
+                icon: Icon(Icons.edit),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.orange,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  foregroundColor: Colors.white,
                 ),
                 onPressed: controller.edit,
-                label: Text(
-                  'edit_sale'.tr,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
+                label: Text('edit'.tr),
               ),
             ),
-            const SizedBox(width: 8),
-            IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444).withOpacity(0.12),
-                foregroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            SizedBox(width: 4),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.delete_outline),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  foregroundColor: Colors.white,
                 ),
-                padding: const EdgeInsets.all(14),
+                onPressed: controller.delete,
+                label: Text('delete'.tr),
               ),
-              icon: const Icon(Icons.delete_outline_rounded, size: 20),
-              onPressed: controller.delete,
             ),
           ],
         ),

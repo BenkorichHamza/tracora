@@ -174,6 +174,8 @@ class UserPaymentController<T> extends GetxController {
       context: Get.context!,
       builder:
           (c) => Dialog(
+            clipBehavior: Clip.antiAlias,
+
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: 450),
               child: UserView<Employee>(),

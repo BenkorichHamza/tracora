@@ -81,7 +81,7 @@ class MoneyTransactionRepository {
     var employees = employeeMaps.map(((e) => UserModel.fromMap(e))).toList();
     var userId =
         maps
-            .map<String>((e) => '"' + (e['userId'] ?? "") + '"')
+            .map<String>((e) => (e['userId'] ?? ""))
             .toSet()
             .where((e) => e != '""')
             .toList();

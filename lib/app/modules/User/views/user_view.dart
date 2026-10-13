@@ -26,22 +26,24 @@ class UserView<T> extends GetView<UserController<T>> {
     return Obx(
       () => Column(
         children: [
-          StockTransactionTabs(
-            title: controller.title,
-            formTitle:
-                Get.find<UserFormController<T>>().user.id == null
-                    ? (controller.newTitle)
-                    : (Get.find<UserFormController<T>>().user.firstName ??
-                        Get.find<UserFormController<T>>().user.firstName ??
-                        controller.newTitle),
-            onCloseForm: () {
-              Get.find<UserFormController<T>>().init(UserModel());
-              controller.showForm = false;
-            },
-            onFormTap: () => controller.showForm = true,
-            onHideForm: () => controller.showForm = false,
-            showForm: controller.showForm,
-          ),
+          Get.arguments?["select"] == true
+              ? SizedBox()
+              : StockTransactionTabs(
+                title: controller.title,
+                formTitle:
+                    Get.find<UserFormController<T>>().user.id == null
+                        ? (controller.newTitle)
+                        : (Get.find<UserFormController<T>>().user.firstName ??
+                            Get.find<UserFormController<T>>().user.firstName ??
+                            controller.newTitle),
+                onCloseForm: () {
+                  Get.find<UserFormController<T>>().init(UserModel());
+                  controller.showForm = false;
+                },
+                onFormTap: () => controller.showForm = true,
+                onHideForm: () => controller.showForm = false,
+                showForm: controller.showForm,
+              ),
           Expanded(
             child: controller.showForm ? CustomerFormView<T>() : users(),
           ),
@@ -59,11 +61,11 @@ class UserView<T> extends GetView<UserController<T>> {
             margin: EdgeInsets.all(4),
             // padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
-              border: Border.all(
-                width: 0.1,
-                color: Get.find<HomeController>().theme.colorScheme.onSurface,
-              ),
+              // borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
+              // border: Border.all(
+              //   width: 0.1,
+              //   color: Get.find<HomeController>().theme.colorScheme.onSurface,
+              // ),
             ),
             child: list(),
           ),

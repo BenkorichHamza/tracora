@@ -20,22 +20,26 @@ class WarehouseView extends GetView<WarehouseController> {
     return Obx(
       () => Column(
         children: [
-          StockTransactionTabs(
-            title: "warehouses".tr,
-            formTitle:
-                Get.find<WarehouseFormController>().warehouse.id == null
-                    ? ('${'new_warehouse'.tr} F1')
-                    : (Get.find<WarehouseFormController>().warehouse.name ??
-                        Get.find<WarehouseFormController>().warehouse.nameAr ??
-                        'form'),
-            onCloseForm: () {
-              Get.find<WarehouseFormController>().init(Warehouse());
-              controller.showForm = false;
-            },
-            onFormTap: () => controller.showForm = true,
-            onHideForm: () => controller.showForm = false,
-            showForm: controller.showForm,
-          ),
+          Get.arguments?["select"] == true
+              ? SizedBox()
+              : StockTransactionTabs(
+                title: "warehouses".tr,
+                formTitle:
+                    Get.find<WarehouseFormController>().warehouse.id == null
+                        ? ('${'new_warehouse'.tr} F1')
+                        : (Get.find<WarehouseFormController>().warehouse.name ??
+                            Get.find<WarehouseFormController>()
+                                .warehouse
+                                .nameAr ??
+                            'form'),
+                onCloseForm: () {
+                  Get.find<WarehouseFormController>().init(Warehouse());
+                  controller.showForm = false;
+                },
+                onFormTap: () => controller.showForm = true,
+                onHideForm: () => controller.showForm = false,
+                showForm: controller.showForm,
+              ),
           Expanded(child: controller.showForm ? WarehouseFormView() : users()),
         ],
       ),
@@ -51,11 +55,11 @@ class WarehouseView extends GetView<WarehouseController> {
             margin: EdgeInsets.all(4),
             // padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
-              border: Border.all(
-                width: 0.1,
-                color: Get.find<HomeController>().theme.colorScheme.onSurface,
-              ),
+              // borderRadius: BorderRadius.only(topLeft: Radius.circular(16)),
+              // border: Border.all(
+              //   width: 0.1,
+              //   color: Get.find<HomeController>().theme.colorScheme.onSurface,
+              // ),
             ),
             child: list(),
           ),
@@ -87,7 +91,7 @@ class WarehouseView extends GetView<WarehouseController> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: colorScheme.surface,
+        backgroundColor: colorScheme.surfaceContainer,
         surfaceTintColor: Colors.transparent,
         titleSpacing: 12,
         title: Focus(
@@ -299,6 +303,7 @@ class WarehouseView extends GetView<WarehouseController> {
           onTap: () {
             controller.toDetails(warehouse);
           },
+          leading: Icon(Icons.warehouse_rounded),
           subtitle: Text(warehouse.description ?? ''),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -309,13 +314,8 @@ class WarehouseView extends GetView<WarehouseController> {
                       : Colors.grey.withAlpha(100),
             ),
           ),
-          tileColor:
-              Get.find<HomeController>().isDark
-                  ? Get.find<HomeController>()
-                      .theme
-                      .colorScheme
-                      .surfaceContainerHigh
-                  : Colors.white,
+          selectedTileColor:
+              Get.find<HomeController>().theme.colorScheme.surfaceContainer,
           contentPadding: EdgeInsets.only(right: 8, top: 0, bottom: 0, left: 8),
           trailing: Icon(Icons.abc),
           title: Text(warehouse.translateName ?? 'warehouse'.tr),
